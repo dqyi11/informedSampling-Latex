@@ -1,0 +1,106 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%2345678901234567890123456789012345678901234567890123456789012345678901234567890
+%        1         2         3         4         5         6         7         8
+
+\documentclass[letterpaper, 10 pt, conference]{ieeeconf}  % Comment this line out if you need a4paper
+
+%\documentclass[a4paper, 10pt, conference]{ieeeconf}      % Use this line for a4 paper
+
+\IEEEoverridecommandlockouts                              % This command is only needed if 
+                                                          % you want to use the \thanks command
+
+\overrideIEEEmargins                                      % Needed to meet printer requirements.
+
+% See the \addtolength command later in the file to balance the column lengths
+% on the last page of the document
+
+
+\usepackage{xspace}
+\usepackage{amsmath,amssymb,amsfonts,amsfonts}
+\usepackage{algorithm}
+\usepackage[noend]{algorithmic}
+\usepackage{url}
+\usepackage{graphicx,subfigure}
+\usepackage{color}
+\usepackage{hyperref}
+%\hypersetup{bookmarksopen,
+%bookmarksnumbered,
+%pdfpagemode=UseOutlines,
+%colorlinks=true,
+%linkcolor=blue,
+%anchorcolor=blue,
+%citecolor=blue,
+%filecolor=blue,
+%menucolor=blue,
+%urlcolor=blue
+%}
+
+
+\title{\LARGE \bf
+Informed sampling by Markov chain Monte Carlo methods
+}
+
+
+\author{
+Rohan Thakker$^{*}$,
+Cole Gulino$^{*}$,
+Daqing YI$^{}$,
+Oren Salzman$^{}$ and
+Siddhartha Srinivasa$^{}$% <-this % stops a space
+\thanks{*R. Thakker and C. Gulino contributed equally to this paper.}
+\thanks{This work was (partially) funded by the National Science Foundation IIS (\#1409003), Toyota Motor Engineering \& Manufacturing (TEMA), and the Office of Naval Research.}% <-this % stops a space
+\thanks{$^{1}${\tt\small \{rthakker, cgulino, daqingy, osalzman, ss5\} @andrew.cmu.edu}}%
+%
+\\        
+Robotics Institute, Carnegie Mellon University$^{1}$
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  macros 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{macros.tex}
+
+\begin{document}
+
+
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+\section{Related work}
+\subsection{planning}
+
+
+\subsection{sampling}
+Hierarchical sampling~\cite{KTC16}.
+
+Informed sampling~\cite{GSB14}
+
+OBPRM~\cite{ABDJV98, YTEA12}
+
+Medial axis~\cite{LTA03, YDLTA14}
+
+heuristic~\cite{US03, SWT09}
+
+\subsection{MCMC}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliography{bibliography}
+\bibliographystyle{abbrv}
+%\bibliographystyle{IEEEtran}
+%\bibliography{IEEEabrv,bibliography}
+
+
+\end{document}
