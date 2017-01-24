@@ -8,9 +8,11 @@
 %@string{iser = "ISER"}
 %
 %@string{cmu = "Carnegie Mellon University"}
-%
-%@string{ijrr = "I. J. Robotics Res."}
-%@string{tra = "{IEEE} Trans. Robotics and Automation"}
+
+@string{ijrr = "I. J. Robotics Res."}
+@string{tra = "{IEEE} Trans. Robotics and Automation"}
+@string{tr = "{IEEE} Trans. Robotics"}
+@string{cdc = "{IEEE} Conference on Decision and Control"}
 
 @string{iros = "{IEEE/RSJ} Int. Conf. Intelligent Robots and Systems (IROS)"}
 @string{icra = "{IEEE} Int. Conf. Robotics and Automation (ICRA)"}
@@ -50,8 +52,7 @@
   author    = {Jonathan D. Gammell and
                Siddhartha S. Srinivasa and
                Timothy D. Barfoot},
-  title     = {Batch Informed Trees ({BIT}*): Sampling-based optimal planning via the
-               heuristically guided search of implicit random geometric graphs},
+  title     = {Batch Informed Trees ({BIT}*): Sampling-based optimal planning via the                heuristically guided search of implicit random geometric graphs},
   booktitle = icra,
   pages     = {3067--3074},
   year      = {2015}
@@ -141,3 +142,125 @@
   pages={155--168},
   year={1998}
 }
+
+@article{LK01,
+  author    = {Steven M. LaValle and
+               James J. Kuffner Jr.},
+  title     = {Randomized Kinodynamic Planning},
+  journal   = ijrr,
+  volume    = {20},
+  number    = {5},
+  pages     = {378--400},
+  year      = {2001}
+}
+
+@article{KSLO96,
+  author    = {Lydia E. Kavraki and
+               Petr Svestka and
+               Jean{-}Claude Latombe and
+               Mark H. Overmars},
+  title     = {Probabilistic roadmaps for path planning in high-dimensional configuration
+               spaces},
+  journal   = tra,
+  volume    = {12},
+  number    = {4},
+  pages     = {566--580},
+  year      = {1996}
+}
+
+@article{KF11,
+  author    = {Sertac Karaman and
+               Emilio Frazzoli},
+  title     = {Sampling-based algorithms for optimal motion planning},
+  journal   = ijrr,
+  volume    = {30},
+  number    = {7},
+  pages     = {846--894},
+  year      = {2011}
+}
+
+
+@article{SH16,
+  author    = {Oren Salzman and
+               Dan Halperin},
+  title     = {Asymptotically Near-Optimal {RRT} for Fast, High-Quality Motion Planning},
+  journal   = tr,
+  volume    = {32},
+  number    = {3},
+  pages     = {473--483},
+  year      = {2016}
+}
+
+
+@inproceedings{SSH16,
+  author    = {Kiril Solovey and
+               Oren Salzman and
+               Dan Halperin},
+  title     = {New perspective on sampling-based motion planning via random geometric graphs},
+  booktitle = rss,
+  year      = {2016}
+}
+
+
+@article{DB14,
+  author    = {Andrew Dobson and
+               Kostas E. Bekris},
+  title     = {Sparse roadmap spanners for asymptotically near-optimal motion planning},
+  journal   = ijrr,
+  volume    = {33},
+  number    = {1},
+  pages     = {18--47},
+  year      = {2014}
+}
+
+@article{JSCP15,
+  author    = {Lucas Janson and
+               Edward Schmerling and
+               Ashley A. Clark and
+               Marco Pavone},
+  title     = {Fast marching tree: {A} fast marching sampling-based method for optimal motion planning in many dimensions},
+  journal   = ijrr,
+  volume    = {34},
+  number    = {7},
+  pages     = {883--921},
+  year      = {2015}
+}
+
+@inproceedings{SL14,
+  author    = {Samantha Stoneman and
+               Roberto Lampariello},
+  title     = {Embedding nonlinear optimization in RRT* for optimal kinodynamic planning},
+  booktitle = cdc,
+  pages     = {3737--3744},
+  year      = {2014}
+}
+
+@inproceedings{XBPA15,
+  author    = {Christopher Xie and
+               Jur P. van den Berg and
+               Sachin Patil and
+               Pieter Abbeel},
+  title     = {Toward asymptotically optimal motion planning for kinodynamic systems using a two-point boundary value problem solver},
+  booktitle = icra,
+  pages     = {4187--4194},
+  year      = {2015}
+}
+
+@inproceedings{WB13,
+  author    = {Dustin J. Webb and
+               Jur van den Berg},
+  title     = {Kinodynamic {RRT}*: Asymptotically optimal motion planning for robots
+               with linear dynamics},
+  booktitle = icra,
+  pages     = {5054--5061},
+  year      = {2013}
+}
+@inproceedings{KF10,
+  author    = {Sertac Karaman and
+               Emilio Frazzoli},
+  title     = {Optimal kinodynamic motion planning using incremental sampling-based methods},
+  booktitle = cdc,
+  pages     = {7681--7687},
+  year      = {2010}
+}
+
