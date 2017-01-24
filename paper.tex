@@ -77,6 +77,30 @@ Robotics Institute, Carnegie Mellon University$^{1}$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+Sampling-based motion-planning algorithms~\cite{CBHKKLT05, L06} have proven to be an effective tool at solving motion-planning problems.
+They search through the continuous state space~$\calX$ by sampling random states and maintaining a discrete graph~$G$ called a \emph{roadmap}.
+Vertices and edges in $G$ correspond to collision-free states and paths, respectively.
+
+Roughly speaking, all these algorithms iteratively sample new states.
+This is required to ensure that, as the number of samples tends to infinity, 
+(i)~a solution will be found 
+(a property called \emph{probabilistic completeness})
+and that
+(ii)~given some optimization criteria, the quality of the solution will progressively converge to the quality of the optimal solution
+(a property called \emph{asymptotic  optimality}).
+
+
+
+While, original sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} only guaranteed to asymptotically return \emph{a} solution, if one exists, they did not provide any guarantees on the \emph{quality} of the solution, given some optimization criteria.
+Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
+Additional algorithms followed, increasing the converges rate by various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
+
+
+In the most basic form, the motion-planning problem calls for computing \emph{a} path between two given states.
+Indeed, 
+However, recent years 
+Original planners such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not provide any guarantee on the \emph{•}
+
 
 \section{Related work}
 \subsection{planning}
