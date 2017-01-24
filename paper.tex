@@ -89,6 +89,19 @@ and that
 (ii)~given some optimization criteria, the quality of the solution will progressively converge to the quality of the optimal solution
 (a property called \emph{asymptotic  optimality}).
 
+In the initial stages of the algorithm, 
+when no path has yet to be found, 
+the samples need to be drawn from the entire state space~$\calX$.
+However, given a path $\gamma$ , the algorithm can limit its sampling domain to a subset of~$\calX$  containing states that \emph{may} produce higher-quality paths than $\gamma$.
+Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it $\Cinf$.
+
+For systems without differential constraints, \Cinf can be sampled directly~\cite{GSB14}.
+However, for systems with differential constraints, it is not clear how to directly sample \Cinf.
+One approach to produce samples in \Cinf is via \emph{rejection sampling}---sampling a state $x \in \calX$ and testing if $x \in \Cinf$.
+However, when the size of the informed space~$\Cinf$ is much smaller than entire state space~$\calX$, then this procedure may dominate the running time of the algorithm~\cite{KTC16}.
+\emph{Hierarchical rejection sampling} (HRS) is a recently introduced sampling approach that improves the efficiency of rejection sampling.
+This is done by sampling in individual dimensions of the state space and progressively combing these partial samples into larger ones while testing if these combined samples may be in \Cinf or not.
+
 
 
 While, original sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} only guaranteed to asymptotically return \emph{a} solution, if one exists, they did not provide any guarantees on the \emph{quality} of the solution, given some optimization criteria.
@@ -99,7 +112,7 @@ Additional algorithms followed, increasing the converges rate by various techniq
 In the most basic form, the motion-planning problem calls for computing \emph{a} path between two given states.
 Indeed, 
 However, recent years 
-Original planners such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not provide any guarantee on the \emph{•}
+Original planners such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not provide any guarantee on the \emph{s}
 
 
 \section{Related work}
