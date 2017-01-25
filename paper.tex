@@ -80,6 +80,8 @@ Robotics Institute, Carnegie Mellon University$^{1}$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+\label{sec:intro}
+
 Sampling-based motion-planning algorithms~\cite{CBHKKLT05, L06} have proven to be an effective tool at solving motion-planning problems.
 They search through the continuous state space~$\calX$ by sampling random states and maintaining a discrete graph~$G$ called a \emph{roadmap}.
 Vertices and edges in $G$ correspond to collision-free states and paths, respectively.
@@ -119,6 +121,7 @@ Original planners such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not provide 
 
 
 \section{Related work}
+\label{sec:related_work}
 
 
 \subsection{Planning}
@@ -161,13 +164,22 @@ heuristic~\cite{US03, SWT09}
 
 \subsection{MCMC}
 
-Markov Chain Monte Carlo~\cite{ADDJ03} is a framework of sampling from a given probability distribution by constructing a Markov chain of random transition toward a desired distribution.
+Markov Chain Monte Carlo(MCMC)~\cite{ADDJ03} is a framework of sampling from a given probability distribution by constructing a Markov chain of random transition toward a desired distribution.
 A set of samples are generated to approximate the desired distribution.
 Unlike a rejection sampling, MCMC does a random walk in a parametric space and concentrates on an important areas, which usually brings better efficiency.
-
-HMC~\cite{N11}
+Hamiltonian Monte Carlo(HMC)~\cite{N11} is introduced to provide better efficiency in converging to a desired distribution.
+It adopts physical system dynamics to propose future states in the Markov chain.
 
 \section{Algorithm}
+\label{sec:algorithm}
+
+\begin{algorithm}
+	\begin{algorithmic}[1]
+		\STATE
+   	\end{algorithmic}
+	\caption{MCMC Informed Sampling}
+	\label{alg:mcmc_informed_sampling}
+\end{algorithm}
 
 
 \section{Results}
