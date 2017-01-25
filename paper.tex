@@ -23,6 +23,7 @@
 \usepackage{algorithm}
 \usepackage[noend]{algorithmic}
 \usepackage{url}
+\usepackage{bm}
 \usepackage{graphicx,subfigure}
 \usepackage{color}
 \usepackage{hyperref}
@@ -182,6 +183,35 @@ We are going to integrate this idea into our sampling framework of efficiently g
 
 \section{Algorithm}
 \label{sec:algorithm}
+
+Define the dynamics of a robot as 
+\begin{equation}
+\label{eq:kinematics}
+\dot{\bm{x}}(t) = f( \bm{x}(t) , \bm{u}(t) ), 
+\end{equation}
+in which $ \bm{x} \in \mathcal{X} \subseteq \mathbb{R}^n $ is the state of the robot, and $ \bm{u} \in \mathcal{U} \subseteq \mathbb{R}^m $ is the control input.
+The dynamics determines a state trajectory $ \pi $, given a duration $ T $, an initial state $ \bm{x}(0) $ and an initial input $ \bm{u}(0) $.
+The cost of a trajectory $ \pi $ is defined as the accumulated cost along the path, which is 
+\begin{equation}
+\label{eq:path_cost}
+c(\pi) = \int_0^{T} c( x(t), u(t) ) dt.
+\end{equation}
+Consider the obstacles in a workspace, we have $ \mathcal{X}_{free} \subseteq \mathcal{X} $.
+Consider the bounds of the control input, we have $ \mathcal{U}_{free} \subseteq \mathcal{U} $.
+The dynamics of the robot in Equation~\eqref{eq:kinematics}, free state space $  \mathcal{X}_{free} $ and free control input space $ \mathcal{U}_{free} $ determines a free trajectory space $ \Pi_{free} $, which contains all feasible trajectories $ \pi \in \Pi_{free} $.
+
+We can define an optimal kinodynamic path-planning problem that finds a kinodynamic path minimizing the cost in Definition \ref{defn:optimal_kino_path_planning}.
+\begin{defn}{ \textbf{Optimal Kinodynamic Path-Planning} }
+\label{defn:optimal_kino_path_planning}
+	Find an optimal path $  \pi^* $ that satisfies
+	\begin{itemize}
+	\item $\forall t \in [0,T] $, $ \bm{x} (t) \in \mathcal{X}_{free}  $ and $ \bm{u} (t) \in \mathcal{U}_{free} $;
+	\item $ \bm{x} (0) = x_{init} $, $ \bm{x} (T) = x_{goal} $, $ \bm{u} (0) = u_{init} $ and $ \bm{u} (T) = u_{goal} $; and
+	\item $ \pi^* = \max_{ \pi \in \Pi_{free} } c( \pi ) $. 
+	\end{itemize}
+\end{defn}
+
+\dy{Do we want to set an initial and a goal for the control input? Does this simplify the problem solving?}
 
 \begin{algorithm}
 	\begin{algorithmic}[1]
