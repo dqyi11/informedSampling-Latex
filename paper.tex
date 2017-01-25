@@ -164,11 +164,21 @@ heuristic~\cite{US03, SWT09}
 
 \subsection{MCMC}
 
-Markov Chain Monte Carlo(MCMC)~\cite{ADDJ03} is a framework of sampling from a given probability distribution by constructing a Markov chain of random transition toward a desired distribution.
-A set of samples are generated to approximate the desired distribution.
+Markov Chain Monte Carlo(MCMC)~\cite{ADDJ03} is a framework of sampling from a given probability distribution by constructing a Markov chain of random transition toward a desired distribution $ \pi (x) $ .
+A set of samples are generated to approximate the desired distribution $ \pi (x) $.
 Unlike a rejection sampling, MCMC does a random walk in a parametric space and concentrates on an important areas, which usually brings better efficiency.
 Hamiltonian Monte Carlo(HMC)~\cite{N11} is introduced to provide better efficiency in converging to a desired distribution.
 It adopts physical system dynamics to propose future states in the Markov chain.
+The concept origins from Hamiltonian dynamics, which models the movement of an object.
+Given the position $ x $ and the momentum $ q $ of an object, the system energy can be written as $ H(x,q) = U(x) + K(q) $, in which $ U(x) $ is the potential energy and $ K(q) $ is the kinetic energy.
+The movement of the object (how $ x $ and $ q $ change over time) is determined by
+$ \frac{dx}{dt} = \frac{\partial H}{\partial q} $ and $ \frac{dq}{dt} = - \frac{\partial H}{\partial x} $.
+By the association between energy and a canonical distribution, a joint distribution for the states $ x $ and $ q $ can be created from a Hamiltonian dynamics, which is 
+$ P(x, q) = \frac{1}{Z} \exp ( -H(x,q) / T ) = \frac{1}{Z} \exp ( -U(x) / T) \exp (-K(q) / T) $.
+If we define $ U(x) = - \log ( \pi(x) T ) $, $ P(x, q) $ can be rewritten as $ P(x, q) = \pi (x) \frac{1}{Z} \exp (-K(q) / T) $.
+Because the state $ x $ and the the momentum  $ q $ are independent, we can sample $ [ x ,q ] $ from $ P(x, q) $ and discard the momentum $ q $ (as an auxiliary variable).
+The collected set of $ x $ is equivalent to sampling from $ \pi(x) $.
+We are going to integrate this idea into our sampling framework of efficiently generating samples under kinetic constraints. 
 
 \section{Algorithm}
 \label{sec:algorithm}
