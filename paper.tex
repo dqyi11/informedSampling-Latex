@@ -14,12 +14,16 @@
 % See the \addtolength command later in the file to balance the column lengths
 % on the last page of the document
 
+\makeatletter
+\let\NAT@parse\undefined
+\makeatother
 
 \usepackage{xspace}
 \usepackage{amsmath,amssymb,amsfonts,amsfonts}
 \usepackage{algorithm}
 \usepackage[noend]{algorithmic}
 \usepackage{url}
+\usepackage{bm}
 \usepackage{graphicx,subfigure}
 \usepackage{color}
 \usepackage{hyperref}
@@ -77,6 +81,8 @@ Robotics Institute, Carnegie Mellon University$^{1}$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+\label{sec:intro}
+
 Sampling-based motion-planning algorithms~\cite{CBHKKLT05, L06} have proven to be an effective tool at solving motion-planning problems.
 They search through the continuous state space~$\calX$ by sampling random states and maintaining a discrete graph~$G$ called a \emph{roadmap}.
 Vertices and edges in $G$ correspond to collision-free states and paths, respectively.
@@ -118,6 +124,7 @@ Original planners such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not provide 
 
 
 \section{Related work}
+\label{sec:related_work}
 
 
 \subsection{Planning}
@@ -160,11 +167,61 @@ heuristic~\cite{US03, SWT09}
 
 \subsection{MCMC}
 
-MCMC~\cite{ADDJ03}
-
-HMC~\cite{N11}
+Markov Chain Monte Carlo(MCMC)~\cite{ADDJ03} is a framework of sampling from a given probability distribution by constructing a Markov chain of random transition toward a desired distribution $ \pi (x) $ .
+A set of samples are generated to approximate the desired distribution $ \pi (x) $.
+Unlike a rejection sampling, MCMC does a random walk in a parametric space and concentrates on an important areas, which usually brings better efficiency.
+Hamiltonian Monte Carlo(HMC)~\cite{N11} is introduced to provide better efficiency in converging to a desired distribution.
+It adopts physical system dynamics to propose future states in the Markov chain.
+The concept origins from Hamiltonian dynamics, which models the movement of an object.
+Given the position $ x $ and the momentum $ q $ of an object, the system energy can be written as $ H(x,q) = U(x) + K(q) $, in which $ U(x) $ is the potential energy and $ K(q) $ is the kinetic energy.
+The movement of the object (how $ x $ and $ q $ change over time) is determined by
+$ \frac{dx}{dt} = \frac{\partial H}{\partial q} $ and $ \frac{dq}{dt} = - \frac{\partial H}{\partial x} $.
+By the association between energy and a canonical distribution, a joint distribution for the states $ x $ and $ q $ can be created from a Hamiltonian dynamics, which is 
+$ P(x, q) = \frac{1}{Z} \exp ( -H(x,q) / T ) = \frac{1}{Z} \exp ( -U(x) / T) \exp (-K(q) / T) $.
+If we define $ U(x) = - \log ( \pi(x) T ) $, $ P(x, q) $ can be rewritten as $ P(x, q) = \pi (x) \frac{1}{Z} \exp (-K(q) / T) $.
+Because the state $ x $ and the the momentum  $ q $ are independent, we can sample $ [ x ,q ] $ from $ P(x, q) $ and discard the momentum $ q $ (as an auxiliary variable).
+The collected set of $ x $ is equivalent to sampling from $ \pi(x) $.
+We are going to integrate this idea into our sampling framework of efficiently generating samples under kinetic constraints. 
 
 \section{Algorithm}
+\label{sec:algorithm}
+
+Define the dynamics of a robot as 
+\begin{equation}
+\label{eq:kinematics}
+\dot{\bm{x}}(t) = f( \bm{x}(t) , \bm{u}(t) ), 
+\end{equation}
+in which $ \bm{x} \in \mathcal{X} \subseteq \mathbb{R}^n $ is the state of the robot, and $ \bm{u} \in \mathcal{U} \subseteq \mathbb{R}^m $ is the control input.
+The dynamics determines a state trajectory $ \pi $, given a duration $ T $, an initial state $ \bm{x}(0) $ and an initial input $ \bm{u}(0) $.
+The cost of a trajectory $ \pi $ is defined as the accumulated cost along the path, which is 
+\begin{equation}
+\label{eq:path_cost}
+c(\pi) = \int_0^{T} c( x(t), u(t) ) dt.
+\end{equation}
+Consider the obstacles in a workspace, we have $ \mathcal{X}_{free} \subseteq \mathcal{X} $.
+Consider the bounds of the control input, we have $ \mathcal{U}_{free} \subseteq \mathcal{U} $.
+The dynamics of the robot in Equation~\eqref{eq:kinematics}, free state space $  \mathcal{X}_{free} $ and free control input space $ \mathcal{U}_{free} $ determines a free trajectory space $ \Pi_{free} $, which contains all feasible trajectories $ \pi \in \Pi_{free} $.
+
+We can define an optimal kinodynamic path-planning problem that finds a kinodynamic path minimizing the cost in Definition \ref{defn:optimal_kino_path_planning}.
+\begin{defn}{ \textbf{Optimal Kinodynamic Path-Planning} }
+\label{defn:optimal_kino_path_planning}
+	Find an optimal path $  \pi^* $ that satisfies
+	\begin{itemize}
+	\item $\forall t \in [0,T] $, $ \bm{x} (t) \in \mathcal{X}_{free}  $ and $ \bm{u} (t) \in \mathcal{U}_{free} $;
+	\item $ \bm{x} (0) = x_{init} $, $ \bm{x} (T) = x_{goal} $, $ \bm{u} (0) = u_{init} $ and $ \bm{u} (T) = u_{goal} $; and
+	\item $ \pi^* = \max_{ \pi \in \Pi_{free} } c( \pi ) $. 
+	\end{itemize}
+\end{defn}
+
+\dy{Do we want to set an initial and a goal for the control input? Does this simplify the problem solving?}
+
+\begin{algorithm}
+	\begin{algorithmic}[1]
+		\STATE
+   	\end{algorithmic}
+	\caption{MCMC Informed Sampling}
+	\label{alg:mcmc_informed_sampling}
+\end{algorithm}
 
 
 \section{Results}
