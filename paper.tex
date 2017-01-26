@@ -84,10 +84,10 @@ Robotics Institute, Carnegie Mellon University$^{1}$
 \label{sec:intro}
 
 Sampling-based motion-planning algorithms~\cite{CBHKKLT05, L06} have proven to be an effective tool at solving motion-planning problems.
-They search through the continuous state space~$\calX$ by sampling random states and maintaining a discrete graph~$G$ called a \emph{roadmap}.
+They search through a continuous state space~$\calX$ by sampling random states and maintaining a discrete graph~$G$ called a \emph{roadmap}.
 Vertices and edges in $G$ correspond to collision-free states and paths, respectively.
 
-Roughly speaking, all these algorithms iteratively sample new states.
+Roughly speaking, these algorithms iteratively sample new states.
 This is required to ensure that, as the number of samples tends to infinity, 
 (i)~a solution will be found 
 (a property called \emph{probabilistic completeness})
@@ -98,29 +98,44 @@ and that
 In the initial stages of the algorithm, 
 when no path has yet to be found, 
 the samples need to be drawn from the entire state space~$\calX$.
-However, given a path $\gamma$ , the algorithm can limit its sampling domain to a subset of~$\calX$  containing states that \emph{may} produce higher-quality paths than $\gamma$.
+However, once a path $\gamma$ is produce,  algorithm that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$  containing states that may produce higher-quality paths than $\gamma$.
 Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it $\Cinf$.
 
-For systems without differential constraints, \Cinf can be sampled directly~\cite{GSB14}.
-However, for systems with differential constraints, it is not clear how to directly sample \Cinf.
+For Euclidean spaces optimizing for path length, 
+\Cinf can be analytically expresses as a prolate hyperspheroid and can be sampled directly~\cite{GSB14}.
+Indeed, directly sampling in \Cinf has been shown to dramatically improve computation time when compared to sampling in $\calX$, especially in high dimensions. 
+
+Unfortunately, in more general settings such as
+for systems with differential constraints,
+it is not clear how to directly sample \Cinf.
+%
 One approach to produce samples in \Cinf is via \emph{rejection sampling}---sampling a state $x \in \calX$ and testing if $x \in \Cinf$.
 However, when the size of the informed space~$\Cinf$ is much smaller than entire state space~$\calX$, then this procedure may dominate the running time of the algorithm~\cite{KTC16}.
-\emph{Hierarchical rejection sampling} (HRS) is a recently introduced sampling approach that improves the efficiency of rejection sampling.
-This is done by sampling in individual dimensions of the state space and progressively combing these partial samples into larger ones while testing if these combined samples may be in \Cinf or not.
+Recently, Kunz et al.~\cite{KTC16} showed, under some technical assumptions, how to efficiently produce samples in~$\Cinf$ by \emph{Hierarchical rejection sampling} (HRS). 
+Here, individual dimensions are sampled recursively 
+and then combined. Rejection sampling is performed for these partial samples until a suitable sample has been produced. The novelty of HRS is the ability to fail fast. 
 
-In this paper, we suggest an alternative approach to sampling in the informed set \Cinf.
-We call our approach 
+Unfortunately, both rejection sampling and HRS may produce a large number of rejected samples especially in high-dimensional spaces.
+This may cause the search algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
+In this paper, we suggest an alternative approach to sampling in the informed set \Cinf for a wide range of settings.
+Our main insight is 
+\os{this is a very important sentence!!!}
+Specifically, our approach consists of two stages:
+in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a gradient-descent algorithm;
+in the second stage, this retracted sample $\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to approximately produce samples uniformly \emph{within}~$\Cinf$.
 
+Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{} and that a gradient can be defined over the cost function.
+Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitute when compared to algorithms using rejection sampling or HRS.
 
-While, original sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} only guaranteed to asymptotically return \emph{a} solution, if one exists, they did not provide any guarantees on the \emph{quality} of the solution, given some optimization criteria.
-Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
-Additional algorithms followed, increasing the converges rate by various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
+%While, original sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} only guaranteed to asymptotically return \emph{a} solution, if one exists, they did not provide any guarantees on the \emph{quality} of the solution, given some optimization criteria.
+%Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
+%Additional algorithms followed, increasing the converges rate by various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
+%
 
-
-In the most basic form, the motion-planning problem calls for computing \emph{a} path between two given states.
-Indeed, 
-However, recent years 
-Original planners such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not provide any guarantee on the \emph{s}
+%In the most basic form, the motion-planning problem calls for computing \emph{a} path between two given states.
+%Indeed, 
+%However, recent years 
+%Original planners such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not provide any guarantee on the \emph{s}
 
 
 \section{Related work}
@@ -163,6 +178,18 @@ OBPRM~\cite{ABDJV98, YTEA12}
 
 Medial axis~\cite{LTA03, YDLTA14}
 
+\os{can our method be applied to produce samples on the medial axis?}
+
+S. A. Wilmarth, N. M. Amato, and P. F. Stiller. MAPRM: A prob-
+abilistic roadmap planner with sampling on the medial axis of the
+free space. In Proc. IEEE Int. Conf. Robot. Autom. (ICRA), pages
+1024–1031, 1999.
+
+S. A. Wilmarth, N. M. Amato, and P. F. Stiller. Motion planning for
+a rigid body using random networks on the medial axis of the free
+space. In Proc. ACM Symp. on Computational Geometry (SoCG),
+pages 173–180, 1999
+
 heuristic~\cite{US03, SWT09}
 
 \subsection{MCMC}
@@ -182,6 +209,14 @@ If we define $ U(x) = - \log ( \pi(x) T ) $, $ P(x, q) $ can be rewritten as $ P
 Because the state $ x $ and the the momentum  $ q $ are independent, we can sample $ [ x ,q ] $ from $ P(x, q) $ and discard the momentum $ q $ (as an auxiliary variable).
 The collected set of $ x $ is equivalent to sampling from $ \pi(x) $.
 We are going to integrate this idea into our sampling framework of efficiently generating samples under kinetic constraints. 
+
+\section{Problem definition}
+\label{sec:pdef}
+
+\subsection{general}
+
+\subsection{double integrator}
+Discuss how the informed set looks like
 
 \section{Algorithm}
 \label{sec:algorithm}
