@@ -95,10 +95,10 @@ and that
 (ii)~given some optimization criteria, the quality of the solution will progressively converge to the quality of the optimal solution
 (a property called \emph{asymptotic  optimality}).
 
-In the initial stages of the algorithm, 
+Initially, 
 when no path has yet to be found, 
 the samples need to be drawn from the entire state space~$\calX$.
-However, once a path $\gamma$ is produce,  algorithm that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$  containing states that may produce higher-quality paths than $\gamma$.
+However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$  containing states that may produce higher-quality paths than~$\gamma$.
 Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it $\Cinf$.
 
 For Euclidean spaces optimizing for path length, 
@@ -113,7 +113,8 @@ One approach to produce samples in \Cinf is via \emph{rejection sampling}---samp
 However, when the size of the informed space~$\Cinf$ is much smaller than entire state space~$\calX$, then this procedure may dominate the running time of the algorithm~\cite{KTC16}.
 Recently, Kunz et al.~\cite{KTC16} showed, under some technical assumptions, how to efficiently produce samples in~$\Cinf$ by \emph{Hierarchical rejection sampling} (HRS). 
 Here, individual dimensions are sampled recursively 
-and then combined. Rejection sampling is performed for these partial samples until a suitable sample has been produced. The novelty of HRS is the ability to fail fast. 
+and then combined. Rejection sampling is performed for these partial samples until a suitable sample has been produced. 
+%The novelty of HRS is the ability to fail fast. 
 
 Unfortunately, both rejection sampling and HRS may produce a large number of rejected samples especially in high-dimensional spaces.
 This may cause the search algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
@@ -140,36 +141,36 @@ Indeed, we demonstrate the efficiency of our approach on a wide variety of syste
 
 \section{Related work}
 \label{sec:related_work}
-
+We start in Sec.~\ref{subsec:planning} by giving an overview of relevant sampling-based motion-planning algorithms.
+We then continue in Sec.~\ref{subsec:sampling} to describe different approaches used to sample~$\calX$.
+We conclude our literature review in Sec.~\ref{subsec:mcmc} with a brief overview of Markov Chain Monte Carlo methods.
 
 \subsection{Planning}
+\label{subsec:planning}
+Initial sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not take into account the \emph{quality} of a path, given some optimization criteria, and only guaranteed to asymptotically return \emph{a} solution, if one exists.
+Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
+Additional algorithms followed, increasing the converges rate by various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
 
 
-Classic:\\
-RRT~\cite{LK01}
+Many of the algorithms mentioned require solving a two-point boundary value problem (2pBVP) to perform exact connections between vertices in the roadmap.
 
-PRM~\cite{KSLO96}
+Xie et al.~\cite{XBPA15} use a variant of sequential quadratic programming (SQP) to solve 2pBVP and integrate it with BIT*~\cite{GSB15}.
 
-AO:\\
-RRT*, PRM*~\cite{KF11}
-
-BIT*~\cite{GSB15}
-
-FMT*~\cite{JSCP15}
-
-Near AO:\\
-LBT-RRT~\cite{SH16}
-
-SPARSE~\cite{DB14}
-
+Webb and van den Berg~\cite{WB13} use a fixed-final-state-free-final-time controller to solve the 2pBVP  with respect to a cost function that is allows for balancing between the duration of the trajectory and the expended control effort.
 
 RGGS~\cite{SSH16}
 
 
-Kinodynamic works:\\~\cite{SL14, XBPA15, WB13, KF10}
+Kinodynamic works:\\~\cite{KF10}
+
+
+Perez et al.~\cite{PPKKL12} propose a variant of RRT* that automatically defines a distance metric and node extension method by locally linearizing
+the domain dynamics and applying linear quadratic regulation (LQR).
+
+Goretkin et al.~\cite{GPPK13}
 
 \subsection{Sampling}
-
+\label{subsec:sampling}
 Hierarchical sampling~\cite{KTC16}.
 
 Informed sampling~\cite{GSB14}
@@ -193,7 +194,7 @@ pages 173–180, 1999
 heuristic~\cite{US03, SWT09}
 
 \subsection{MCMC}
-
+\label{subsec:mcmc}
 Markov Chain Monte Carlo(MCMC)~\cite{ADDJ03} is a framework of sampling from a given probability distribution by constructing a Markov chain of random transition toward a desired distribution $ \pi (x) $ .
 A set of samples are generated to approximate the desired distribution $ \pi (x) $.
 Unlike a rejection sampling, MCMC does a random walk in a parametric space and concentrates on an important areas, which usually brings better efficiency.
