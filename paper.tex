@@ -259,9 +259,38 @@ We can define an optimal kinodynamic path-planning problem that finds a kinodyna
 	\label{alg:mcmc_informed_sampling}
 \end{algorithm}
 
+We 
 
 \section{Results}
 
+\subsection{Uniformity}
+
+(Give a set of parameters)
+We firstly need to propose a way of measuring uniformity.
+Then we can apply it to compare MCMC approach with rejection sampling and hierarchical rejection sampling.
+We are interested with
+\begin{itemize}
+	\item asymptotic behavior (assumption: MCMC converge to a close uniformity)
+	\item convergence rate (assumption: MCMC converge faster)
+\end{itemize}
+
+\subsection{Efficiency}
+
+The efficiency is shown by how the time is needed when the number of nodes are increased.
+(Y: time spent) and (X: number of nodes).
+
+\subsection{Integration}
+
+We're going to test with RRT*, which falls into a informed RRT*.
+
+We are going to show how the solution cost falls along time.
+(Y: solution cost) and (X: time spent).
+
+\begin{itemize}
+\item DIMT (double integrator minimum time)
+\item Dubins car
+\item Airplane
+\end{itemize}
 
 \section{Conclusion}
 
