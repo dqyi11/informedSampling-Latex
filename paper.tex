@@ -98,8 +98,8 @@ and that
 Initially, 
 when no path has yet to be found, 
 the samples need to be drawn from the entire state space~$\calX$.
-However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$  containing states that may produce higher-quality paths than~$\gamma$.
-Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it $\Cinf$.
+However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths}, which is the focus of this paper, can limit their sampling domain to a subset of~$\calX$  containing states that may produce higher-quality paths than~$\gamma$.
+Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it~$\Cinf$.
 
 For Euclidean spaces optimizing for path length, 
 \Cinf can be analytically expresses as a prolate hyperspheroid and can be sampled directly~\cite{GSB14}.
@@ -118,14 +118,14 @@ and then combined. Rejection sampling is performed for these partial samples unt
 
 Unfortunately, both rejection sampling and HRS may produce a large number of rejected samples especially in high-dimensional spaces.
 This may cause the search algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
-In this paper, we suggest an alternative approach to sampling in the informed set \Cinf for a wide range of settings.
+In this paper, we suggest an alternative approach to produce samples in the informed set \Cinf for a wide range of settings.
 Our main insight is 
 \os{this is a very important sentence!!!}
 Specifically, our approach consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a gradient-descent algorithm;
-in the second stage, this retracted sample $\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to approximately produce samples uniformly \emph{within}~$\Cinf$.
+in the second stage, this retracted sample $\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
 
-Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{} and that a gradient can be defined over the cost function.
+Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06, H02} and that a gradient can be defined over the cost function.
 Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitute when compared to algorithms using rejection sampling or HRS.
 
 %While, original sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} only guaranteed to asymptotically return \emph{a} solution, if one exists, they did not provide any guarantees on the \emph{quality} of the solution, given some optimization criteria.
@@ -149,53 +149,42 @@ We conclude our literature review in Sec.~\ref{subsec:mcmc} with a brief overvie
 \label{subsec:planning}
 Initial sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not take into account the \emph{quality} of a path, given some optimization criteria, and only guaranteed to asymptotically return \emph{a} solution, if one exists.
 Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
+This is done by recognizing the underlying connections between stochastic sampling-based motion planning and the theory of random geometric graphs (see also~\cite{SSH16}).
 Additional algorithms followed, increasing the converges rate by various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
 
 
-Many of the algorithms mentioned require solving a two-point boundary value problem (2pBVP) to perform exact connections between vertices in the roadmap.
+Many of the algorithms mentioned require solving a two-point boundary value problem (2pBVP) to perform exact and optimal connections between vertices in the roadmap.
+For holonomic robots, these are simply straight lines in the state space, but for kinodynamic sytems with arbitrary cost functions,  computing an optimal trajectory between two states is non-trivial in general.
 
 Xie et al.~\cite{XBPA15} use a variant of sequential quadratic programming (SQP) to solve 2pBVP and integrate it with BIT*~\cite{GSB15}.
-
-Webb and van den Berg~\cite{WB13} use a fixed-final-state-free-final-time controller to solve the 2pBVP  with respect to a cost function that is allows for balancing between the duration of the trajectory and the expended control effort.
-
-RGGS~\cite{SSH16}
-
-
-Kinodynamic works:\\~\cite{KF10}
-
-
+Webb and van den Berg~\cite{WB13} use a fixed-final-state-free-final-time controller to solve the 2pBVP  with respect to a cost function that allows for balancing between the duration of the trajectory and the expended control effort.
 Perez et al.~\cite{PPKKL12} propose a variant of RRT* that automatically defines a distance metric and node extension method by locally linearizing
 the domain dynamics and applying linear quadratic regulation (LQR).
 
-Goretkin et al.~\cite{GPPK13}
+%Finally, we note that there have been many papers presenting solutions to the 2pBVP for specific systems such as
+%
+%Jeong Hwan Jeon, Raghvendra V. Cowlagi, Steven C. Peters, Sertac Karaman, Emilio Frazzoli, Panagiotis Tsiotras, Karl Iagnemma: Optimal motion planning with the half-car dynamical model for autonomous high-speed driving. ACC 2013: 188-193
+%Dubins cars optimizng for both time and energy (RSS submission 107 by Shammas, Elie) 
+
+%possible additional papers on Kinodynamic RRT*:~\cite{KF10, GPPK13}
 
 \subsection{Sampling}
 \label{subsec:sampling}
-Hierarchical sampling~\cite{KTC16}.
+There is a rich body of literature on how to produce samples that increase the efficiency of the planner in terms of finding a solution or producing high-quality solutions.
+Heuristic approaches include
+sampling on the medial axis~\cite{WAS99a, WAS99b, LTA03, YDLTA14},
+sampling near the boundary of the obstacles~\cite{ABDJV98, YTEA12},
+resampling along a given trajectory~\cite{APD11, AS11}
+and more~\cite{US03, SWT09}
 
-Informed sampling~\cite{GSB14}
+Of specific interest to our work are approaches that produce samples in the informed set~\Cinf.
+As mentioned in Sec.~\ref{sec:intro} Gammel et al.~\cite{GSB14} describe an approach to sample uniformly in~\Cinf for the specific case of where $\calX = \R^d$ and when optimizing for path length.
+To the best of our knowledge, the only method to produce samples in non-Euclidean spaces (other than rejection sampling) is HRS by Kunz et al.~\cite{KTC16}.
 
-OBPRM~\cite{ABDJV98, YTEA12}
-
-Medial axis~\cite{LTA03, YDLTA14}
-
-\os{can our method be applied to produce samples on the medial axis?}
-
-S. A. Wilmarth, N. M. Amato, and P. F. Stiller. MAPRM: A prob-
-abilistic roadmap planner with sampling on the medial axis of the
-free space. In Proc. IEEE Int. Conf. Robot. Autom. (ICRA), pages
-1024–1031, 1999.
-
-S. A. Wilmarth, N. M. Amato, and P. F. Stiller. Motion planning for
-a rigid body using random networks on the medial axis of the free
-space. In Proc. ACM Symp. on Computational Geometry (SoCG),
-pages 173–180, 1999
-
-heuristic~\cite{US03, SWT09}
 
 \subsection{MCMC}
 \label{subsec:mcmc}
-Markov Chain Monte Carlo(MCMC)~\cite{ADDJ03} is a framework of sampling from a given probability distribution by constructing a Markov chain of random transition toward a desired distribution $ \pi (x) $ .
+Markov Chain Monte Carlo (MCMC)~\cite{ADDJ03} is a framework of sampling from a given probability distribution by constructing a Markov chain of random transition toward a desired distribution $ \pi (x) $.
 A set of samples are generated to approximate the desired distribution $ \pi (x) $.
 Unlike a rejection sampling, MCMC does a random walk in a parametric space and concentrates on an important areas, which usually brings better efficiency.
 Hamiltonian Monte Carlo(HMC)~\cite{N11} is introduced to provide better efficiency in converging to a desired distribution.
@@ -211,8 +200,21 @@ Because the state $ x $ and the the momentum  $ q $ are independent, we can samp
 The collected set of $ x $ is equivalent to sampling from $ \pi(x) $.
 We are going to integrate this idea into our sampling framework of efficiently generating samples under kinetic constraints. 
 
+\section{Motivating example---Minimal Time Double Integrator}
+We start by considering a simple yet important motion-planning problem 
+
+The double integrator is a simple yet im-
+portant example that nicely illustrates the phase space. Suppose that a second-
+order differential equation is given as q  ̈ = u, in which q and u are chosen from R
+
 \section{Problem definition}
 \label{sec:pdef}
+
+\subsection{Minimal Time Double Integrator (MTDI)}
+In this paper we demonstrate our approach for the specific case of a double integrator system when the objective function is minimizing the trajectory execution time.
+
+Minimal Time Double Integrator
+
 
 \subsection{general}
 
