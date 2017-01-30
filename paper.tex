@@ -200,26 +200,53 @@ Because the state $ x $ and the the momentum  $ q $ are independent, we can samp
 The collected set of $ x $ is equivalent to sampling from $ \pi(x) $.
 We are going to integrate this idea into our sampling framework of efficiently generating samples under kinetic constraints. 
 
-\section{Motivating example---Minimal Time Double Integrator}
-We start by considering a simple yet important motion-planning problem 
+\section{Motivating example---Minimal-Time Double Integrator}
+We start by considering a simple yet important motion-planning problem---the double integrator.
+We are given a one-dimensional point robot  with bounded velocity and bounded acceleration moving amid obstacles. We wish to compute the minimal-time trajectory between two states $x_s, x_g$.
+A state in this model is described by 
+the position $q \in \R$
+and
+the velocity $\dot{q}\in \R$ of the position
+%each coordinate axis.
+The dynamics of the system is described by:
+$$
+x = (q, \dot{q}); 
+\hspace{5mm}
+u = \ddot{q}.
+$$
+Here, the control $u [u_{\text{min}}, u_{\text{max}}]$ is the (bounded) acceleration. 
 
-The double integrator is a simple yet im-
-portant example that nicely illustrates the phase space. Suppose that a second-
-order differential equation is given as q  ̈ = u, in which q and u are chosen from R
 
-\section{Problem definition}
-\label{sec:pdef}
+Notice that 
+(i)~this is model can be seen as a simplified one-dimensional instance of a robot manipulator with many degrees of freedom and that
+(ii)~closed form solutions exist to the 2pBVP for this specific case (as well as the generalized instance)~\cite{HN10}.
 
-\subsection{Minimal Time Double Integrator (MTDI)}
-In this paper we demonstrate our approach for the specific case of a double integrator system when the objective function is minimizing the trajectory execution time.
+Let $T(x_1, x_2)$ denote the minimal time to move the robot from state $x_1$ to $x_2$.
+Further, set
+$$
+T(x) = T(x_s, x) + T(x, x_g).
+$$ 
+Namely, $T(x)$ is the minimal time to reach the goal from the start subject to passing through the state $x$.
 
-Minimal Time Double Integrator
+\subsection{Informed set}
+Recall that for Euclidean spaces minimizing path length, the informed set is a prolate hyperspheroid.
+Moreover, this ellipsoid is defined only be the cost $\hat{c}$ of the current best solution and not by the location of the start and goal.
 
+For the case of a double integrator, this is not the case:
+\os{show the explicit math and that it depends on the location of the start and goal}
 
-\subsection{general}
+See Fig.~\ref{fig:informed_1d_di}.
+\begin{figure}[tb]
+  \centering
+  	\includegraphics[height = 4.cm ]{level_set.jpg}
+  \caption{
+    \captionstyle
+  	Level sets for the case of minimal-time double integrator. A point $x = (q, \dot{q})$  denote the position and velocity of the robot while the color at $x$ denotes the cost to reach $x_t$ from $x_s$ subject to passing through the state $x$.
+  	}
+   	\label{fig:informed_1d_di}
+	\vspace{-5.5mm}
+\end{figure}
 
-\subsection{double integrator}
-Discuss how the informed set looks like
 
 \section{Algorithm}
 \label{sec:algorithm}
