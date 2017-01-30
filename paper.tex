@@ -181,7 +181,6 @@ Of specific interest to our work are approaches that produce samples in the info
 As mentioned in Sec.~\ref{sec:intro} Gammel et al.~\cite{GSB14} describe an approach to sample uniformly in~\Cinf for the specific case of where $\calX = \R^d$ and when optimizing for path length.
 To the best of our knowledge, the only method to produce samples in non-Euclidean spaces (other than rejection sampling) is HRS by Kunz et al.~\cite{KTC16}.
 
-
 \subsection{MCMC}
 \label{subsec:mcmc}
 Markov Chain Monte Carlo (MCMC)~\cite{ADDJ03} is a framework of sampling from a given probability distribution by constructing a Markov chain of random transition toward a desired distribution $ \pi (x) $.
@@ -189,16 +188,26 @@ A set of samples are generated to approximate the desired distribution $ \pi (x)
 Unlike a rejection sampling, MCMC does a random walk in a parametric space and concentrates on an important areas, which usually brings better efficiency.
 Hamiltonian Monte Carlo(HMC)~\cite{N11} is introduced to provide better efficiency in converging to a desired distribution.
 It adopts physical system dynamics to propose future states in the Markov chain.
-The concept origins from Hamiltonian dynamics, which models the movement of an object.
-Given the position $ x $ and the momentum $ q $ of an object, the system energy can be written as $ H(x,q) = U(x) + K(q) $, in which $ U(x) $ is the potential energy and $ K(q) $ is the kinetic energy.
-The movement of the object (how $ x $ and $ q $ change over time) is determined by
+The concept origins from Hamiltonian dynamics, which models the movement of an object, the position $ x $ and the momentum $ q $ over time $ t $.
+Define a system energy $ H $ of an object that consists of kinetic energy $ K $ and potential energy $ U $, which is written as $ H(x,q) = U(x) + K(q) $.
+The kinetic energy $ K(q) $ is determined by the momentum $ q $ of the object, while the potential energy $ U(x) $ is determined by the position $ x $ of the object.
+By the Hamiltonian equation, the movement of the object can be predicted by
 $ \frac{dx}{dt} = \frac{\partial H}{\partial q} $ and $ \frac{dq}{dt} = - \frac{\partial H}{\partial x} $.
-By the association between energy and a canonical distribution, a joint distribution for the states $ x $ and $ q $ can be created from a Hamiltonian dynamics, which is 
-$ P(x, q) = \frac{1}{Z} \exp ( -H(x,q) / T ) = \frac{1}{Z} \exp ( -U(x) / T) \exp (-K(q) / T) $.
-If we define $ U(x) = - \log ( \pi(x) T ) $, $ P(x, q) $ can be rewritten as $ P(x, q) = \pi (x) \frac{1}{Z} \exp (-K(q) / T) $.
-Because the state $ x $ and the the momentum  $ q $ are independent, we can sample $ [ x ,q ] $ from $ P(x, q) $ and discard the momentum $ q $ (as an auxiliary variable).
+This provides an approach of the gradient descent by following the decrease of an associated potential energy.
+Thus, HMC simulates the Hamiltonian dynamics that moves samples towards a target distribution while avoiding random walks.
+
+A canonical distribution bridges an energy with a probability distribution.
+If two different states have the same energy, the probabilities of them are equivalent.
+A set of samples from such a distribution can be equivalent to a set of samples driven by an associated energy.
+By using the system energy $ H(x, q) $, we can defines a canonical distribution $ P(x, q) = \frac{1}{Z} \exp ( -H(x,q) / T ) $.
+Because $ H(x,q) = U(x) + K(q) $, $ P(x, q) $ can be factorized into two independent terms, which is written as $ P(x, q) = \frac{1}{Z} \exp ( -U(x) / T) \exp (-K(q) / T) $.
+The independence implies that we can sample $ [ x ,q ] $ from $ P(x, q) $ and discard the momentum $ q $ (as an auxiliary variable) in order to sample from a canonical distribution $ \propto \exp ( -U(x) / T) $.
+If we have a target distribution $ \pi(x) $ of state $ x $ and define a potential energy in the form $  U(x) = - \log ( \pi(x) T ) $, we can have the canonical distribution equal to $ \pi(x) $.
 The collected set of $ x $ is equivalent to sampling from $ \pi(x) $.
+Thus, we can use simulating the Hamiltonian dynamics to generate a set of samples from a target distribution $ \pi (x) $.
+
 We are going to integrate this idea into our sampling framework of efficiently generating samples under kinetic constraints. 
+We define a target distribution as a uniform distribution subject to kinetic constraints and cost budgets.
 
 \section{Motivating example---Minimal Time Double Integrator}
 We start by considering a simple yet important motion-planning problem 
