@@ -41,7 +41,7 @@
 
 
 \title{\LARGE \bf
-Informed sampling by Markov Chain Monte Carlo methods
+Informed sampling for kinodynamic planning by \\ Markov Chain Monte Carlo methods
 }
 
 
@@ -96,8 +96,9 @@ and that
 Initially, 
 when no path has yet to be found, 
 the samples need to be drawn from the entire state space~$\calX$.
-However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths}, which is the focus of this paper, can limit their sampling domain to a subset of~$\calX$  containing states that may produce higher-quality paths than~$\gamma$.
+However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$ only  containing states that may produce higher-quality paths than~$\gamma$.
 Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it~$\Cinf$.
+\textbf{In this work we address the problem of efficiently producing samples in informed subset for systems with differential constraints}. 
 
 For Euclidean spaces optimizing for path length, 
 \Cinf can be analytically expresses as a prolate hyperspheroid and can be sampled directly~\cite{GSB14}.
@@ -117,8 +118,7 @@ and then combined. Rejection sampling is performed for these partial samples unt
 Unfortunately, both rejection sampling and HRS may produce a large number of rejected samples especially in high-dimensional spaces.
 This may cause the search algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
 In this paper, we suggest an alternative approach to produce samples in the informed set \Cinf for a wide range of settings.
-Our main insight is 
-\os{this is a very important sentence!!!}
+\textbf{Our main insight is to formulate the problem as the problem of sampling uniformly below a level set of an implicit function and then apply optimization and statistical tools.}
 Specifically, our approach consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a gradient-descent algorithm;
 in the second stage, this retracted sample $\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
@@ -221,7 +221,7 @@ x = (q, \dot{q});
 \hspace{5mm}
 u = \ddot{q}.
 $$
-Here, the control $u [u_{\text{min}}, u_{\text{max}}]$ is the (bounded) acceleration. 
+Here, the control $u \in [u_{\text{min}}, u_{\text{max}}]$ is the (bounded) acceleration. 
 
 
 Notice that 
