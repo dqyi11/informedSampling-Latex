@@ -198,11 +198,11 @@ A canonical distribution bridges an energy with a probability distribution.
 If two different states have the same energy, the probabilities of them are equivalent.
 A set of samples from such a distribution can be equivalent to a set of samples driven by an associated energy.
 By using the system energy $ H(x, q) $, we can defines a canonical distribution $ P(x, q) = \frac{1}{Z} \exp ( -H(x,q) / T ) $.
-Because $ H(x,q) = U(x) + K(q) $, $ P(x, q) $ can be factorized into two independent terms, which is written as $ P(x, q) = \frac{1}{Z} \exp ( -U(x) / T) \exp (-K(q) / T) $.
-The independence implies that we can sample $ [ x ,q ] $ from $ P(x, q) $ and discard the momentum $ q $ (as an auxiliary variable) in order to sample from a canonical distribution $ \propto \exp ( -U(x) / T) $.
+We can sample $ [ x ,q ] $ from $ P(x, q) $ and discard the momentum $ q $ (as an auxiliary variable) in order to sample from a marginal distribution $ P(x) $.
 If we have a target distribution $ \pi(x) $ of state $ x $ and define a potential energy in the form $  U(x) = - \log ( \pi(x) T ) $, we can have the canonical distribution equal to $ \pi(x) $.
 The collected set of $ x $ is equivalent to sampling from $ \pi(x) $.
 Thus, we can use simulating the Hamiltonian dynamics to generate a set of samples from a target distribution $ \pi (x) $.
+The properties of Hamiltonian dynamics guarantees so that the proposals will always be accepted, which accelerates the convergence rate.
 
 We are going to integrate this idea into our sampling framework of efficiently generating samples under kinetic constraints. 
 We define a target distribution as a uniform distribution subject to kinetic constraints and cost budgets.
