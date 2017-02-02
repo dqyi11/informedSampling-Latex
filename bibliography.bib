@@ -27,7 +27,10 @@
 @string{socg = "Symposium on Computational Geometry (SoCG)"}
 @string{socs = "Symposium on Combinatorial Search (SoCS)"}
 
-
+@string{ml = "Machine learning"}
+@string{hmcmc = "Handbook of Markov Chain Monte Carlo"}
+@string{eccv = "European Conference on Computer Vision (ECCV)"}
+@string{icml = "International Conference on Machine Learning"}
 
 @book{L06,
 	author       = {S. M. LaValle},
@@ -270,7 +273,7 @@
 @article{N11,
 	title={{MCMC} using Hamiltonian dynamics},
 	author={Neal, Radford M and others},
-	journal={Handbook of Markov Chain Monte Carlo},
+	journal= hmcmc,
 	volume={2},
 	pages={113--162},
 	year={2011}
@@ -279,7 +282,7 @@
 @article{ADDJ03,
 	title={An introduction to {MCMC} for machine learning},
 	author={Andrieu, Christophe and De Freitas, Nando and Doucet, Arnaud and Jordan, Michael I},
-	journal={Machine learning},
+	journal= ml,
 	volume={50},
 	number={1-2},
 	pages={5--43},
@@ -352,7 +355,8 @@
   author={Akgun, Baris and Stilman, Mike},
   booktitle=iros,
   pages={2640--2645},
-  year={2011}
+  year={2011},
+  organization={IEEE}
 }
 
 @misc{H02,
@@ -361,6 +365,7 @@
   year={2002},
   publisher={McGraw-Hill New York}
 }
+
 @inproceedings{HN10,
   author    = {Kris K. Hauser and
                Victor Ng{-}Thow{-}Hing},
@@ -368,4 +373,32 @@
   booktitle = icra,
   pages     = {2493--2498},
   year      = {2010}
+}
+
+@inproceedings{KBD04,
+	title={An MCMC-based particle filter for tracking multiple interacting targets},
+	author={Khan, Zia and Balch, Tucker and Dellaert, Frank},
+	booktitle= eccv,
+	pages={279--290},
+	year={2004},
+	organization={Springer}
+}
+
+@inproceedings{TL11,
+	title={Variational heteroscedastic Gaussian process regression},
+	author={Titsias, Michalis K and L{\'a}zaro-Gredilla, Miguel},
+	booktitle=icml,
+	pages={841--848},
+	year={2011}
+}
+
+@article{ASC13,
+	title={Bayesian multicategorical soft data fusion for human--robot collaboration},
+	author={Ahmed, Nisar R and Sample, Eric M and Campbell, Mark},
+	journal=tr,
+	volume={29},
+	number={1},
+	pages={189--206},
+	year={2013},
+	publisher={IEEE}
 }

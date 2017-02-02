@@ -41,7 +41,7 @@
 
 
 \title{\LARGE \bf
-Informed sampling for kinodynamic planning by \\ Markov Chain Monte Carlo methods
+Informed sampling by Markov Chain Monte Carlo methods
 }
 
 
@@ -96,9 +96,8 @@ and that
 Initially, 
 when no path has yet to be found, 
 the samples need to be drawn from the entire state space~$\calX$.
-However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$ only  containing states that may produce higher-quality paths than~$\gamma$.
+However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths}, which is the focus of this paper, can limit their sampling domain to a subset of~$\calX$  containing states that may produce higher-quality paths than~$\gamma$.
 Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it~$\Cinf$.
-\textbf{In this work we address the problem of efficiently producing samples in informed subset for systems with differential constraints}. 
 
 For Euclidean spaces optimizing for path length, 
 \Cinf can be analytically expresses as a prolate hyperspheroid and can be sampled directly~\cite{GSB14}.
@@ -118,7 +117,8 @@ and then combined. Rejection sampling is performed for these partial samples unt
 Unfortunately, both rejection sampling and HRS may produce a large number of rejected samples especially in high-dimensional spaces.
 This may cause the search algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
 In this paper, we suggest an alternative approach to produce samples in the informed set \Cinf for a wide range of settings.
-\textbf{Our main insight is to formulate the problem as the problem of sampling uniformly below a level set of an implicit function and then apply optimization and statistical tools.}
+Our main insight is 
+\os{this is a very important sentence!!!}
 Specifically, our approach consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a gradient-descent algorithm;
 in the second stage, this retracted sample $\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
@@ -181,9 +181,11 @@ To the best of our knowledge, the only method to produce samples in non-Euclidea
 
 \subsection{MCMC}
 \label{subsec:mcmc}
+
 Markov Chain Monte Carlo (MCMC)~\cite{ADDJ03} is a framework of sampling from a given probability distribution by constructing a Markov chain of random transition toward a desired distribution $ \pi (x) $.
 A set of samples are generated to approximate the desired distribution $ \pi (x) $.
-Unlike a rejection sampling, MCMC does a random walk in a parametric space and concentrates on an important areas, which usually brings better efficiency.
+A approximated desired distribution $ \hat{\pi} (x) $ can be used in any problem that states are modeled random variable, e.g. motion tracking~\cite{KBD04}, data regression~\cite{TL11} and state estimation~\cite{ASC13}.
+Unlike a rejection sampling, MCMC does a random walk in a parametric space and concentrates on an important area, which usually brings better efficiency.
 Hamiltonian Monte Carlo(HMC)~\cite{N11} is introduced to provide better efficiency in converging to a desired distribution.
 It adopts physical system dynamics to propose future states in the Markov chain.
 The concept origins from Hamiltonian dynamics, which models the movement of an object, the position $ x $ and the momentum $ q $ over time $ t $.
@@ -208,8 +210,9 @@ We are going to integrate this idea into our sampling framework of efficiently g
 We define a target distribution as a uniform distribution subject to kinetic constraints and cost budgets.
 
 \section{Motivating example---Minimal-Time Double Integrator}
-We start by considering a simple yet important motion-planning problem---the double integrator.
-We are given a one-dimensional point robot  with bounded velocity and bounded acceleration moving amid obstacles. We wish to compute the minimal-time trajectory between two states $x_s, x_g$.
+
+We start by considering a simple yet important dynamical system---the double integrator. 
+We are given a one-dimensional point robot with bounded velocity and bounded acceleration moving amid obstacles. We wish to compute the minimal-time trajectory between two states $x_s, x_g$.
 A state in this model is described by 
 the position $q \in \R$
 and
