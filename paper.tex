@@ -99,7 +99,7 @@ when no path has yet to be found,
 the samples need to be drawn from the entire state space~$\calX$.
 However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$ only  containing states that may produce higher-quality paths than~$\gamma$.
 Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it~$\Cinf$.
-\textbf{In this work we address the problem of efficiently producing samples in informed subset for systems with differential constraints}. 
+\textbf{In this work we address the problem of efficiently producing samples in the informed subset for systems with differential constraints}. 
 
 For Euclidean spaces optimizing for path length, 
 \Cinf can be analytically expresses as a prolate hyperspheroid and can be sampled directly~\cite{GSB14}.
@@ -109,7 +109,7 @@ Unfortunately, in more general settings such as
 for systems with differential constraints,
 it is not clear how to directly sample \Cinf.
 %
-One approach to produce samples in \Cinf is via \emph{rejection sampling}---sampling a state $x \in \calX$ and testing if $x \in \Cinf$.
+One approach to produce samples in \Cinf is via \emph{rejection sampling}---sampling a state $x \in \calX$ and then testing if $x \in \Cinf$.
 However, when the size of the informed space~$\Cinf$ is much smaller than entire state space~$\calX$, then this procedure may dominate the running time of the algorithm~\cite{KTC16}.
 Recently, Kunz et al.~\cite{KTC16} showed, under some technical assumptions, how to efficiently produce samples in~$\Cinf$ by \emph{Hierarchical rejection sampling} (HRS). 
 Here, individual dimensions are sampled recursively 
@@ -122,7 +122,7 @@ In this paper, we suggest an alternative approach to produce samples in the info
 \textbf{Our main insight is to formulate the problem as the problem of sampling uniformly below a level set of an implicit function and then apply optimization and statistical tools.}
 Specifically, our approach consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a gradient-descent algorithm;
-in the second stage, this retracted sample $\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
+in the second stage, this retracted sample~$\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
 
 Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06, H02} and that a gradient can be defined over the cost function.
 Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitute when compared to algorithms using rejection sampling or HRS.
@@ -145,8 +145,8 @@ We conclude our literature review in Sec.~\ref{subsec:mcmc} with a brief overvie
 \label{subsec:planning}
 Initial sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not take into account the \emph{quality} of a path, given some optimization criteria, and only guaranteed to asymptotically return \emph{a} solution, if one exists.
 Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
-This is done by recognizing the underlying connections between stochastic sampling-based motion planning and the theory of random geometric graphs (see also~\cite{SSH16}).
-Additional algorithms followed, increasing the converges rate by various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
+This was done by recognizing the underlying connections between stochastic sampling-based motion planning and the theory of random geometric graphs (see also~\cite{SSH16}).
+Additional algorithms followed, increasing the converges rate by using various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
 
 
 Many of the algorithms mentioned require solving a two-point boundary value problem (2pBVP) to perform exact and optimal connections between vertices in the roadmap.
@@ -226,11 +226,11 @@ Here, the control $u \in [u_{\text{min}}, u_{\text{max}}]$ is the (bounded) acce
 
 
 Notice that 
-(i)~this is model can be seen as a simplified one-dimensional instance of a robot manipulator with many degrees of freedom and that
+(i)~this model can be seen as a simplified one-dimensional instance of a robot manipulator with many degrees of freedom and that
 (ii)~closed form solutions exist to the 2pBVP for this specific case (as well as the generalized instance)~\cite{HN10}.
 
 Let $T(x_1, x_2)$ denote the minimal time to move the robot from state $x_1$ to $x_2$.
-Further, set
+Furthermore, set
 $$
 T(x) = T(x_s, x) + T(x, x_g).
 $$ 
