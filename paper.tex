@@ -211,13 +211,9 @@ Given a target distribution $ \pi(x) $, the potential energy is defined in the f
 We can have $ P(x, q) = \pi(x) \frac{1}{Z'} \exp ( -K(q) / T ) $, which indicates that $ pi(x) $ is a marginal distribution of $ P(x, q) $.
 In HMC, we sample $ [ x ,q ] $ from $ P(x, q) $ and discard the momentum $ q $ so that the set of samples $ x $ equals to sampling from the marginal distribution $ \pi(x) $.
 The momentum $ q $ is used as an auxiliary variable.
+Avoiding random walk helps samplings converge to the desired distribution $ \pi(x) $ in higher rate~\cite{N11}.
 
 
-Thus, we can use simulating the Hamiltonian dynamics to generate a set of samples from a target distribution $ \pi (x) $.
-The properties of Hamiltonian dynamics guarantees so that the proposals will always be accepted, which accelerates the convergence rate.
-
-We are going to integrate this idea into our sampling framework of efficiently generating samples under system dynamic constraints. 
-We define a target distribution as a uniform distribution subject to kinetic constraints and cost budgets.
 
 \section{Motivating example---Minimal-Time Double Integrator}
 
