@@ -95,21 +95,21 @@ and that
 (a property called \emph{asymptotic  optimality}).
 
 Initially, 
-when no path has yet to be found, 
+when a path has yet to be found, 
 the samples need to be drawn from the entire state space~$\calX$.
 However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$ only  containing states that may produce higher-quality paths than~$\gamma$.
 Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it~$\Cinf$.
-\textbf{In this work we address the problem of efficiently producing samples in the informed subset for systems with differential constraints}. 
+\textbf{In this work we address the problem of efficiently producing samples in informed subset for systems with differential constraints}. 
 
 For Euclidean spaces optimizing for path length, 
-\Cinf can be analytically expresses as a prolate hyperspheroid and can be sampled directly~\cite{GSB14}.
+\Cinf can be analytically expressed as a prolate hyperspheroid and can be sampled directly using a closed form solution~\cite{GSB14}.
 Indeed, directly sampling in \Cinf has been shown to dramatically improve computation time when compared to sampling in $\calX$, especially in high dimensions. 
 
 Unfortunately, in more general settings such as
 for systems with differential constraints,
 it is not clear how to directly sample \Cinf.
 %
-One approach to produce samples in \Cinf is via \emph{rejection sampling}---sampling a state $x \in \calX$ and then testing if $x \in \Cinf$.
+One approach to produce samples in \Cinf is via \emph{rejection sampling}---sampling a state $x \in \calX$ and testing if $x \in \Cinf$.
 However, when the size of the informed space~$\Cinf$ is much smaller than entire state space~$\calX$, then this procedure may dominate the running time of the algorithm~\cite{KTC16}.
 Recently, Kunz et al.~\cite{KTC16} showed, under some technical assumptions, how to efficiently produce samples in~$\Cinf$ by \emph{Hierarchical rejection sampling} (HRS). 
 Here, individual dimensions are sampled recursively 
@@ -122,7 +122,7 @@ In this paper, we suggest an alternative approach to produce samples in the info
 \textbf{Our main insight is to formulate the problem as the problem of sampling uniformly below a level set of an implicit function and then apply optimization and statistical tools.}
 Specifically, our approach consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a gradient-descent algorithm;
-in the second stage, this retracted sample~$\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
+in the second stage, this retracted sample $\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
 
 Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06, H02} and that a gradient can be defined over the cost function.
 Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitute when compared to algorithms using rejection sampling or HRS.
@@ -145,8 +145,8 @@ We conclude our literature review in Sec.~\ref{subsec:mcmc} with a brief overvie
 \label{subsec:planning}
 Initial sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not take into account the \emph{quality} of a path, given some optimization criteria, and only guaranteed to asymptotically return \emph{a} solution, if one exists.
 Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
-This was done by recognizing the underlying connections between stochastic sampling-based motion planning and the theory of random geometric graphs (see also~\cite{SSH16}).
-Additional algorithms followed, increasing the converges rate by using various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
+This is done by recognizing the underlying connections between stochastic sampling-based motion planning and the theory of random geometric graphs (see also~\cite{SSH16}).
+Additional algorithms followed, increasing the converges rate by various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
 
 
 Many of the algorithms mentioned require solving a two-point boundary value problem (2pBVP) to perform exact and optimal connections between vertices in the roadmap.
@@ -221,39 +221,103 @@ We are given a one-dimensional point robot with bounded velocity and bounded acc
 A state in this model is described by 
 the position $q \in \R$
 and
-the velocity $\dot{q}\in \R$ of the position
+the velocity $\dot{q}\in \R$ of the position.
 %each coordinate axis.
 The dynamics of the system is described by:
-$$
+
+\begin{equation}
 x = (q, \dot{q}); 
 \hspace{5mm}
 u = \ddot{q}.
-$$
+\end{equation}
+
 Here, the control $u \in [u_{\text{min}}, u_{\text{max}}]$ is the (bounded) acceleration. 
 
 
 Notice that 
-(i)~this model can be seen as a simplified one-dimensional instance of a robot manipulator with many degrees of freedom and that
+(i)~this is model can be seen as a simplified one-dimensional instance of a robot manipulator with many degrees of freedom and that
 (ii)~closed form solutions exist to the 2pBVP for this specific case (as well as the generalized instance)~\cite{HN10}.
 
 Let $T(x_1, x_2)$ denote the minimal time to move the robot from state $x_1$ to $x_2$.
-Furthermore, set
-$$
+
+Further, set
+\begin{equation}
 T(x) = T(x_s, x) + T(x, x_g).
-$$ 
+\end{equation}
+
 Namely, $T(x)$ is the minimal time to reach the goal from the start subject to passing through the state $x$.
 
 \subsection{Informed set}
 Recall that for Euclidean spaces minimizing path length, the informed set is a prolate hyperspheroid.
 Moreover, this ellipsoid is defined only be the cost $\hat{c}$ of the current best solution and not by the location of the start and goal.
 
-For the case of a double integrator, this is not the case:
-\os{show the explicit math and that it depends on the location of the start and goal}
+For the case of a double integrator, this is not the case. Intuitively, one can see why. According the the double-integrator minimum time model, maximum acceleration is applied in one direction to a point, and then maximum acceleration in the other direction is applied to complete the motion. The direction of the first and second acceleration depends on the start and goal state.
 
-See Fig.~\ref{fig:informed_1d_di}.
+See Fig. ~\ref{fig:sample_dimt} for an example motion of one joint through the $\left(x,\dot{x}\right)$ space. 
+
 \begin{figure}[tb]
   \centering
-  	\includegraphics[height = 4.cm ]{level_set.jpg}
+  	\includegraphics[width=0.3\textwidth]{fig/example_motion.png}
+  \caption{
+    \captionstyle
+  	Example possible motion using the double-integrator minimum time model between start state $(x_1, \dot{x_1}$ and goal state $(x_2, \dot{x_2}$ through some intermediate state $(x_i, \dot{x_i})$.
+  	}
+   	\label{fig:sample_dimt}
+\end{figure}
+
+In order to find the minimum time, $T\left(x\right)$, of a motion like Fig. ~\ref{fig:sample_dimt}, we can examine the paths separately with one corresponding to a motion with acceleration $a_1$ from $\left(x_1, \dot{x}_1\right)$ to $\left(x_i, \dot{x}_i\right)$ and another corresponding to motion with acceleration $a_2$ from $\left(x_i, \dot{x}_i\right)$ to $\left(x_2, \dot{x}_2\right)$.
+
+\ref{} shows that we can express total distance travelled in the joint space $x$ can be expressed in this way as:
+
+\begin{equation}
+x_2 - x_1 = d_{a_1} + d_{a_2}
+\end{equation}
+where $d_{a_1}$ is the distance travelled at max acceleration from the first path and $d_{a_2}$ is the distance travelled at max acceleration in the opposite direction.
+
+Using simple constant acceleration equations we can express this in the form:
+
+\begin{equation}
+x_2 - x_1 = \left(\dot{x}_1 t_{a_1} + \frac{1}{2} a_1 t_{a_1}^2\right) + \left(\frac{\dot{x}_2^2 - \dot{x}_i^2}{2a_2}\right)
+\end{equation}
+where $t_{a_1}$ is the time it takes to make the path from $\left(x_1, \dot{x}_1\right)$ to $\left(x_i, \dot{x}_i\right)$ at acceleration $a_1$ and $t_{a_2}$ is the time it takes to make the path from $\left(x_i, \dot{x_i}\right)$ to $\left(x_2, \dot{x}_2\right)$ at acceleration $a_2$.
+
+We can further expand the equation in order to put it into the canonical quadratic equation as follows:
+
+\begin{equation}
+a_1 t_{a_1}^2 + 2 \dot{x}_1 t_{a_1} + \frac{\dot{x}_2^2 - \dot{x}_1^2}{2a_2} - \left(x_2 - x_1\right) = 0
+\end{equation}
+
+Following ~\ref{} we solve a quadratic equation of the form $at^2+bt+c=0$ as follows:
+
+$$
+q = -\frac{1}{2}\left(b + \text{sign}\left(b\right)\sqrt{b^2 - 4ac}\right)
+$$
+$$
+t_1 = \frac{q}{a}; \hspace{5mm} t_2 = \frac{c}{q}
+$$
+where $t_1$ and $t_2$ are the two solutions to the quadratic equation.
+
+As we know, time must be positive and we are looking for minimum time. This leads to the fact that there is only one correct solution to the quadratic equation. Because of this, depending on the start and goal states, the sign of the acceleration on each path will change.
+
+Again following ~\ref{}, we programatically solve for the sign of the sign of the acceleration by analysing the start and goal position. Fig. ~\ref{fig:sample_dimt} shows the determining term $\Delta x_{acc}$, which is the distance from $x_1$ to the point where $\dot{x} = \dot{x}_2$. 
+
+And using constant acceleration equations with ~\ref{} again, we find that:
+
+\begin{equation}
+\Delta x_{acc} = \frac{1}{2} \left(\dot{x}_1 + \dot{x}_2\right) \frac{|\dot{x}_2 - \dot{x}_1|}{a_{max}}
+\end{equation}
+
+\begin{equation}
+a_1 = - a_2 = \text{sign}\left(x_2 - x_2 - \Delta x_{acc}\right) a_{max}
+\end{equation}
+
+From these equations it shows a fundamental difference of a kinodynamic state space compared to a geometric state space. Because of this the minimum time path can vary in shape depending on the start and goal state. The consequence of this is that the shape of the informed subset can change dramatically depending on the start and goal state of the problem definition. Because of this, finding a closed form solution to sampling in the informed space is not feasible.
+
+See Fig.~\ref{fig:informed_1d_di} for a visualization of the cost surface for a specific start and goal state for one degree of freedom (two dimensions $\left(x, \dot{x}\right)$). Lower costs are represented with cooler colors with warmer colors representing higher costs. One can see the minimum cost path from start to goal as the dark blue curve.
+
+\begin{figure}[tb]
+  \centering
+  	\includegraphics[height = 4.cm ]{fig/level_set.jpg}
   \caption{
     \captionstyle
   	Level sets for the case of minimal-time double integrator. A point $x = (q, \dot{q})$  denote the position and velocity of the robot while the color at $x$ denotes the cost to reach $x_t$ from $x_s$ subject to passing through the state $x$.
@@ -262,6 +326,18 @@ See Fig.~\ref{fig:informed_1d_di}.
 	\vspace{-5.5mm}
 \end{figure}
 
+\begin{figure}[tb]
+  \centering
+  	\includegraphics[width=0.5\textwidth]{fig/kino_space.png}
+  \caption{
+    \captionstyle
+  	Side view of the cost surface for the case of minimal-time double integrator. The side view showcases the discontinuous nature of the cost surface.
+  	}
+   	\label{fig:cost_surface_1d}
+	\vspace{-5.5mm}
+\end{figure}
+
+See Fig. ~\ref{fig:cost_surface_1d} for a side view of the cost surface for one degree of freedom ($\left(x, \dot{x}\right)$). One can see a key property of the cost surface that cause serious concerns is the discontinuous nature of the surface. As mentioned before, finding the minimum time problem amounts to solving a quadratic equation. Because the nature of this equation changes with the start and end goal, there is a curve in the input space that amounts to a switching surface that represents the boundary for the decision of the sign of $a_1$. This surface causes a discontinuous cost surface as shown in Fig. ~\ref{fig:cost_surface_1d}.
 
 
 \section{Algorithm}
@@ -296,6 +372,44 @@ We can define an optimal kinodynamic path-planning problem that finds a kinodyna
 
 \dy{Do we want to set an initial and a goal for the control input? Does this simplify the problem solving?}
 
+\dy{I am not sure what we want to put into here, but I am going to continue on the discussion of the algorithm and talk about some of the probability stuff.}
+
+One of the major difficulties of sampling the informed level set is that the shape of the cost function can change dramatically with the start and goal states. Because of this, there is not a principled way to sample from the informed set for each possible start and goal combination.  
+
+Following the example of recent work in path planning algorithms such as ~\ref{} (CHOMP?), we propose to solve the problem of efficiently sampling uniformly in the level set by using Monte Carlo sampling methods. Monte Carlo sampling methods have been used in the statics and machine learning fields to sample from intractable posteriors. Monte Carlo methods have the desirable property that they are guaranteed to sample the true posterior as the number of steps goes toward infinity.
+
+In order to take advantage of these powerful methods, we propose to reformulate the cost surface as a probability density. Specifically, we consider a Boltzmann distribution in order to formulate the cost function using flexible energy based methods. Because Monte Carlo methods only consider the ratio of the probabilities, we do not need to consider the problem of estimating the intractable partition function.
+
+Formally, we consider the probability distribution to be a Boltzmann distribution in the form of:
+
+\begin{equation}
+P\left(t,t_0\right) = \frac{1}{Z}\exp\left(-E\left(t,t_0\right)\right)
+\end{equation}
+where $Z$ is the intractable partition function that denotes the normalizing constant of the distribution and  $E\left(t,t_0\right)$ is the energy function which is dependent on the current best cost, $t_0$, and the cost of the path in question $t$.
+
+The flexibility of the energy function is in the ability to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. Specifically for our problem, we defined the energy function to be:
+
+\begin{equation}
+E\left(t, t_0\right) = E_{\text{grad}}\left(t\right) + E_{\text{informed}}\left(t,t_0\right) + E_{\text{region}}\left(\mathbf{x}\right)
+\end{equation}
+
+\begin{equation}
+E_{\text{grad}}\left(t\right) = \sigma\left(t\right)
+\end{equation}
+where $\sigma\left(\cdot\right)$ is some function that controls the flatness of the distribution.  Intuitively, this function prefers states with smaller costs. The flatter the function, the less pronounced this becomes. We experimented with using $\log\left(1 + \log\left(t\right)\right)$ and $\tanh\left(t\right)$. $\tanh$ resorts in a flatter distribution which may result in more uniform samples, but contains less gradient information for methods that use them such as Hamiltonian Monte Carlo.
+
+\begin{equation}
+E_{\text{informed}}\left(t,t_0\right) = \beta_{\text{informed}} \text{sigm}\left(t_0 - t\right)
+\end{equation}
+where $\text{sigm}\left(\cdot\right)$ represents a tight sigmoid function that can be seen as a differentiable $\text{sign}\left(\cdot\right)$ function. $\beta_{\text{informed}}$ is some large number that controls how much we want to penalize states outside of the level set. In theory, the energy should be infinity (which represents zero probability). In practice, however, setting $\beta_{\text{informed}}$ to be some high number such as $100$ works well and is more stable.
+
+\begin{equation}
+E_{\text{region}}\left(\mathbf{x}\right) = \beta_{\text{region}}||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2
+\end{equation}
+where $||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2$ represents the L2 distance between the current state $\mathbf{x}$ and the state limits $\mathbf{x}_{\text{limits}}$ and $\beta_{\text{region}}$ is some high number that controls how much to penalize states close to the limits. The same intuition for values of $\beta_{\text{region}}$ is the same as for $\beta_{\text{informed}}$.
+
+In order to ensure that the span the set of all possible states 
+
 \begin{algorithm}
 	\begin{algorithmic}[1]
 		\STATE
@@ -303,9 +417,6 @@ We can define an optimal kinodynamic path-planning problem that finds a kinodyna
 	\caption{MCMC Informed Sampling}
 	\label{alg:mcmc_informed_sampling}
 \end{algorithm}
-
-We 
-
 
 
 \section{Results}
