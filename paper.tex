@@ -261,7 +261,7 @@ See Fig. ~\ref{fig:sample_dimt} for an example motion of one joint through the $
   	\includegraphics[width=0.3\textwidth]{fig/example_motion.png}
   \caption{
     \captionstyle
-  	Example possible motion using the double-integrator minimum time model between start state $(x_1, \dot{x_1}$ and goal state $(x_2, \dot{x_2}$ through some intermediate state $(x_i, \dot{x_i})$.
+  	Example possible motion using the double-integrator minimum time model between start state $(x_1, \dot{x_1})$ and goal state $(x_2, \dot{x_2})$ through some intermediate state $(x_i, \dot{x_i})$.
   	}
    	\label{fig:sample_dimt}
 \end{figure}
@@ -377,7 +377,7 @@ We can define an optimal kinodynamic path-planning problem that finds a kinodyna
 
 One of the major difficulties of sampling the informed level set is that the shape of the cost function can change dramatically with the start and goal states. Because of this, there is not a principled way to sample from the informed set for each possible start and goal combination.  
 
-Following the example of recent work in path planning algorithms such as ~\ref{} (CHOMP?), we propose to solve the problem of efficiently sampling uniformly in the level set by using Monte Carlo sampling methods. Monte Carlo sampling methods have been used in the statics and machine learning fields to sample from intractable posteriors. Monte Carlo methods have the desirable property that they are guaranteed to sample the true posterior as the number of steps goes toward infinity.
+Following the example of recent work in path planning algorithms such as CHOMP~\cite{RZBS09}, we propose to solve the problem of efficiently sampling uniformly in the level set by using Monte Carlo sampling methods. Monte Carlo sampling methods have been used in the statics and machine learning fields to sample from intractable posteriors. Monte Carlo methods have the desirable property that they are guaranteed to sample the true posterior as the number of steps goes toward infinity.
 
 In order to take advantage of these powerful methods, we propose to reformulate the cost surface as a probability density. Specifically, we consider a Boltzmann distribution in order to formulate the cost function using flexible energy based methods. Because Monte Carlo methods only consider the ratio of the probabilities, we do not need to consider the problem of estimating the intractable partition function.
 
