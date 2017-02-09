@@ -395,21 +395,21 @@ However, the rejection rate is still relatively high~\cite{}.
 In this paper, we propose an informed sampling by an MCMC approach.
 In order to obtained uniformly sampling on a manifold, MCMC provides an approach that samples from a high-dimensional uniform distribution subject to a manifold constraint.
 
-
-\os{
-Roughly speaking, HMC views the system as an energy function for which Hamiltonian dynamics are simulated in fixed time steps.
-Thus, to sample from a desired distribution~$P$ using HMC, we need to convert the distribution to an energy function and vice-versa.
-This is done using the concept of a canonical distribution from statistical mechanics~\cite{}. 
-Given some energy function,~$E$, the canonical distribution over states has probability density function $P = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and $T$ is the temperature of the system.
-%Viewing this the opposite way, if we are interested in some distribution with density function $P$, we can obtain it as a canonical distribution with $T = 1$ by setting $E = -\log P - \log Z$, where $Z$ is any convenient positive constant
-Simulating Hamiltonian dynamics requires that the energy function defined is differentiable.
-}
-
 One of the major difficulties of sampling the informed level set is that the shape of the cost function can change dramatically with the start and goal states. Because of this, there is not a principled way to sample from the informed set for each possible start and goal combination.  
 
 Following the example of recent work in path planning algorithms such as CHOMP~\cite{RZBS09}, we propose to solve the problem of efficiently sampling uniformly in the level set by using Monte Carlo sampling methods. Monte Carlo sampling methods have been used in the statics and machine learning fields to sample from intractable posteriors. Monte Carlo methods have the desirable property that they are guaranteed to sample the true posterior as the number of steps goes toward infinity.
 
 In order to take advantage of these powerful methods, we propose to reformulate the cost surface as a probability density. Specifically, we consider a Boltzmann distribution in order to formulate the cost function using flexible energy based methods. Because Monte Carlo methods only consider the ratio of the probabilities, we do not need to consider the problem of estimating the intractable partition function.
+
+\os{
+	Roughly speaking, HMC views the system as an energy function for which Hamiltonian dynamics are simulated in fixed time steps.
+	Thus, to sample from a desired distribution~$P$ using HMC, we need to convert the distribution to an energy function and vice-versa.
+	This is done using the concept of a canonical distribution from statistical mechanics~\cite{N11}. 
+	Given some energy function,~$E$, the canonical distribution over states has probability density function $P = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and $T$ is the temperature of the system.
+	%Viewing this the opposite way, if we are interested in some distribution with density function $P$, we can obtain it as a canonical distribution with $T = 1$ by setting $E = -\log P - \log Z$, where $Z$ is any convenient positive constant
+	Simulating Hamiltonian dynamics requires that the energy function defined is differentiable.
+}
+
 
 Formally, we consider the probability distribution to be a Boltzmann distribution in the form of:
 
