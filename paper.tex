@@ -387,13 +387,14 @@ See Fig. ~\ref{fig:cost_surface_1d} for a side view of the cost surface for one 
 
 \section{MCMC-based Informed Sampling}
 
-\dy{I am not sure what we want to put into here, but I am going to continue on the discussion of the algorithm and talk about some of the probability stuff.}
+%\dy{I am not sure what we want to put into here, but I am going to continue on the discussion of the algorithm and talk about some of the probability stuff.}
 
-Rejection sampling is the simplest ways of constrained sampling~\cite{}, but is also known for high rejection-rate on a manifold in a high-dimensional space.
-Hierarchical Rejection Sampling (HRS) is thus proposed .... 
-However, the rejection rate is still relatively high~\cite{}.
+Rejection sampling is the simplest ways of constrained sampling~\cite{CRCW04}, but is also known for high rejection-rate on a manifold in a high-dimensional space~\cite{KTC16}.
+Hierarchical Rejection Sampling (HRS)~\cite{KTC16} is thus proposed that sequentially samples each dimension so that an unqualified candidate can be rejected before all dimensions are sampled. 
+However, the rejection rate is still relatively high~\cite{KTC16}.
 In this paper, we propose an informed sampling by an MCMC approach.
 In order to obtained uniformly sampling on a manifold, MCMC provides an approach that samples from a high-dimensional uniform distribution subject to a manifold constraint.
+Instead of rejecting samplings, original samples are purposefully driven onto a manifold.
 
 One of the major difficulties of sampling the informed level set is that the shape of the cost function can change dramatically with the start and goal states. Because of this, there is not a principled way to sample from the informed set for each possible start and goal combination.  
 
