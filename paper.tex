@@ -302,6 +302,7 @@ Moreover, this hyperspheroid is defined only be the cost $\hat{c}$ of the curren
 
 For the case of a double integrator, this is not the case. Intuitively, one can see why. According the the double-integrator minimum time model, maximum acceleration is applied in one direction to a point, and then maximum acceleration in the other direction is applied to complete the motion. The direction of the first and second acceleration depends on the start and goal state.
 
+\ignore{
 See Fig. ~\ref{fig:sample_dimt} for an example motion of one joint through the $\left(q,\dot{q}\right)$ space. 
 
 \begin{figure}[tb]
@@ -361,6 +362,7 @@ a_1 = - a_2 = \text{sign}\left(x_2 - x_2 - \Delta x_{acc}\right) a_{max}
 \end{equation}
 
 From these equations it shows a fundamental difference of a kinodynamic state space compared to a geometric state space. Because of this the minimum time path can vary in shape depending on the start and goal state. The consequence of this is that the shape of the informed subset can change dramatically depending on the start and goal state of the problem definition. Because of this, finding a closed form solution to sampling in the informed space is not feasible.
+}
 
 See Fig.~\ref{fig:informed_1d_di} for a visualization of the cost surface for a specific start and goal state for one degree of freedom (two dimensions $\left(x, \dot{x}\right)$). Lower costs are represented with cooler colors with warmer colors representing higher costs. One can see the minimum cost path from start to goal as the dark blue curve.
 
@@ -383,14 +385,70 @@ See Fig.~\ref{fig:informed_1d_di} for a visualization of the cost surface for a 
   	Side view of the cost surface for the case of minimal-time double integrator. The side view showcases the discontinuous nature of the cost surface.
   	}
    	\label{fig:cost_surface_1d}
-	\vspace{-5.5mm}
+%	\vspace{-5.5mm}
 \end{figure}
 
-See Fig. ~\ref{fig:cost_surface_1d} for a side view of the cost surface for one degree of freedom ($\left(x, \dot{x}\right)$). One can see a key property of the cost surface that cause serious concerns is the discontinuous nature of the surface. As mentioned before, finding the minimum time problem amounts to solving a quadratic equation. Because the nature of this equation changes with the start and end goal, there is a curve in the input space that amounts to a switching surface that represents the boundary for the decision of the sign of $a_1$. This surface causes a discontinuous cost surface as shown in Fig. ~\ref{fig:cost_surface_1d}.
+See Fig.~\ref{fig:cost_surface_1d} for a side view of the cost surface for one degree of freedom ($\left(x, \dot{x}\right)$). One can see a key property of the cost surface that cause serious concerns is the discontinuous nature of the surface. As mentioned before, finding the minimum time problem amounts to solving a quadratic equation. Because the nature of this equation changes with the start and end goal, there is a curve in the input space that amounts to a switching surface that represents the boundary for the decision of the sign of $a_1$. This surface causes a discontinuous cost surface as shown in Fig. ~\ref{fig:cost_surface_1d}.
 
 \section{MCMC-based Informed Sampling}
+	Roughly speaking, HMC views the system as an energy function for which Hamiltonian dynamics are simulated in fixed time steps.
+	Thus, to sample from a desired distribution~$P$ using HMC, we need to convert the distribution to an energy function and vice-versa.
+	This is done using the concept of a canonical distribution from statistical mechanics~\cite{N11}. 
+	Given some energy function,~$E$, the canonical distribution over states has the Boltzman probability distribution $P = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and $T$ is the temperature of the system.
+	%Viewing this the opposite way, if we are interested in some distribution with density function $P$, we can obtain it as a canonical distribution with $T = 1$ by setting $E = -\log P - \log Z$, where $Z$ is any convenient positive constant	
 
-%\dy{I am not sure what we want to put into here, but I am going to continue on the discussion of the algorithm and talk about some of the probability stuff.}
+The energy function's definition provides the flexibility to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. 
+Specifically, in our setting we want to approximate 
+a uniform distribution over points inside the informed set~\Cinf.
+
+Our energy for any given time $t$, 
+denoted by~$E\left(t,\Cbest \right)$, 
+is a function of $t$ and the current best cost~$\Cbest$.
+To consider only points in the informed set, all with equal energy, one may consider taking 
+$$
+E\left(t,\Cbest \right) = 
+\begin{cases}
+    1,	& \text{if } t \leq \Cbest\\        
+    0,  	& \text{otherwise}.
+\end{cases}
+$$
+However, simulating Hamiltonian dynamics requires that the energy function defined is differentiable.
+This function has a discontinuity at $t = \Cbest$ 
+and contains no gradient information for $t \leq \Cbest$.
+Thus, we define our energy function\footnote{In practice we add another term to the energy function which we discuss in our experiments (see Sec.~\ref{sec:eval}). We omit this term here for clarity of exposition.} as  
+\begin{equation}
+\label{eq:energy}
+E\left( t, \Cbest \right) 
+= 
+E_{\text{grad}} \left( t \right) + 
+E_{\text{informed}} \left( t,\Cbest \right).
+\end{equation}
+Here, $E_{\text{grad}}$ is a user-defined function that
+controls the ``flatness`` of the distribution.
+Intuitively, this term biases the distribution towards states with smaller cost and balances between the uniformity of the distribution and the gradient information provided to the HMC algorithm.
+%
+%In our setting we experimented with using 
+%$\log\left(1 + \log\left(t\right)\right)$ and $\tanh\left(t\right)$. 
+%
+The term 
+$E_{\text{informed}} \left( t,\Cbest \right) 
+= \beta_{\text{informed}} \cdot \text{sigm}\left(t_0 - t\right)
+$
+penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some constant~$\beta_{\text{informed}}$.
+The sigmoid can be seen as a differentiable function smoothing the boundary of~$\Cinf$.
+
+\subsection{Implementation details}
+In our implementation we add another term to our energy function (Eq.~\ref{eq:energy}) relating to system parameters that induce known bounds on states.
+Specifically, our robot has predefined joint limits. 
+The flexibility of the energy function allows us to incorporate these limits  to penalize states \emph{within} the informed set that are close to, or violate these limits.
+
+Specifically, we add to Eq.~\ref{eq:energy} the term 
+$
+E_{\text{limits}}\left(\mathbf{x}\right) = \beta_{\text{limits}} \cdot ||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2
+$
+where $||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2$ represents the L2 distance between the current state $\mathbf{x}$ and the state limits~$\mathbf{x}_{\text{limits}}$ and~$\beta_{\text{limits}}$ is some constant controlling how much to penalize states close to the limits. 
+
+\section{MCMC-based Informed Sampling}
 
 Rejection sampling is the simplest ways of constrained sampling~\cite{CRCW04}, but is also known for high rejection-rate on a manifold in a high-dimensional space~\cite{KTC16}.
 Hierarchical Rejection Sampling (HRS)~\cite{KTC16} is thus proposed that sequentially samples each dimension so that an unqualified candidate can be rejected before all dimensions are sampled. 
@@ -403,58 +461,6 @@ One of the major difficulties of sampling the informed level set is that the sha
 
 Following the example of recent work in path planning algorithms such as CHOMP~\cite{RZBS09}, we propose to solve the problem of efficiently sampling uniformly in the level set by using Monte Carlo sampling methods. Monte Carlo sampling methods have been used in the statics and machine learning fields to sample from intractable posteriors. Monte Carlo methods have the desirable property that they are guaranteed to sample the true posterior as the number of steps goes toward infinity.
 
-In order to take advantage of these powerful methods, we propose to reformulate the cost surface as a probability density. Specifically, we consider a Boltzmann distribution in order to formulate the cost function using flexible energy based methods. Because Monte Carlo methods only consider the ratio of the probabilities, we do not need to consider the problem of estimating the intractable partition function.
-
-\os{
-	Roughly speaking, HMC views the system as an energy function for which Hamiltonian dynamics are simulated in fixed time steps.
-	Thus, to sample from a desired distribution~$P$ using HMC, we need to convert the distribution to an energy function and vice-versa.
-	This is done using the concept of a canonical distribution from statistical mechanics~\cite{N11}. 
-	Given some energy function,~$E$, the canonical distribution over states has the Boltzman probability distribution $P = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and $T$ is the temperature of the system.
-	%Viewing this the opposite way, if we are interested in some distribution with density function $P$, we can obtain it as a canonical distribution with $T = 1$ by setting $E = -\log P - \log Z$, where $Z$ is any convenient positive constant	
-}
-
-\os{
-The energy function's definition provides the flexibility to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. 
-Specifically, in our setting we want to approximate 
-a uniform distribution over points inside the informed set~\Cinf.
-Note that simulating Hamiltonian dynamics requires that the energy function defined is differentiable.
-}
-
-\os{
-Our energy for any given time $t$, 
-denoted by~$E\left(t,\Cbest \right)$, 
-is a function of $t$ and the current best cost~$\Cbest$.
-}
-
-Formally, we consider the probability distribution to be a Boltzmann distribution in the form of:
-
-\begin{equation}
-P\left(t,t_0\right) = \frac{1}{Z}\exp\left(-E\left(t,t_0\right)\right)
-\end{equation}
-where $Z$ is the intractable partition function that denotes the normalizing constant of the distribution and  $E\left(t,t_0\right)$ is the energy function which is dependent on the current best cost, $t_0$, and the cost of the path in question $t$.
-
-The flexibility of the energy function is in the ability to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. Specifically for our problem, we defined the energy function to be:
-
-\begin{equation}
-E\left(t, t_0\right) = E_{\text{grad}}\left(t\right) + E_{\text{informed}}\left(t,t_0\right) + E_{\text{region}}\left(\mathbf{x}\right)
-\end{equation}
-
-\begin{equation}
-E_{\text{grad}}\left(t\right) = \sigma\left(t\right)
-\end{equation}
-where $\sigma\left(\cdot\right)$ is some function that controls the flatness of the distribution.  Intuitively, this function prefers states with smaller costs. The flatter the function, the less pronounced this becomes. We experimented with using $\log\left(1 + \log\left(t\right)\right)$ and $\tanh\left(t\right)$. $\tanh$ resorts in a flatter distribution which may result in more uniform samples, but contains less gradient information for methods that use them such as Hamiltonian Monte Carlo.
-
-\begin{equation}
-E_{\text{informed}}\left(t,t_0\right) = \beta_{\text{informed}} \text{sigm}\left(t_0 - t\right)
-\end{equation}
-where $\text{sigm}\left(\cdot\right)$ represents a tight sigmoid function that can be seen as a differentiable $\text{sign}\left(\cdot\right)$ function. $\beta_{\text{informed}}$ is some large number that controls how much we want to penalize states outside of the level set. In theory, the energy should be infinity (which represents zero probability). In practice, however, setting $\beta_{\text{informed}}$ to be some high number such as $100$ works well and is more stable.
-
-\begin{equation}
-E_{\text{region}}\left(\mathbf{x}\right) = \beta_{\text{region}}||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2
-\end{equation}
-where $||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2$ represents the L2 distance between the current state $\mathbf{x}$ and the state limits $\mathbf{x}_{\text{limits}}$ and $\beta_{\text{region}}$ is some high number that controls how much to penalize states close to the limits. The same intuition for values of $\beta_{\text{region}}$ is the same as for $\beta_{\text{informed}}$.
-
-In order to ensure that the span the set of all possible states 
 
 \begin{algorithm}
 	\begin{algorithmic}[1]
@@ -465,7 +471,8 @@ In order to ensure that the span the set of all possible states
 \end{algorithm}
 
 
-\section{Results}
+\section{Evaluation}
+\label{sec:eval}
 
 \subsection{Uniformity}
 
@@ -497,6 +504,51 @@ We are going to show how the solution cost falls along time.
 \end{itemize}
 
 \section{Conclusion}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Old text that may be re-used
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ignore{
+In order to take advantage of these powerful methods, we propose to reformulate the cost surface as a probability density. Specifically, we consider a Boltzmann distribution in order to formulate the cost function using flexible energy based methods. Because Monte Carlo methods only consider the ratio of the probabilities, we do not need to consider the problem of estimating the intractable partition function.
+
+\begin{equation}
+E_{\text{informed}}\left(t,t_0\right) = \beta_{\text{informed}} \text{sigm}\left(t_0 - t\right)
+\end{equation}
+where $\text{sigm}\left(\cdot\right)$ represents a tight sigmoid function that can be seen as a differentiable $\text{sign}\left(\cdot\right)$ function. $\beta_{\text{informed}}$ is some large number that controls how much we want to penalize states outside of the level set. In theory, the energy should be infinity (which represents zero probability). In practice, however, setting $\beta_{\text{informed}}$ to be some high number such as $100$ works well and is more stable.
+
+
+
+
+Formally, we consider the probability distribution to be a Boltzmann distribution in the form of:
+
+\begin{equation}
+P\left(t,t_0\right) = \frac{1}{Z}\exp\left(-E\left(t,t_0\right)\right)
+\end{equation}
+where $Z$ is the intractable partition function that denotes the normalizing constant of the distribution and  $E\left(t,t_0\right)$ is the energy function which is dependent on the current best cost, $t_0$, and the cost of the path in question $t$.
+
+The flexibility of the energy function is in the ability to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. Specifically for our problem, we defined the energy function to be:
+
+\begin{equation}
+E\left(t, t_0\right) = E_{\text{grad}}\left(t\right) + E_{\text{informed}}\left(t,t_0\right) + E_{\text{region}}\left(\mathbf{x}\right)
+\end{equation}
+
+\begin{equation}
+E_{\text{grad}}\left(t\right) = \sigma\left(t\right)
+\end{equation}
+where $\sigma\left(\cdot\right)$ is some function that controls the flatness of the distribution.  Intuitively, this function prefers states with smaller costs. The flatter the function, the less pronounced this becomes. We experimented with using $\log\left(1 + \log\left(t\right)\right)$ and $\tanh\left(t\right)$. $\tanh$ resorts in a flatter distribution which may result in more uniform samples, but contains less gradient information for methods that use them such as Hamiltonian Monte Carlo.
+
+\begin{equation}
+E_{\text{informed}}\left(t,t_0\right) = \beta_{\text{informed}} \text{sigm}\left(t_0 - t\right)
+\end{equation}
+where $\text{sigm}\left(\cdot\right)$ represents a tight sigmoid function that can be seen as a differentiable $\text{sign}\left(\cdot\right)$ function. $\beta_{\text{informed}}$ is some large number that controls how much we want to penalize states outside of the level set. In theory, the energy should be infinity (which represents zero probability). In practice, however, setting $\beta_{\text{informed}}$ to be some high number such as $100$ works well and is more stable.
+
+\begin{equation}
+E_{\text{region}}\left(\mathbf{x}\right) = \beta_{\text{region}}||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2
+\end{equation}
+where $||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2$ represents the L2 distance between the current state $\mathbf{x}$ and the state limits $\mathbf{x}_{\text{limits}}$ and $\beta_{\text{region}}$ is some high number that controls how much to penalize states close to the limits. The same intuition for values of $\beta_{\text{region}}$ is the same as for $\beta_{\text{informed}}$.
+
+}
 
 
 
