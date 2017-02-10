@@ -248,15 +248,14 @@ Define the dynamics of a robot as
 \end{equation}
 in which $ x \in \calX \subseteq \mathbb{R}^n $ is the state of the robot, and $ u \in \calU \subseteq \mathbb{R}^m $ is the control input.
 The dynamics determines how a state trajectory $ \gamma $ is like given duration $ T $, state $ x(t) $ and input $ u(t) $.
+There exists a free trajectory space $ \Pi_{free} $ that contains all feasible trajectories $ \gamma \in \Gamma_{\rm free} $.
+It is determined by the system dynamics,$ \Cfree $ and $ \Ufree $, in which $ \Cfree \subseteq \calX $ is a free state space considering the obstacles in a workspace, and $ \Ufree \subseteq \calU $ is a free control space considering the bounds of control input. 
 The cost of a trajectory $ \gamma $ is defined as the accumulated cost $ c( x(t), u(t) ) $ along the path, which is 
 \begin{equation}
 \label{eq:path_cost}
 c(\gamma) = \int_0^{T} c( x(t), u(t) ) dt.
 \end{equation}
-Consider the obstacles in a workspace, we have $ \Cfree \subseteq \calX $.
-Consider the bounds of the control input, we have $ \Ufree \subseteq \calU $.
-The dynamics of the robot in Equation~\eqref{eq:kinematics}, free state space $  \Cfree $ and free control input space $ \Ufree $ determines a free trajectory space $ \Pi_{free} $, which contains all feasible trajectories $ \gamma \in \Gamma_{\rm free} $.
-An optimal kinodynamic path-planning problem that finds a kinodynamic path minimizing the cost $ \pi^* = \min_{ \pi \in \Gamma_{free} } c( \gamma ) $ subject to constraints $ x(t) \in \Cfree  $ and $ u(t) \in \Ufree $.
+An optimal kinodynamic path-planning problem that finds a kinodynamic path minimizing the cost $ \pi^* = \min_{ \pi \in \Gamma_{free} } c( \gamma ) $.
 
 Informed sampling-based planning algorithms (e.g. Informed RRT*~\cite{GSB14}, BIT*~\cite{GSB15}) samples new states only from an \emph{informed set}.
 An informed set is a subspace $ \Cinf \subseteq \calX $   that is possible to provide better solution than the current best $  \Cinf = \{ x \in \calX \mid c ( \gamma^*(x) ) < \cbest \} $~\cite{GSB14}, in which $ \gamma^*(x) $ means the optimal path from $ x_s $ to $ x_g $ constrained to pass through $ x $ without considering collision checking, and $ \cbest $ is the cost of the current best found.
