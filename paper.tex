@@ -103,7 +103,7 @@ Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed su
 
 For Euclidean spaces optimizing for path length, 
 \Cinf can be analytically expressed as a prolate hyperspheroid and can be sampled directly using a closed form solution~\cite{GSB14}.
-Indeed, directly sampling in \Cinf has been shown to dramatically improve computation time when compared to sampling in $\calX$, especially in high dimensions. 
+Indeed, directly sampling in \Cinf has been shown to dramatically improve computation time when compared to sampling in~$\calX$, especially in high dimensions. 
 
 Unfortunately, in more general settings such as
 for systems with differential constraints,
@@ -117,12 +117,12 @@ and then combined. Rejection sampling is performed for these partial samples unt
 %The novelty of HRS is the ability to fail fast. 
 
 Unfortunately, both rejection sampling and HRS may produce a large number of rejected samples especially in high-dimensional spaces.
-This may cause the search algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
+This may cause the planning algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
 In this paper, we suggest an alternative approach to produce samples in the informed set \Cinf for a wide range of settings.
 \textbf{Our main insight is to formulate the problem as the problem of sampling uniformly below a level set of an implicit function and then apply optimization and statistical tools.}
 Specifically, our approach consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a gradient-descent algorithm;
-in the second stage, this retracted sample $\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
+in the second stage, this retracted sample~$\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
 
 Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06, H02} and that a gradient can be defined over the cost function.
 Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitute when compared to algorithms using rejection sampling or HRS.
@@ -138,7 +138,7 @@ Indeed, we demonstrate the efficiency of our approach on a wide variety of syste
 \section{Related work}
 \label{sec:related_work}
 We start in Sec.~\ref{subsec:planning} by giving an overview of relevant sampling-based motion-planning algorithms.
-We then continue in Sec.~\ref{subsec:sampling} to describe different approaches used to sample~$\calX$.
+We then continue in Sec.~\ref{subsec:sampling} to describe different approaches that can be used these algorithms to sample~$\calX$.
 We conclude our literature review in Sec.~\ref{subsec:mcmc} with a brief overview of Markov Chain Monte Carlo methods.
 
 \subsection{Sampling-based motion-planning algorithms}
@@ -146,7 +146,10 @@ We conclude our literature review in Sec.~\ref{subsec:mcmc} with a brief overvie
 Initial sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not take into account the \emph{quality} of a path, given some optimization criteria, and only guaranteed to asymptotically return \emph{a} solution, if one exists.
 Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
 This is done by recognizing the underlying connections between stochastic sampling-based motion planning and the theory of random geometric graphs (see also~\cite{SSH16}).
-Additional algorithms followed, increasing the converges rate by various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
+Additional algorithms followed, increasing the converges rate by various techniques such as 
+lazy dynamic programming~\cite{GSB15, JSCP15, SH15},
+relaxing optimality to near-optimality~\cite{DB14, SH16} 
+and more.
 
 
 Many of the algorithms mentioned require solving a two-point boundary value problem (2pBVP) to perform exact and optimal connections between vertices in the roadmap.
@@ -256,7 +259,7 @@ The dynamics of the robot in Equation~\eqref{eq:kinematics}, free state space $ 
 An optimal kinodynamic path-planning problem that finds a kinodynamic path minimizing the cost $ \pi^* = \max_{ \pi \in \Pi_{free} } c( \pi ) $ subject to constraints $ \bm{x} (t) \in \mathcal{X}_{free}  $ and $ \bm{u} (t) \in \mathcal{U}_{free} $.
 
 Informed sampling-based planning algorithms (e.g. Informed RRT*~\cite{GSB14}, BIT*~\cite{GSB15}) samples new states only from an \emph{informed set}.
-An informed set is a subspace $ X_f \subseteq \mathcal{X}_{free} $  that is possible to provide better solution than the current best $  X_f = \{ x \in \mathcal{X}_{free} \mid c ( \pi^*(x) ) < c_{best} \} $~\cite{GSB14}, in which $ \pi^*(x) $ means the optimal path from $ x_{init} $ to $ x_{goal} $ constrained to pass through $ x $ and $ c_{best} $ is the cost of the current best found.
+An informed set is a subspace $ \Cinf \subseteq \calX $   that is possible to provide better solution than the current best $  \Cinf = \{ x \in \calX \mid c ( \pi^*(x) ) < c_{best} \} $~\cite{GSB14}, in which $ \pi^*(x) $ means the optimal path from $ x_{init} $ to $ x_{goal} $ constrained to pass through $ x $ and $ c_{best} $ is the cost of the current best found.
 The current best $ c_{best} $ constrains eligible $ x $ indirectly by an implicit $ \pi^*(x) $.
 In an optimal kinodynamic path-planning problem, more constraints are considered in defining an informed set, which include the system dynamic constraint and the boundary of control input.
 If we consider a manifold that is defined by an informed set $ X_f $, the informed sampling becomes how to sample on this manifold in a high-dimensional space. 
