@@ -408,11 +408,22 @@ In order to take advantage of these powerful methods, we propose to reformulate 
 	Roughly speaking, HMC views the system as an energy function for which Hamiltonian dynamics are simulated in fixed time steps.
 	Thus, to sample from a desired distribution~$P$ using HMC, we need to convert the distribution to an energy function and vice-versa.
 	This is done using the concept of a canonical distribution from statistical mechanics~\cite{N11}. 
-	Given some energy function,~$E$, the canonical distribution over states has probability density function $P = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and $T$ is the temperature of the system.
-	%Viewing this the opposite way, if we are interested in some distribution with density function $P$, we can obtain it as a canonical distribution with $T = 1$ by setting $E = -\log P - \log Z$, where $Z$ is any convenient positive constant
-	Simulating Hamiltonian dynamics requires that the energy function defined is differentiable.
+	Given some energy function,~$E$, the canonical distribution over states has the Boltzman probability distribution $P = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and $T$ is the temperature of the system.
+	%Viewing this the opposite way, if we are interested in some distribution with density function $P$, we can obtain it as a canonical distribution with $T = 1$ by setting $E = -\log P - \log Z$, where $Z$ is any convenient positive constant	
 }
 
+\os{
+The energy function's definition provides the flexibility to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. 
+Specifically, in our setting we want to approximate 
+a uniform distribution over points inside the informed set~\Cinf.
+Note that simulating Hamiltonian dynamics requires that the energy function defined is differentiable.
+}
+
+\os{
+Our energy for any given time $t$, 
+denoted by~$E\left(t,\Cbest \right)$, 
+is a function of $t$ and the current best cost~$\Cbest$.
+}
 
 Formally, we consider the probability distribution to be a Boltzmann distribution in the form of:
 
