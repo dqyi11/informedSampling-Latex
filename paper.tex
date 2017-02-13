@@ -263,7 +263,7 @@ The current best $ \cbest $ constrains eligible $ x $ indirectly by an implicit 
 In an optimal kinodynamic path-planning problem, more constraints are considered in defining an informed set, which include the system dynamic constraint and the boundary of control input.
 If we consider a manifold that is defined by an informed set $ \Cinf $, the informed sampling becomes how to sample on this manifold in a high-dimensional space. 
 
-\section{Motivating example---Minimal-Time Double Integrator}
+\section{Motivating example---Minimal-Time Double Integrator (MTDI)}
 
 We start by considering a simple yet important dynamical system---the double integrator. 
 We are given a one-dimensional point robot with bounded acceleration moving amid obstacles. We wish to compute the minimal-time trajectory between two states $x_s, x_g$.
@@ -296,10 +296,25 @@ Namely, $T(x_s, x, x_g)$ is the minimal time to reach the goal from the start su
 
 
 \subsection{Informed set}
-Recall that for Euclidean spaces minimizing path length, the informed set is a prolate hyperspheroid.
+Recall that for Euclidean spaces minimizing path length, the informed set~\Cinf is a prolate hyperspheroid.
 Moreover, this hyperspheroid is defined only be the cost $\hat{c}$ of the current best solution and not by the location of the start and goal.
 
-For the case of a double integrator, this is not the case. Intuitively, one can see why. According the the double-integrator minimum time model, maximum acceleration is applied in one direction to a point, and then maximum acceleration in the other direction is applied to complete the motion. The direction of the first and second acceleration depends on the start and goal state.
+For the case of a MTDI, this is not the case. 
+Specifically, we have that 
+(i)~the structure of~\Cinf changes not only with~$\hat{c}$ but also according to the specific values of the start~$x_s$ and goal~$x_g$ states
+and that
+(ii)~the cost map that implicitly defines~\Cinf can contain discontinuities (in contrast to Euclidean spaces minimizing path length where the cost map is continuous and differentiable at every point).
+
+To understand the differences recall that optimal paths for MTDI follows a ``bang-bang`` controller. Namely, we first apply maximal (or minimal) acceleration for some duration and then switch to applying minimal (or maximal, respectively) acceleration.
+It is straightforward to see that both the type and the amount of acceleration applied (and hence the structure of~\Cinf) depend on the specific values of~$x_s$ and~$x_g$. 
+Fig~\ref{fig:informed_sets} 
+depicts two informed sets defined using the same cost~$\hat{c}$ using different start and goal states. Notice the difference in structure of~\Cinf. 
+
+To understand why the cost map may not be continuous consider the simple example in Fig~\ref{fig:discont}
+
+First, the informed 
+
+Intuitively, one can see why. According the the double-integrator minimum time model, maximum acceleration is applied in one direction to a point, and then maximum acceleration in the other direction is applied to complete the motion. The direction of the first and second acceleration depends on the start and goal state.
 
 \ignore{
 See Fig. ~\ref{fig:sample_dimt} for an example motion of one joint through the $\left(q,\dot{q}\right)$ space. 
