@@ -97,7 +97,7 @@ and that
 Initially, 
 when a path has yet to be found, 
 the samples need to be drawn from the entire state space~$\calX$.
-However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$ only  containing states that may produce higher-quality paths than~$\gamma$.
+However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$ only  containing states that may be used to produce higher-quality paths than~$\gamma$.
 Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it~$\Cinf$.
 \textbf{In this work we address the problem of efficiently producing samples in informed subset for systems with differential constraints}. 
 
@@ -120,12 +120,15 @@ Unfortunately, both rejection sampling and HRS may produce a large number of rej
 This may cause the planning algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
 In this paper, we suggest an alternative approach to produce samples in the informed set \Cinf for a wide range of settings.
 \textbf{Our main insight is to formulate the problem as the problem of sampling uniformly below a level set of an implicit function and then apply optimization and statistical tools.}
+\os{do we really care about uniformity?}
 Specifically, our approach consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a gradient-descent algorithm;
 in the second stage, this retracted sample~$\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
 
 Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06, H02} and that a gradient can be defined over the cost function.
 Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitute when compared to algorithms using rejection sampling or HRS.
+
+\os{structure}
 
 %While, original sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} only guaranteed to asymptotically return \emph{a} solution, if one exists, they did not provide any guarantees on the \emph{quality} of the solution, given some optimization criteria.
 %Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
@@ -138,14 +141,14 @@ Indeed, we demonstrate the efficiency of our approach on a wide variety of syste
 \section{Related work}
 \label{sec:related_work}
 We start in Sec.~\ref{subsec:planning} by giving an overview of relevant sampling-based motion-planning algorithms.
-We then continue in Sec.~\ref{subsec:sampling} to describe different approaches that can be used these algorithms to sample~$\calX$.
+We then continue in Sec.~\ref{subsec:sampling} to describe different approaches that can be used by  these algorithms to sample~$\calX$.
 We conclude our literature review in Sec.~\ref{subsec:mcmc} with a brief overview of Markov Chain Monte Carlo methods.
 
 \subsection{Sampling-based motion-planning algorithms}
 \label{subsec:planning}
 Initial sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not take into account the \emph{quality} of a path, given some optimization criteria, and only guaranteed to asymptotically return \emph{a} solution, if one exists.
 Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
-This is done by recognizing the underlying connections between stochastic sampling-based motion planning and the theory of random geometric graphs (see also~\cite{SSH16}).
+This was done by recognizing the underlying connections between stochastic sampling-based motion planning and the theory of random geometric graphs (see also~\cite{SSH16}).
 Additional algorithms followed, increasing the converges rate by various techniques such as 
 lazy dynamic programming~\cite{GSB15, JSCP15, SH15},
 relaxing optimality to near-optimality~\cite{DB14, SH16} 
@@ -238,9 +241,29 @@ Avoiding random walk helps samplings converge to the desired distribution $ \pi(
 %
 }
 
-\section{Informed Sampling}
+\section{Problem definition}
 \label{sec:algorithm}
+Let $\calX, \calU$ denote the state and controls spaces, respectively and set $\Cfree \subset \calX$ to be the set of states where the robot is collision free.
+A \emph{trajectory} $\gamma$ is a timed path through~$\calX$ obtained by applying at time $t$ control $u(t) \in \calU$ and satisfying the system dynamics 
+$\dot{x}(t) = f( x(t) , u(t) )$.
+A trajectory is collision free if $\forall t,~\gamma(t) \in \Cfree$
 
+Given a cost function $C : \calX \times \calU \rightarrow \R$, the cost of a trajectory $ \gamma $ is defined as the accumulated cost along the path
+$c(\gamma) = \int_0^{T} c( x(t), u(t) ) dt$, 
+where $T$ is the duration of~$\gamma$.
+
+Given start and target states $x_s, x_g \in \calX$, we wish to find a collision free trajectory $\gamma*$ connecting $x_s$ to $x_g$ such that 
+$c(\gamma*) = \min_{\gamma \in \Gamma} c(\gamma)$, where $\Gamma$ is the set of all collision-free trajectories.
+
+Given a trajectory $\gamma_{\text{best}}$ with cost $c_{\text{best}} = c(\gamma_{\text{best}})$ the \emph{informed set}~\Cinf is defined to be all states $x$  which may be on trajectories with lower cost than $c_{\text{best}}$.
+Specifically,
+$
+\Cinf = \{ x \in \calX \mid  
+		c ( \gamma^*(x) ) < \cbest \} $~\cite{GSB14}.
+Here~$ \gamma^*(x) $ denotes the optimal trajectory  from $ x_s $ to $ x_g $ constrained to pass through $ x $.
+Notice that~$ \gamma^*(x) $ is not required to be collision free.
+
+\ignore{
 Define the dynamics of a robot as 
 \begin{equation}
 \label{eq:kinematics}
@@ -261,13 +284,13 @@ Informed sampling-based planning algorithms (e.g. Informed RRT*~\cite{GSB14}, BI
 An informed set is a subspace $ \Cinf \subseteq \calX $   that is possible to provide better solution than the current best $  \Cinf = \{ x \in \calX \mid c ( \gamma^*(x) ) < \cbest \} $~\cite{GSB14}, in which $ \gamma^*(x) $ means the optimal path from $ x_s $ to $ x_g $ constrained to pass through $ x $ without considering collision checking, and $ \cbest $ is the cost of the current best found.
 The current best $ \cbest $ constrains eligible $ x $ indirectly by an implicit $ \gamma^*(x) $.
 In an optimal kinodynamic path-planning problem, more constraints are considered in defining an informed set, which include the system dynamic constraint and the boundary of control input.
-If we consider a manifold that is defined by an informed set $ \Cinf $, the informed sampling becomes how to sample on this manifold in a high-dimensional space. 
+If we consider a manifold that is defined by an informed set $ \Cinf $, the informed sampling becomes how to sample on this manifold in a high-dimensional space. }
 
 \section{Motivating example---Minimal-Time Double Integrator (MTDI)}
 
-We start by considering a simple yet important dynamical system---the double integrator. 
-We are given a one-dimensional point robot with bounded acceleration moving amid obstacles. We wish to compute the minimal-time trajectory between two states $x_s, x_g$.
-A state in this model is described by 
+To understand why we resort to optimization-based methods and do not attempt to provide a closed-form solution to sample $\Cinf$ we study the structure of the informed set for a simple yet important dynamical system---the double integrator. 
+Here, we are given a one-dimensional point robot with bounded acceleration moving amid obstacles. We wish to compute the minimal-time trajectory between two states $x_s, x_g$.
+A state $x \in \calX$ in this model is defined by 
 the position $q \in \R$
 and
 the velocity $\dot{q}\in \R$ of the robot.
@@ -285,17 +308,17 @@ Notice that
 (i)~this is model can be seen as a simplified one-dimensional instance of a robot manipulator with many degrees of freedom and that
 (ii)~closed form solutions exist to the 2pBVP for this specific case (as well as the multi-dimensional setting)~\cite{HN10, KS14}.
 
-Let $T(x_1, x_2)$ denote the minimal time to move the robot from state $x_1$ to $x_2$.
-Furthermore, set
+%Let $T(x_1, x_2)$ denote the minimal time to move the robot from state $x_1$ to $x_2$.
+%Furthermore, set
+%%
+%\begin{equation}
+%T(x_s, x, x_g) = T(x_s, x) + T(x, x_g).
+%\end{equation}
+%%
+%Namely, $T(x_s, x, x_g)$ is the minimal time to reach the goal from the start subject to passing through the state $x$.
 %
-\begin{equation}
-T(x_s, x, x_g) = T(x_s, x) + T(x, x_g).
-\end{equation}
 %
-Namely, $T(x_s, x, x_g)$ is the minimal time to reach the goal from the start subject to passing through the state $x$.
-
-
-\subsection{Informed set}
+%\subsection{Informed set}
 Recall that for Euclidean spaces minimizing path length, the informed set~\Cinf is a prolate hyperspheroid.
 Moreover, this hyperspheroid is defined only be the cost $\hat{c}$ of the current best solution and not by the location of the start and goal.
 
@@ -305,16 +328,14 @@ Specifically, we have that
 and that
 (ii)~the cost map that implicitly defines~\Cinf can contain discontinuities (in contrast to Euclidean spaces minimizing path length where the cost map is continuous and differentiable at every point).
 
-To understand the differences recall that optimal paths for MTDI follows a ``bang-bang`` controller. Namely, we first apply maximal (or minimal) acceleration for some duration and then switch to applying minimal (or maximal, respectively) acceleration.
+To understand the differences recall that optimal paths for MTDI follow a ``bang-bang`` controller. Namely, we first apply maximal (or minimal) acceleration for some duration and then switch to applying minimal (or maximal, respectively) acceleration.
 It is straightforward to see that both the type and the amount of acceleration applied (and hence the structure of~\Cinf) depend on the specific values of~$x_s$ and~$x_g$. 
 Fig~\ref{fig:informed_sets} 
 depicts two informed sets defined using the same cost~$\hat{c}$ using different start and goal states. Notice the difference in structure of~\Cinf. 
+Fig~\ref{fig:discont} depicts a simple example where the cost map may is discontinuous.
 
-To understand why the cost map may not be continuous consider the simple example in Fig~\ref{fig:discont}
-
-First, the informed 
-
-Intuitively, one can see why. According the the double-integrator minimum time model, maximum acceleration is applied in one direction to a point, and then maximum acceleration in the other direction is applied to complete the motion. The direction of the first and second acceleration depends on the start and goal state.
+To summarize, the structure of \Cinf can change given different start and goal states.
+Furthermore,  its boundary may not even be smooth or differentiable due to the aforementioned discontinuous. 
 
 \ignore{
 See Fig. ~\ref{fig:sample_dimt} for an example motion of one joint through the $\left(q,\dot{q}\right)$ space. 
@@ -378,8 +399,25 @@ a_1 = - a_2 = \text{sign}\left(x_2 - x_2 - \Delta x_{acc}\right) a_{max}
 From these equations it shows a fundamental difference of a kinodynamic state space compared to a geometric state space. Because of this the minimum time path can vary in shape depending on the start and goal state. The consequence of this is that the shape of the informed subset can change dramatically depending on the start and goal state of the problem definition. Because of this, finding a closed form solution to sampling in the informed space is not feasible.
 }
 
+\ignore{
 See Fig.~\ref{fig:informed_1d_di} for a visualization of the cost surface for a specific start and goal state for one degree of freedom (two dimensions $\left(x, \dot{x}\right)$). Lower costs are represented with cooler colors with warmer colors representing higher costs. One can see the minimum cost path from start to goal as the dark blue curve.
+}
 
+\begin{figure}[tb]
+  \centering
+  	\includegraphics[height = 5.25cm ]{fig/cost_discontinuity.pdf}
+  \caption{
+    \captionstyle
+  	Visualization of the discontinuity in the cost function of MTDI (right) as a function of the controls applied (left). 
+  	Given state~$x_s$ and fixed position $q_0$, we depict the cost (time) as a function of the velocity~$\dot{q}$. 
+  	The minimal cost is attained at $\dot{q}_{\min}$ by applying maximal acceleration (blue curves~$(i), (ii)$). 
+  	To reach states such as~$\dot{q}_1$, where $\dot{q}_1 < \dot{q}_{\min}$ we need to apply maximal acceleration (curve~$(i)$) followed by minimal acceleration (green curve~$(iii)$), which result in a continuous increase in cost.
+  	However, for states such as $\dot{q}_2$, where $\dot{q}_2 > \dot{q}_{\min}$, we need to apply minimal acceleration  followed by maximal acceleration (curves~$(iv), (v)$), which result in the cost discontinuity.
+  	}
+   	\label{fig:discont}
+\end{figure}
+
+\ignore{
 \begin{figure}[tb]
   \centering
   	\includegraphics[height = 4.cm ]{fig/level_set.jpg}
@@ -403,8 +441,12 @@ See Fig.~\ref{fig:informed_1d_di} for a visualization of the cost surface for a 
 \end{figure}
 
 See Fig.~\ref{fig:cost_surface_1d} for a side view of the cost surface for one degree of freedom ($\left(x, \dot{x}\right)$). One can see a key property of the cost surface that cause serious concerns is the discontinuous nature of the surface. As mentioned before, finding the minimum time problem amounts to solving a quadratic equation. Because the nature of this equation changes with the start and end goal, there is a curve in the input space that amounts to a switching surface that represents the boundary for the decision of the sign of $a_1$. This surface causes a discontinuous cost surface as shown in Fig. ~\ref{fig:cost_surface_1d}.
+}
 
 \section{MCMC-based Informed Sampling}
+\os{missing intro here}
+
+
 	Roughly speaking, HMC views the system as an energy function for which Hamiltonian dynamics are simulated in fixed time steps.
 	Thus, to sample from a desired distribution~$P$ using HMC, we need to convert the distribution to an energy function and vice-versa.
 	This is done using the concept of a canonical distribution from statistical mechanics~\cite{N11}. 
@@ -450,6 +492,8 @@ $E_{\text{informed}} \left( t,\Cbest \right)
 $
 penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some constant~$\beta_{\text{informed}}$.
 The sigmoid can be seen as a differentiable function smoothing the boundary of~$\Cinf$.
+
+\os{add visualization}
 
 \subsection{Implementation details}
 In our implementation we add another term to our energy function (Eq.~\ref{eq:energy}) relating to system parameters that induce known bounds on states.
