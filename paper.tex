@@ -89,10 +89,10 @@ Vertices and edges in $G$ correspond to collision-free states and paths, respect
 Roughly speaking, these algorithms iteratively sample new states.
 This is required to ensure that, as the number of samples tends to infinity, 
 (i)~a solution will be found 
-(a property called \emph{probabilistic completeness})
+%(a property called \emph{probabilistic completeness})
 and that
-(ii)~given some optimization criteria, the quality of the solution will progressively converge to the quality of the optimal solution
-(a property called \emph{asymptotic  optimality}).
+(ii)~given some optimization criteria, the quality of the solution will progressively converge to the quality of the optimal solution.
+%(a property called \emph{asymptotic  optimality}).
 
 Initially, 
 when a path has yet to be found, 
@@ -249,12 +249,12 @@ A \emph{trajectory} $\gamma$ is a timed path through~$\calX$ obtained by applyin
 $\dot{x}(t) = f( x(t) , u(t) )$.
 A trajectory is collision free if $\forall t,~\gamma(t) \in \Cfree$
 
-Given a cost function $C : \calX \times \calU \rightarrow \R$, the cost of a trajectory $ \gamma $ is defined as the accumulated cost along the path
+Given a cost function $C : \calX \times \calU \rightarrow \R$, the cost of a trajectory $ \gamma $ is the accumulated cost along the path
 $c(\gamma) = \int_0^{T} c( x(t), u(t) ) dt$, 
 where $T$ is the duration of~$\gamma$.
 
-Given start and target states $x_s, x_g \in \calX$, we wish to find a collision free trajectory $\gamma*$ connecting $x_s$ to $x_g$ such that 
-$c(\gamma*) = \min_{\gamma \in \Gamma} c(\gamma)$, where $\Gamma$ is the set of all collision-free trajectories.
+Given start and target states $x_s, x_g \in \calX$, we wish to find a collision free trajectory $\gamma^*$ connecting $x_s$ to $x_g$ such that 
+$c(\gamma^*) = \min_{\gamma \in \Gamma} c(\gamma)$, where $\Gamma$ is the set of all collision-free trajectories.
 
 Given a trajectory $\gamma_{\text{best}}$ with cost $c_{\text{best}} = c(\gamma_{\text{best}})$ the \emph{informed set}~\Cinf is defined to be all states $x$  which may be on trajectories with lower cost than $c_{\text{best}}$.
 Specifically,
@@ -262,7 +262,14 @@ $
 \Cinf = \{ x \in \calX \mid  
 		c ( \gamma^*(x) ) < \cbest \} $~\cite{GSB14}.
 Here~$ \gamma^*(x) $ denotes the optimal trajectory  from $ x_s $ to $ x_g $ constrained to pass through $ x $.
-Notice that~$ \gamma^*(x) $ is not required to be collision free.
+Notice that we do not require that~$ \gamma^*(x) $ is collision free.
+
+The informed set induces a probability distribution $\Pinf$. 
+Here, points in \Cinf are distributed uniformly
+while 
+the probability of sampling any configuration $x \in \calX \setminus \Cinf$ is zero.
+Our goal is to efficiently produce samples (approximately) from \Pinf.
+
 
 \ignore{
 Define the dynamics of a robot as 
@@ -288,8 +295,9 @@ In an optimal kinodynamic path-planning problem, more constraints are considered
 If we consider a manifold that is defined by an informed set $ \Cinf $, the informed sampling becomes how to sample on this manifold in a high-dimensional space. }
 
 \section{Motivating example---Minimal-Time Double Integrator (MTDI)}
+\label{sec:mtdi}
 
-To understand why we resort to optimization-based methods and do not attempt to provide a closed-form solution to sample $\Cinf$ we study the structure of the informed set for a simple yet important dynamical system---the double integrator. 
+To understand why we resort to optimization-based methods and do not attempt to provide a closed-form solution to sample $\Cinf$ we study the structure of the informed set for a simple yet important dynamical system---the double integrator minimizing time (MTDI). 
 Here, we are given a one-dimensional point robot with bounded acceleration moving amid obstacles. We wish to compute the minimal-time trajectory between two states $x_s, x_g$.
 A state $x \in \calX$ in this model is defined by 
 the position $q \in \R$
@@ -307,7 +315,7 @@ Here, the control $u \in [u_{\text{min}}, u_{\text{max}}]$ is the (bounded) acce
 
 Notice that 
 (i)~this is model can be seen as a simplified one-dimensional instance of a robot manipulator with many degrees of freedom and that
-(ii)~closed form solutions exist to the 2pBVP for this specific case (as well as the multi-dimensional setting)~\cite{HN10, KS14}.
+(ii)~closed-form solutions exist to the 2pBVP for this specific case (as well as the multi-dimensional setting)~\cite{HN10, KS14}.
 
 %Let $T(x_1, x_2)$ denote the minimal time to move the robot from state $x_1$ to $x_2$.
 %Furthermore, set
@@ -321,18 +329,19 @@ Notice that
 %
 %\subsection{Informed set}
 Recall that for Euclidean spaces minimizing path length, the informed set~\Cinf is a prolate hyperspheroid.
-Moreover, this hyperspheroid is defined only be the cost $\hat{c}$ of the current best solution and not by the location of the start and goal.
+Moreover, this hyperspheroid is defined only be the cost $c_{\text{best}}$ of the current best solution and not by the location of the start~$x_s$ and goal~$x_g$.
 
 For the case of a MTDI, this is not the case. 
 Specifically, we have that 
-(i)~the structure of~\Cinf changes not only with~$\hat{c}$ but also according to the specific values of the start~$x_s$ and goal~$x_g$ states
+(i)~the structure of~\Cinf changes not only with~$c_{\text{best}}$ but also according to the specific values of~$x_s$ and~$x_g$ 
 and that
 (ii)~the cost map that implicitly defines~\Cinf can contain discontinuities (in contrast to Euclidean spaces minimizing path length where the cost map is continuous and differentiable at every point).
 
-To understand the differences recall that optimal paths for MTDI follow a ``bang-bang`` controller. Namely, we first apply maximal (or minimal) acceleration for some duration and then switch to applying minimal (or maximal, respectively) acceleration.
+To understand the differences recall that optimal paths for MTDI follow a ``bang-bang`` controller~\cite{HN10, KS14}.
+Namely, we first apply maximal (or minimal) acceleration for some duration and then switch to applying minimal (or maximal, respectively) acceleration.
 It is straightforward to see that both the type and the amount of acceleration applied (and hence the structure of~\Cinf) depend on the specific values of~$x_s$ and~$x_g$. 
 Fig~\ref{fig:informed_sets} 
-depicts two informed sets defined using the same cost~$\hat{c}$ using different start and goal states. Notice the difference in structure of~\Cinf. 
+depicts two informed sets defined using the same cost~$c_{\text{best}}$ but different start and goal states. Notice the difference in structure of~\Cinf. 
 Fig~\ref{fig:discont} depicts a simple example where the cost map may is discontinuous.
 
 To summarize, the structure of \Cinf can change given different start and goal states.
@@ -409,11 +418,11 @@ See Fig.~\ref{fig:informed_1d_di} for a visualization of the cost surface for a 
   	\includegraphics[height = 5.25cm ]{fig/cost_discontinuity.pdf}
   \caption{
     \captionstyle
-  	Visualization of the discontinuity in the cost function of MTDI (right) as a function of the controls applied (left). 
+  	Visualization of the discontinuity in the cost function of MTDI (right) related to the types of controls applied (left). 
   	Given state~$x_s$ and fixed position $q_0$, we depict the cost (time) as a function of the velocity~$\dot{q}$. 
   	The minimal cost is attained at $\dot{q}_{\min}$ by applying maximal acceleration (blue curves~$(i), (ii)$). 
   	To reach states such as~$\dot{q}_1$, where $\dot{q}_1 < \dot{q}_{\min}$ we need to apply maximal acceleration (curve~$(i)$) followed by minimal acceleration (green curve~$(iii)$), which result in a continuous increase in cost.
-  	However, for states such as $\dot{q}_2$, where $\dot{q}_2 > \dot{q}_{\min}$, we need to apply minimal acceleration  followed by maximal acceleration (curves~$(iv), (v)$), which result in the cost discontinuity.
+  	However, for states such as $\dot{q}_2$, where $\dot{q}_2 > \dot{q}_{\min}$, we need to apply minimal acceleration  followed by maximal acceleration (curves~$(iv), (v)$), which result in the discontinuity.
   	}
    	\label{fig:discont}
 \end{figure}
@@ -445,13 +454,28 @@ See Fig.~\ref{fig:cost_surface_1d} for a side view of the cost surface for one d
 }
 
 \section{MCMC-based Informed Sampling}
-\os{missing intro here}
+In this section we describe our approach to efficiently produce samples in the informed set~\Cinf given a specific cost~$c_{\text{best}}$.
+We start  by randomly sampling a configuration~$x_\text{rand} \in \calX$.
+This sample~$x_\text{rand}$ is used to initialize a gradient-descent algorithm which produces a sample~$x_\text{boundary} \in \partial\Cinf$ which lies (approximately) on the boundary of the informed set (Sec.~\ref{subsec:grad}).
+We then use~$x_\text{boundary}$ to initialize an MCMC algorithm which produces a series of samples within \Cinf (Sec.~\ref{subsec:mcmc}). Specifically, we chose to use HMC due to its favourable properties (see Sec.~\ref{sec:intro}). 
 
 
+
+\subsection{Gradient descent}
+\label{subsec:grad}
+In theory, MCMC methods converge to the desired distribution regardless of the initial sample used to seed the chain.
+However, in practice it is common to discard an initial set of samples (a process referred to as ``burn-in'') to avoid starting biases~\cite{ADDJ03}. 
+In our setting, we chose to skip this 
+
+Recall (Sec.~\ref{sec:mtdi}) that our cost function is nor necessarily continuous
+
+
+\subsection{Hamiltonian Monte Carlo (HMC)}
+\label{subsec:mcmc}
 	Roughly speaking, HMC views the system as an energy function for which Hamiltonian dynamics are simulated in fixed time steps.
 	Thus, to sample from a desired distribution~$P$ using HMC, we need to convert the distribution to an energy function and vice-versa.
 	This is done using the concept of a canonical distribution from statistical mechanics~\cite{N11}. 
-	Given some energy function,~$E$, the canonical distribution over states has the Boltzman probability distribution $P = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and $T$ is the temperature of the system.
+	Given some energy function,~$E$, the canonical distribution over states has the Boltzman probability distribution $P = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and~$T$ is the temperature of the system.
 	%Viewing this the opposite way, if we are interested in some distribution with density function $P$, we can obtain it as a canonical distribution with $T = 1$ by setting $E = -\log P - \log Z$, where $Z$ is any convenient positive constant	
 
 The energy function's definition provides the flexibility to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. 
@@ -465,8 +489,8 @@ To consider only points in the informed set, all with equal energy, one may cons
 $$
 E\left(t,\Cbest \right) = 
 \begin{cases}
-    1,	& \text{if } t \leq \Cbest\\        
-    0,  	& \text{otherwise}.
+    0,	& \text{if } t \leq \Cbest\\        
+    \infty,  	& \text{otherwise}.
 \end{cases}
 $$
 However, simulating Hamiltonian dynamics requires that the energy function defined is differentiable.
@@ -483,15 +507,15 @@ E_{\text{informed}} \left( t,\Cbest \right).
 Here, $E_{\text{grad}}$ is a user-defined function that
 controls the ``flatness`` of the distribution.
 Intuitively, this term biases the distribution towards states with smaller cost and balances between the uniformity of the distribution and the gradient information provided to the HMC algorithm.
-%
-%In our setting we experimented with using 
-%$\log\left(1 + \log\left(t\right)\right)$ and $\tanh\left(t\right)$. 
-%
+
+In our setting we experimented with using 
+$\log\left(1 + \log\left(t\right)\right)$ and $\tanh\left(t\right)$. 
+
 The term 
 $E_{\text{informed}} \left( t,\Cbest \right) 
 = \beta_{\text{informed}} \cdot \text{sigm}\left(t_0 - t\right)
 $
-penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some constant~$\beta_{\text{informed}}$.
+penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some (large\footnote{The constant~$\beta_{\text{informed}}$ gives points out of~\Cinf a large energy value which in turn implies a low probability of being sampled. In theory, we would like to have~$\beta_{\text{informed}} \approx \infty$. However, choosing~$\beta_{\text{informed}}$ to be to large may cause numerical instabilities.}) constant~$\beta_{\text{informed}}$.
 The sigmoid can be seen as a differentiable function smoothing the boundary of~$\Cinf$.
 
 \os{add visualization}
@@ -507,6 +531,45 @@ E_{\text{limits}}\left(\mathbf{x}\right) = \beta_{\text{limits}} \cdot ||\mathbf
 $
 where $||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2$ represents the L2 distance between the current state $\mathbf{x}$ and the state limits~$\mathbf{x}_{\text{limits}}$ and~$\beta_{\text{limits}}$ is some constant controlling how much to penalize states close to the limits. 
 
+\subsection{Probabilistic completeness}
+
+%\newpage
+%\begin{thm}
+%For each node $u$ that was removed from the priority $\calQ$, $g(u) = \delta(u)$, where $\delta(u)$ denotes the shortest path to reach $u$ from $s$.
+%\end{thm}
+%
+%The proof is by induction on the order of vertices removed from $\calQ$. 
+%
+%\textbf{Base} holds trivially for $s$.
+%
+%\textbf{Step:}
+%Let $v$ be the current node on the top of the priority queue and let $u$ be its parent.
+%Notice that by the induction hypothesis we have that $g(u) = \delta(u)$.
+%
+%We have two case to consider: 
+%(i) the shortest path does not pass through $u$ but through some other node $u'$ which is not in $\calQ$,
+%and
+%(i) the shortest path does not pass through $u$ but through some other node $y$ which is in $\calQ$.
+%
+%For case (i), we have that when $u'$ was removed from $\calQ$, then $v$'s cost was $g(v) \leq g(u') + c(u',v)$.
+%Since $g(u') = \delta(u')$ this is equal to $\delta(v)$.
+%
+%For case (ii), let $x$ be $y$'s parent which was already removed from $\calQ$.
+%Note that $g(x) = \delta(x)$ and (similar to the previous case) we have that $g(y) < g(x) + c(x,y)$.
+%Furthermore notice that $v$ was before $y$ in $\calQ$ thus $g(v) \leq g(y)$.
+%Purring everything together we have that
+%$$
+%\delta(v)   > \delta(x) + c(x,y)
+%			\geq g(y)
+%			\geq g(v).
+%$$
+%Here, the first transition is due to the assumption that the shortest path goes from $s$ to $v$ through the edge $(x,y)$.
+%The second (which I got confused about in class) is due to the fact that when $x$ was popped from $\calQ$ it updated $y$'s cost.
+% \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\
+% 
+%\vspace{20cm}
+
+\ignore{
 \section{MCMC-based Informed Sampling}
 
 Rejection sampling is the simplest ways of constrained sampling~\cite{CRCW04}, but is also known for high rejection-rate on a manifold in a high-dimensional space~\cite{KTC16}.
@@ -528,7 +591,7 @@ Following the example of recent work in path planning algorithms such as CHOMP~\
 	\caption{MCMC Informed Sampling}
 	\label{alg:mcmc_informed_sampling}
 \end{algorithm}
-
+}
 
 \section{Evaluation}
 \label{sec:eval}
@@ -564,7 +627,11 @@ We are going to show how the solution cost falls along time.
 
 \section{Conclusion}
 
+What MCMC algorithm is the best to use?
 
+Parameter tuning
+
+Application to different state spaces
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Old text that may be re-used
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
