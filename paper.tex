@@ -162,7 +162,8 @@ Xie et al.~\cite{XBPA15} use a variant of sequential quadratic programming (SQP)
 Webb and van den Berg~\cite{WB13} use a fixed-final-state-free-final-time controller to solve the 2pBVP  with respect to a cost function that allows for balancing between the duration of the trajectory and the expended control effort.
 Perez et al.~\cite{PPKKL12} propose a variant of RRT* that automatically defines a distance metric and node extension method by locally linearizing
 the domain dynamics and applying linear quadratic regulation (LQR).
-Finally, reachability-guided sampling~\cite{SWT09, PLAEFRA17} focuses on sampling regions of the state space that are most likely to promote expansion under the differential constraints.
+
+Finally, we note that we are not the first to integrate Monte Carlo sampling into planning algorithms. T-RRT~\cite{JCS10} and its variants~\cite{DSC13} are inspired by Monte Carlo optimization techniques and use notions such as the Metropolis criterion to guide the exploration of the configuration space.
 
 %Finally, we note that there have been many papers presenting solutions to the 2pBVP for specific systems such as
 %
@@ -178,7 +179,10 @@ Heuristic approaches include
 sampling on the medial axis~\cite{WAS99a, WAS99b, LTA03, YDLTA14},
 sampling near the boundary of the obstacles~\cite{ABDJV98, YTEA12},
 resampling along a given trajectory~\cite{APD11, AS11}
-and more~\cite{US03, SWT09}
+and more~\cite{US03, SWT09}.
+For planning under the differential constraints,
+reachability-guided sampling~\cite{SWT09, PLAEFRA17} focuses on sampling regions of the state space that are most likely to promote expansion under the differential constraints.
+
 
 Of specific interest to our work are approaches that produce samples in the informed set~\Cinf.
 As mentioned in Sec.~\ref{sec:intro} Gammel et al.~\cite{GSB14} describe an approach to sample uniformly in~\Cinf for the specific case of where $\calX = \R^d$ and when optimizing for path length.
@@ -186,6 +190,8 @@ To the best of our knowledge, the only method to produce samples in non-Euclidea
 
 \subsection{Markov Chain Monte Carlo (MCMC)}
 \label{subsec:mcmc}
+\os{This section puts a lot of emphasis on HMC. If we end up choosing an alternative method, we should change the relevant weight}
+
 Monte Carlo simulation is a general sampling framework widely used in various domains such as
 statistical machine learning~\cite{M97},
 motion tracking~\cite{KBD04}, 
@@ -329,7 +335,7 @@ Notice that
 %
 %\subsection{Informed set}
 Recall that for Euclidean spaces minimizing path length, the informed set~\Cinf is a prolate hyperspheroid.
-Moreover, this hyperspheroid is defined only be the cost $c_{\text{best}}$ of the current best solution and not by the location of the start~$x_s$ and goal~$x_g$.
+Moreover, the size and shape of the hyperspheroid is defined only be the cost $c_{\text{best}}$ of the current best solution and not by the location of the start~$x_s$ and goal~$x_g$.
 
 For the case of a MTDI, this is not the case. 
 Specifically, we have that 
@@ -337,15 +343,15 @@ Specifically, we have that
 and that
 (ii)~the cost map that implicitly defines~\Cinf can contain discontinuities (in contrast to Euclidean spaces minimizing path length where the cost map is continuous and differentiable at every point).
 
-To understand the differences recall that optimal paths for MTDI follow a ``bang-bang`` controller~\cite{HN10, KS14}.
+To understand the differences recall that optimal trajectories  for MTDI follow a ``bang-bang`` controller~\cite{HN10, KS14}.
 Namely, we first apply maximal (or minimal) acceleration for some duration and then switch to applying minimal (or maximal, respectively) acceleration.
 It is straightforward to see that both the type and the amount of acceleration applied (and hence the structure of~\Cinf) depend on the specific values of~$x_s$ and~$x_g$. 
 Fig~\ref{fig:informed_sets} 
 depicts two informed sets defined using the same cost~$c_{\text{best}}$ but different start and goal states. Notice the difference in structure of~\Cinf. 
-Fig~\ref{fig:discont} depicts a simple example where the cost map may is discontinuous.
+Fig~\ref{fig:discont} depicts a simple example where the cost map is discontinuous.
 
 To summarize, the structure of \Cinf can change given different start and goal states.
-Furthermore,  its boundary may not even be smooth or differentiable due to the aforementioned discontinuous. 
+Furthermore,  its boundary may not be  differentiable due to the aforementioned discontinuous. 
 
 \ignore{
 See Fig. ~\ref{fig:sample_dimt} for an example motion of one joint through the $\left(q,\dot{q}\right)$ space. 
@@ -455,23 +461,28 @@ See Fig.~\ref{fig:cost_surface_1d} for a side view of the cost surface for one d
 
 \section{MCMC-based Informed Sampling}
 In this section we describe our approach to efficiently produce samples in the informed set~\Cinf given a specific cost~$c_{\text{best}}$.
-We start  by randomly sampling a configuration~$x_\text{rand} \in \calX$.
-This sample~$x_\text{rand}$ is used to initialize a gradient-descent algorithm which produces a sample~$x_\text{boundary} \in \partial\Cinf$ which lies (approximately) on the boundary of the informed set (Sec.~\ref{subsec:grad}).
+We start  by randomly sampling a state~$x_\text{rand} \in \calX$ and use it
+to produces a sample~$x_\text{boundary} \in \partial\Cinf$ which lies (approximately) on the boundary of the informed set (Sec.~\ref{subsec:grad}).
+This is done by applying Newton–Raphson method~\cite{RT06}.
 We then use~$x_\text{boundary}$ to initialize an MCMC algorithm which produces a series of samples within \Cinf (Sec.~\ref{subsec:mcmc}). Specifically, we chose to use HMC due to its favourable properties (see Sec.~\ref{sec:intro}). 
 
 
 
-\subsection{Gradient descent}
+\subsection{Sampling the boundary of \Cinf via Newton–Raphson}
 \label{subsec:grad}
 In theory, MCMC methods converge to the desired distribution regardless of the initial sample used to seed the chain.
 However, in practice it is common to discard an initial set of samples (a process referred to as ``burn-in'') to avoid starting biases~\cite{ADDJ03}. 
-In our setting, we chose to skip this 
 
-Recall (Sec.~\ref{sec:mtdi}) that our cost function is nor necessarily continuous
+In our setting, we are only interested in points in~\Cinf, thus we can start the Markov Chain in~\Cinf and avoid this burn-in stage. 
+To do so we apply  Newton–Raphson's method to obtain a sample on $\partial \Cinf$. 
+However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi}), thus if no sample was produced on $\partial \Cinf$ after a predefined number of steps, we restart the algorithm using a different random state~$x_\text{rand}$.
 
 
-\subsection{Hamiltonian Monte Carlo (HMC)}
+\subsection{Sampling the interior of \Cinf via
+MCMC}
 \label{subsec:mcmc}
+\os{once we have results we need to discuss here (or in the implementation details), how is this used: Do we use one chain? Do we restart from scratch? Do we use every sample on the chain?}
+
 	Roughly speaking, HMC views the system as an energy function for which Hamiltonian dynamics are simulated in fixed time steps.
 	Thus, to sample from a desired distribution~$P$ using HMC, we need to convert the distribution to an energy function and vice-versa.
 	This is done using the concept of a canonical distribution from statistical mechanics~\cite{N11}. 
@@ -507,15 +518,13 @@ E_{\text{informed}} \left( t,\Cbest \right).
 Here, $E_{\text{grad}}$ is a user-defined function that
 controls the ``flatness`` of the distribution.
 Intuitively, this term biases the distribution towards states with smaller cost and balances between the uniformity of the distribution and the gradient information provided to the HMC algorithm.
-
-In our setting we experimented with using 
-$\log\left(1 + \log\left(t\right)\right)$ and $\tanh\left(t\right)$. 
+We used $E_{\text{grad}} (t) = \tanh(t + 3 )$ which whose gradient is close to zero for $t>0$.
 
 The term 
 $E_{\text{informed}} \left( t,\Cbest \right) 
-= \beta_{\text{informed}} \cdot \text{sigm}\left(t_0 - t\right)
+= \beta \cdot \text{sigm}\left(t_0 - t\right)
 $
-penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some (large\footnote{The constant~$\beta_{\text{informed}}$ gives points out of~\Cinf a large energy value which in turn implies a low probability of being sampled. In theory, we would like to have~$\beta_{\text{informed}} \approx \infty$. However, choosing~$\beta_{\text{informed}}$ to be to large may cause numerical instabilities.}) constant~$\beta_{\text{informed}}$.
+penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some (large\footnote{The constant~$\beta$ gives points out of~\Cinf a large energy value which in turn implies a low probability of being sampled. In theory, we would like to have~$\beta \approx \infty$. However, choosing~$\beta$ to be to large may cause numerical instabilities.}) constant~$\beta$.
 The sigmoid can be seen as a differentiable function smoothing the boundary of~$\Cinf$.
 
 \os{add visualization}
@@ -523,13 +532,14 @@ The sigmoid can be seen as a differentiable function smoothing the boundary of~$
 \subsection{Implementation details}
 In our implementation we add another term to our energy function (Eq.~\ref{eq:energy}) relating to system parameters that induce known bounds on states.
 Specifically, our robot has predefined joint limits. 
-The flexibility of the energy function allows us to incorporate these limits  to penalize states \emph{within} the informed set that are close to, or violate these limits.
+The flexibility of the energy function allows us to incorporate these limits  to penalize states \emph{within} the informed set that are violating these limits.
 
 Specifically, we add to Eq.~\ref{eq:energy} the term 
 $
-E_{\text{limits}}\left(\mathbf{x}\right) = \beta_{\text{limits}} \cdot ||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2
+E_{\text{limits}}\left(\mathbf{x}\right) = \beta\cdot \text{sigm} ( ||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2 )
 $
-where $||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2$ represents the L2 distance between the current state $\mathbf{x}$ and the state limits~$\mathbf{x}_{\text{limits}}$ and~$\beta_{\text{limits}}$ is some constant controlling how much to penalize states close to the limits. 
+where $||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2$ represents the L2 distance between the current state $\mathbf{x}$ and the state limits~$\mathbf{x}_{\text{limits}}$.
+ 
 
 \subsection{Probabilistic completeness}
 
