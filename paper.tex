@@ -521,7 +521,7 @@ $$
 However, simulating Hamiltonian dynamics requires that the energy function defined is differentiable.
 This function has a discontinuity at $t = \Cbest$ 
 and contains no gradient information for $t \leq \Cbest$.
-Thus, we define our energy function\footnote{In practice we add another term to the energy function which we discuss in our experiments (see Sec.~\ref{sec:eval}). We omit this term here for clarity of exposition.} as  
+Thus, we define our energy function\footnote{In practice we add another term to the energy function which we discuss in Sec.~\ref{sec:eval}. We omit the term here for clarity of exposition.} as  
 \begin{equation}
 \label{eq:energy}
 E\left( t, \Cbest \right) 
@@ -538,7 +538,7 @@ The term
 $E_{\text{informed}} \left( t,\Cbest \right) 
 = \beta \cdot \text{sigm}\left(t_0 - t\right)
 $
-penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some (large\footnote{The constant~$\beta$ gives points out of~\Cinf a large energy value which in turn implies a low probability of being sampled. In theory, we would like to have~$\beta \approx \infty$. However, choosing~$\beta$ to be to large may cause numerical instabilities.}) constant~$\beta$.
+penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some (large\footnote{The constant~$\beta$ gives points out of~\Cinf a large energy value which in turn implies a low probability of being sampled. In theory, we would like to have~$\beta \approx \infty$. However, choosing~$\beta$ to be too large may cause numerical instabilities.}) constant~$\beta$.
 The sigmoid can be seen as a differentiable function smoothing the boundary of~$\Cinf$.
 See Fig.~\ref{fig:energy} for a visualization.
 
@@ -665,6 +665,8 @@ What MCMC algorithm is the best to use?
 Parameter tuning
 
 Application to different state spaces
+
+Parallel chains
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Old text that may be re-used
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
