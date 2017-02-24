@@ -704,28 +704,55 @@ Parallel chains
 
 \appendix
 \section{HMC}
-\os{polish}
+In this section we provide background on Hamiltonian Monte Carlo (HMC). 
+For a comprehensive description, see~\cite{N11},
+for intuition, see~\cite{ZRDPKDBS13}.
+%Some of the notation in this section 
 
-In consider of efficiency, Hamiltonian Monte Carlo(HMC)~\cite{N11} is thus introduced to replace random walk with Hamiltonian dynamics, which means that future states in the Markov chain is proposed from simulating system dynamics instead of sampling from a jumping distribution.
-It is named ``Hamiltonian, because the concept origins from Hamiltonian dynamics, which defines how system dynamics is determined by system energy.
-Define the system dynamics of an object as the position $ x $ and the momentum $ q $ over time $ t $.
-We have a system energy $ E $ 
-%\os{change to E}
-of the object that consists of kinetic energy $ K $ and potential energy $ U $, which is written as $ E(x,q) = U(x) + K(q) $.
-The kinetic energy $ K(q) $ is determined by the momentum $ q $ of the object, while the potential energy $ U(x) $ is determined by the position $ x $ of the object.
-The Hamiltonian dynamics is determined by the gradients of the system energy, which is
-$ \frac{dx}{dt} = \frac{\partial E}{\partial q} $ and $ \frac{dq}{dt} = - \frac{\partial E}{\partial x} $.
+MCMC algorithms typically make use of random-walks to convergence to a target stationary distribution.
+This is often inefficient, resulting in slow mixing\footnote{The \emph{mixing time} of a Markov chain is the time until it is ``close'' to its steady state distribution.}.
+HMC is an MCMC method that adopts physical-system dynamics (specifically Hamiltonian dynamics) rather than a probability distribution to produce the next state in the Markov chain. 
+
+\subsection{Hamiltonian dynamics}
+Hamiltonian dynamics describe an object's motion in terms of its position $x$ and momentum $q$ at some time $t$. 
+Each position is associated with a potential energy $U(x)$.
+Similarly, each momentum is associated with a kinetic energy $K(q)$.
+The total energy (also called the Hamiltonian) of the system is constant and is defined as
+$$
+E(x, p) = U(x) + K(q).
+$$
+Hamiltonian dynamics describe how the kinetic and potential energies are converted one to the other as the object moves throughout a system in time. 
+This is done via a set of differential equations known as the Hamiltonian equations:
+$$
+\frac{dx}{dt} = \frac{\partial E}{\partial q}, 
+\hspace{5mm}
+\frac{dq}{dt} = - \frac{\partial E}{\partial x}. $$
 %
-The canonical distribution is often choose to bridge a system energy with a probability distribution, which is written as $ P(x, q) = \frac{1}{Z} \exp ( -E(x,q) / T ) $.
-If two different states have the same energy, the probabilities of them are equivalent.
-It has been proved that properties of Hamiltonian dynamics ``leaves the canonical distribution invariant"~\cite{N11}, which means $ P(x, q) $ equals to a stationary distribution in MCMC.
-Thus, we can generate samples $ [ x , q ]^T $ from joint distribution $ p(x, q) $.
-%
-Given a target distribution $ \pi(x) $, the potential energy is defined in the form $  U(x) = - \log ( \pi(x) T ) $.
-We can have $ P(x, q) = \pi(x) \frac{1}{Z'} \exp ( -K(q) / T ) $, which indicates that $ pi(x) $ is a marginal distribution of $ P(x, q) $.
-In HMC, we sample $ [ x ,q ] $ from $ P(x, q) $ and discard the momentum $ q $ so that the set of samples $ x $ equals to sampling from the marginal distribution $ \pi(x) $.
-The momentum $ q $ is used as an auxiliary variable.
-Avoiding random walk helps samplings converge to the desired distribution $ \pi(x) $ in higher rate~\cite{N11}.
+%The Hamiltonian equations describe an object’s motion in time, which is a continuous variable. In order to simulate Hamiltonian dynamics numerically, the Leapfrog method is typically used.
+
+\subsection{From Hamiltonian dynamics to probability distribution}
+To sample from a desired distribution~$P$ using HMC, we need to convert the distribution to an energy function and vice-versa. This is done using the concept of a canonical distribution from statistical mechanics~\cite{N11}. Given some energy function,~$E$, the canonical distribution over states has the Boltzman probability distribution $P = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and~$T$ is the temperature of the system.
+Notice that in our setting
+$$
+P(x,q) 
+\propto e^{-E(x,q)} 
+= e^{-U(x)} \cdot e^{-K(q)}
+\propto P(x) \cdot P(q).
+$$
+This means that the distributions $P(x)$ and $P(q)$ are independent. Therefore, we can use Hamiltonian dynamics to sample from the joint distribution over $q$ and $x$ and ignore the momentum contributions.
+Because the two distributions are independent, we can introducing auxiliary variables to represent the momentum and choose any distribution from which to sample the momentum variables. A common choice is to use a zero-mean Normal distribution with unit variance.
+
+\subsection{Hamiltonian Monte Carlo}
+HMC uses Hamiltonian dynamics to explore the distribution $P(x)$ defined by $U(x)$. 
+Starting at an initial state $(x_0, q_0)$, 
+(here, $q_0$ is the axillary variable used to simulate the momentum), Hamiltonian dynamics are simulated for a short time using the Leap Frog method. 
+Let $(x^*, q^*)$ be the state at the end of the simulation. 
+This state is accepted using an update rule analogous to the Metropolis acceptance criterion~\cite{CG95}. 
+Specifically, if the probability of $(x^*, q^*)$ after Hamiltonian dynamics is greater than probability of the state prior to the Hamiltonian dynamics, then $(x^*, q^*)$ is accepted.
+Otherwise, $(x^*, q^*)$ is accepted randomly. 
+If $(x^*, q^*)$ is rejected, the next state of the Markov chain is set as the state at $(t-1)$. 
+
+To explore the entire space, the dynamics are randomly perturbed. This is done by drawing a random momentum from $p(q)$ before running the dynamics prior to each sampling iteration $t$. Combining these steps, sampling random momentum, followed by Hamiltonian dynamics and Metropolis acceptance criterion defines the HMC algorithm.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Old text that may be re-used
