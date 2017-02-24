@@ -127,6 +127,7 @@ This recasting enables us to apply Monte Carlo sampling methods, used very effec
 %
 %\textbf{Our main insight is to formulate the problem as the problem of sampling uniformly below a level set of an implicit function and then apply optimization and statistical tools.}
 \os{do we really care about uniformity?}
+\dy{Is it fair to say that uniformity guarantee each state has equal opportunity of being selected?}
 Specifically, our approach consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a root-finding algorithm;
 in the second stage, this retracted sample~$\tilde{x}$ is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
@@ -197,7 +198,6 @@ To the best of our knowledge, the only method to produce samples in non-Euclidea
 \subsection{Markov Chain Monte Carlo (MCMC)}
 \label{subsec:mcmc}
 \os{This section puts a lot of emphasis on HMC. If we end up choosing an alternative method, we should change the relevant weight}
-
 Monte Carlo simulation is a general sampling framework widely used in various domains such as
 statistical machine learning~\cite{M97},
 motion tracking~\cite{KBD04}, 
