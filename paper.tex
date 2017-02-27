@@ -510,7 +510,7 @@ For a visualization of the approach, see Fig.~\ref{fig:alg}.
 	\label{alg:mcmc_informed_sampling}	
 \end{algorithm}
 
-\dy{should the ``return'' in Algorithm 1 \ref{alg:mcmc_informed_sampling} be ``yield"?}
+%\dy{should the ``return'' in Algorithm 1 \ref{alg:mcmc_informed_sampling} be ``yield"?}
 
 \subsection{Sampling the boundary of \Cinf via Newton-Raphson}
 \label{subsec:grad}
@@ -676,6 +676,17 @@ We are interested with
 
 The efficiency is shown by how the time is needed when the number of nodes are increased.
 (Y: time spent) and (X: number of nodes).
+
+\begin{figure}[tb]
+	\centering
+	\includegraphics[height = 4.5cm ]{fig/sampling_efficiency.pdf}
+	\caption{
+		\captionstyle
+		Compare time efficiency of generating 1000 samplings.
+	}
+	\label{fig:compare_time_efficiency}
+\end{figure}
+
 
 \subsection{Integration}
 
