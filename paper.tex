@@ -466,21 +466,23 @@ See Fig.~\ref{fig:cost_surface_1d} for a side view of the cost surface for one d
 }
 
 \section{MCMC-based Informed Sampling}
-The informed set induces a probability distribution $\Pinf$. 
-Here, points in \Cinf are distributed uniformly
+In this section we describe our approach to efficiently produce samples in the informed set~\Cinf given a specific cost~$c_{\text{best}}$.
+Our algorithm (see Alg.~\ref{alg:mcmc_informed_sampling}) starts by randomly sampling a state~$x_\text{rand} \in \calX$ (line~1).
+This sample is used to produces a 
+sample~$x_0 \in \partial\Cinf$ 
+%sample~$x_\text{boundary} \in \partial\Cinf$ 
+which lies (approximately) on the boundary of the informed set (Sec.~\ref{subsec:grad})by applying Newton-Raphson method~\cite{RT06} (line~2).
+Finally,~$x_0$ 
+%use~$x_\text{boundary}$ 
+is used (lines~3-5)
+to initialize an MCMC algorithm which produces a series of samples within \Cinf (Sec.~\ref{subsec:mcmc}). Specifically, we chose to use HMC due to its favourable properties (see Sec.~\ref{sec:intro}). 
+For a visualization of the approach, see Fig.~\ref{fig:alg}.
+
+We apply MCMC by using the cost function to define a probability distribution \Pinf.
+Specifically, points in \Cinf are distributed uniformly
 while 
 the probability of sampling any configuration $x \in \calX \setminus \Cinf$ is zero.
-Our goal is to efficiently produce samples (approximately) from \Pinf.
-
-\os{connect previous par}
-
-
-In this section we describe our approach to efficiently produce samples in the informed set~\Cinf given a specific cost~$c_{\text{best}}$.
-We start  by randomly sampling a state~$x_\text{rand} \in \calX$ and use it
-to produces a sample~$x_\text{boundary} \in \partial\Cinf$ which lies (approximately) on the boundary of the informed set (Sec.~\ref{subsec:grad}).
-This is done by applying Newton-Raphson method~\cite{RT06}.
-We then use~$x_\text{boundary}$ to initialize an MCMC algorithm which produces a series of samples within \Cinf (Sec.~\ref{subsec:mcmc}). Specifically, we chose to use HMC due to its favourable properties (see Sec.~\ref{sec:intro}). 
-For a visualization of the approach, see Fig.~\ref{fig:alg}.
+The MCMC algorithm will allow us to  efficiently produce samples (approximately) from \Pinf.
 
 \begin{figure}[tb]
   \centering
@@ -497,9 +499,11 @@ For a visualization of the approach, see Fig.~\ref{fig:alg}.
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
 		\STATE $x_{\text{rand}} \leftarrow \texttt{sample\_uniform(\calX)}$
-		\STATE $x_{\text{boundary}} \leftarrow
+%		\STATE $x_{\text{boundary}} 
+		\STATE $x_{0} 
+		 \leftarrow
 		 \texttt{newton\_raphson}(x_{\text{rand}}, c_{\text{best}})$
-		\STATE $x_{0} \leftarrow x_{\text{boundary}}$
+%		\STATE $x_{0} \leftarrow x_{\text{boundary}}$
 		\FOR {$i = 1$ to $N$}
 			\STATE $x_{i} \leftarrow \texttt{MCMC} (x_{i-1}, c_{\text{best}})$
 			\STATE \textbf{output} $x_{i}$
@@ -509,8 +513,6 @@ For a visualization of the approach, see Fig.~\ref{fig:alg}.
 	\caption{MCMC Informed Sampling $(c_{\text{best}})$}
 	\label{alg:mcmc_informed_sampling}	
 \end{algorithm}
-
-%\dy{should the ``return'' in Algorithm 1 \ref{alg:mcmc_informed_sampling} be ``yield"?}
 
 \subsection{Sampling the boundary of \Cinf via Newton-Raphson}
 \label{subsec:grad}
