@@ -2,7 +2,7 @@ datasetSize = 12;
 maxtimes = zeros(datasetSize);
 for i = 0:1:12
   hmc_filename = sprintf('data/simple_HMC_%d.csv', i);
-  hnr_filename = sprintf('data/simple_HNR_%d.csv', i);
+  hnr_filename = bsprintf('data/simple_HNR_%d.csv', i);
   rs_filename = sprintf('data/simple_RS_%d.csv', i);
   hrs_filename = sprintf('data/simple_HRS_%d.csv', i);
   
