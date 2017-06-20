@@ -21,14 +21,18 @@ end
 maxT = max(maxtimes);
 minVal = min(minvals);
 
-stepNum = 30;
+stepNum = 20;
 HMC1 = zeros(datasetSize, stepNum+1);
 HNR1 = zeros(datasetSize, stepNum+1);
 RS1 = zeros(datasetSize, stepNum+1);
 HRS1 = zeros(datasetSize, stepNum+1);
 
 stepSize = maxT / stepNum;
-T = 0:stepSize:maxT;
+deltaStepSize = stepSize / 5;
+T1 = 0:stepSize:maxT;
+T2 = T1 + deltaStepSize; T2(1) = 0;
+T3 = T1 + deltaStepSize*2; T3(1) = 0;
+T4 = T1 + deltaStepSize*3; T4(1) = 0; 
 
 for i = 0:1:datasetSize-1
   hmc_filename = sprintf('data/simple_HMC_%d.csv', i);
@@ -46,36 +50,30 @@ for i = 0:1:datasetSize-1
   RS(:,2) = RS(:,2)./minVal;
   HRS(:,2) = HRS(:,2)./minVal;
 
-  HMC_tmp = resample_data(HMC(:,2), HMC(:,1), T');
-  HNR_tmp = resample_data(HNR(:,2), HNR(:,1), T');
-  RS_tmp = resample_data(RS(:,2), RS(:,1), T');
-  HRS_tmp = resample_data(HRS(:,2), HRS(:,1), T');
+  HMC_tmp = resample_data(HMC(:,2), HMC(:,1), T1');
+  HNR_tmp = resample_data(HNR(:,2), HNR(:,1), T2');
+  RS_tmp = resample_data(RS(:,2), RS(:,1), T3');
+  HRS_tmp = resample_data(HRS(:,2), HRS(:,1), T4');
   HMC1(i+1,:) = HMC_tmp;
   HNR1(i+1,:) = HNR_tmp;
   RS1(i+1,:) = RS_tmp;
   HRS1(i+1,:) = HRS_tmp;
 end
 
-distT = T;
 figure(100);
 hold on;
-tmpMean = mean(HMC1,1);
-tmpVar = var(HMC1,1,1);
-% x = 1:10:100;
-% y = [20 30 45 40 60 65 80 75 95 90];
-% err = 8*ones(size(y));
-% errorbar(x,y,err)
 
+errorbar(T1, mean(HMC1,1), std(HMC1)', 'r', 'LineWidth',2);
+errorbar(T2, mean(HNR1,1), std(HNR1), 'g', 'LineWidth',2);
+errorbar(T3, mean(RS1,1), std(RS1), 'b', 'LineWidth',2);
+errorbar(T4, mean(HRS1,1), std(HRS1), 'c', 'LineWidth',2);
 
-errorbar(distT, mean(HMC1,1), var(HMC1,1,1)', 'r');
-errorbar(distT, mean(HNR1,1), var(HNR1,1,1), 'g');
-errorbar(distT, mean(RS1,1), var(RS1,1,1), 'b');
-errorbar(distT, mean(HRS1,1), var(HRS1,1,1), 'c');
-%plot(distT, mean(HMC1,1),'-.r');
-%plot(distT, mean(HNR1,1), '.-g');
-%plot(distT, mean(RS1,1), '.-b');
-%plot(distT, mean(HRS1,1), '.-c');
-legend('HMC', 'HNR', 'RS', 'HRS');
+plot(T1, mean(HMC1,1), 'o', 'MarkerFaceColor', 'r', 'MarkerEdgeColor', 'r', 'MarkerSize', 4);
+plot(T2, mean(HNR1,1), 'o', 'MarkerFaceColor', 'g', 'MarkerEdgeColor', 'g', 'MarkerSize', 4);
+plot(T3, mean(RS1,1), 'o', 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b', 'MarkerSize', 4);
+plot(T4, mean(HRS1,1), 'o', 'MarkerFaceColor', 'c', 'MarkerEdgeColor', 'c', 'MarkerSize', 4);
+
+legend('HMC', 'Hit&Run', 'RS', 'HRS');
 xlabel('Time - ms');
 ylabel('Ratio to minimum');
 hold off;
