@@ -1,4 +1,4 @@
-datasetSize = 20;
+datasetSize = 10;
 maxtimes = zeros(datasetSize,1);
 minvals = zeros(datasetSize,1);
 for i = 0:1:datasetSize-1
@@ -88,5 +88,4 @@ T4 = T4/1000;
 T5 = T5/1000;
 T6 = T6/1000;
 
-save('data.mat', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'nHMC1', 'nHMC2', 
-'nHMC3', 'nHMC4', 'nHMC5', 'nHMC6');
+save('data.mat', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'nHMC1', 'nHMC2', 'nHMC3', 'nHMC4', 'nHMC5', 'nHMC6');
