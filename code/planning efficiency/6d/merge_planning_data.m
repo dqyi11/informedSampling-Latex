@@ -1,4 +1,4 @@
-datasetSize = 10;
+datasetSize = 20;
 maxtimes = zeros(datasetSize,1);
 minvals = zeros(datasetSize,1);
 for i = 0:1:datasetSize-1
