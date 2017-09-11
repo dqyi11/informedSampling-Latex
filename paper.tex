@@ -24,7 +24,9 @@
 \usepackage[noend]{algorithmic}
 \usepackage{url}
 \usepackage{bm}
-\usepackage{graphicx,subfigure}
+\usepackage{graphicx}
+\usepackage[font=footnotesize]{caption} % incompatible with aaai.sty?
+\usepackage[font=footnotesize]{subcaption}
 \usepackage{color}
 \usepackage{cite}
 \usepackage{hyperref}
@@ -100,7 +102,7 @@ when a path has yet to be found,
 the samples are drawn from the entire state space~$\calX$.
 However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$ only  containing states that may be used to produce higher-quality paths than~$\gamma$.
 Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it~$\Cinf$.
-\textbf{In this work we address the problem of efficiently producing samples in informed subset for systems with arbitrary complex costs}. 
+In this work we address the problem of efficiently producing samples in informed subset for systems with arbitrary complex costs. 
 
 For Euclidean spaces optimizing for path length, 
 \Cinf can be analytically expressed as a prolate hyperspheroid and can be sampled directly using a closed-form solution~\cite{GSB14}.
@@ -109,7 +111,7 @@ Indeed, directly sampling in \Cinf has been shown to dramatically improve comput
 Unfortunately, in more general settings,
 it is not clear how to directly sample \Cinf.
 %
-One approach to produce samples in \Cinf is via \emph{rejection sampling}---sampling a state $x \in \calX$ and testing if $x \in \Cinf$.
+One approach to produce samples in~\Cinf is via \emph{rejection sampling}---sampling a state $x \in \calX$ and testing if $x \in \Cinf$.
 However, when the size of the informed space~$\Cinf$ is much smaller than entire state space~$\calX$, this procedure is highly inefficient, dominating the running time of the algorithm~\cite{KTC16}.
 Recently, Kunz et al.~\cite{KTC16} showed, under some technical assumptions, how to partially ameliorate this inefficiently by \emph{Hierarchical rejection sampling} (HRS). 
 Here, individual dimensions are sampled recursively 
@@ -118,31 +120,37 @@ and then combined. Rejection sampling is performed for these partial samples unt
 Unfortunately, HRS may still produce a large number of rejected samples especially in high-dimensional spaces~\cite{KTC16}.
 This may cause the planning algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
 
+\begin{figure}[tb]
+  \centering
+  	\includegraphics[trim={4.5cm 0 4cm 2cm},clip,height = 5.25cm ]{fig/alg.pdf}
+  \caption{
+    \captionstyle
+  	Algorithmic approach.
+  	Cost function is depicted using isocontours (darker shades reflect lower cost) while the boundary of the informed set is depicted in purple. 
+  	The root-finding and MCMC algorithms are depicted in blue and green, respectively.
+  	}
+   	\label{fig:alg}
+\end{figure}
+
+
+
 In this paper, we suggest an alternative approach to produce samples in the informed set \Cinf for a wide range of settings.
 \textbf{
 Our main insight is to recast this problem as one of sampling uniformly within a level set of an implicit function.
-This recasting enables us to apply Monte Carlo sampling methods, used very effectively in the optimization community, to solve our problem.
+This recasting enables us to apply Monte Carlo sampling methods, used very effectively in the Machine Learning and Optimization communities, to solve our problem.
 }
-%
-%\textbf{Our main insight is to formulate the problem as the problem of sampling uniformly below a level set of an implicit function and then apply optimization and statistical tools.}
-\os{do we really care about uniformity?}
-\dy{Is it fair to say that uniformity guarantee each state has equal opportunity of being selected?}
-Specifically, our approach consists of two stages:
+Specifically, our approach, depicted in Fig~\ref{fig:alg} consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a root-finding algorithm;
 in the second stage, this retracted sample  is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
 
+While our approach can be used with any Markov chain Monte Carlo (MCMC) method, it is especially suited to be used with hit and run~\cite{S84,KSZ11}.
+Roughly speaking, this is because hit and run (detailed in Sec~\ref{sec:related_work})
+performs a series of one-dimensional rejection samples which are extremely fast to compute, even in high-dimensional spaces. 
+
 Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06, H02} and that a gradient can be defined over the cost function.
-Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitute when compared to algorithms using rejection sampling or HRS.
+Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitude when compared to algorithms using rejection sampling or HRS.
 
 \os{structure}
-
-%While, original sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} only guaranteed to asymptotically return \emph{a} solution, if one exists, they did not provide any guarantees on the \emph{quality} of the solution, given some optimization criteria.
-%Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
-%Additional algorithms followed, increasing the converges rate by various techniques such as lazy dynamic programming~\cite{GSB15, JSCP15}, relaxing optimality to near-optimality~\cite{DB14, SH16} and more.
-%
-%However, recent years 
-%Original planners such as RRT~\cite{LK01} and PRM~\cite{KSLO96} did not provide any guarantee on the \emph{s}
-
 
 \section{Related work}
 \label{sec:related_work}
@@ -171,12 +179,6 @@ the domain dynamics and applying linear quadratic regulation (LQR).
 
 Finally, we note that we are not the first to integrate Monte Carlo sampling into planning algorithms. T-RRT~\cite{JCS10} and its variants~\cite{DSC13} are inspired by Monte Carlo optimization techniques and use notions such as the Metropolis criterion~\cite{CG95} to guide the exploration of the configuration space.
 
-%Finally, we note that there have been many papers presenting solutions to the 2pBVP for specific systems such as
-%
-%Jeong Hwan Jeon, Raghvendra V. Cowlagi, Steven C. Peters, Sertac Karaman, Emilio Frazzoli, Panagiotis Tsiotras, Karl Iagnemma: Optimal motion planning with the half-car dynamical model for autonomous high-speed driving. ACC 2013: 188-193
-%Dubins cars optimizng for both time and energy (RSS submission 107 by Shammas, Elie) 
-
-%possible additional papers on Kinodynamic RRT*:~\cite{KF10, GPPK13}
 
 \subsection{State-space sampling}
 \label{subsec:sampling}
@@ -196,7 +198,6 @@ To the best of our knowledge, the only method to produce samples in non-Euclidea
 
 \subsection{Markov Chain Monte Carlo (MCMC)}
 \label{subsec:mcmc}
-\os{This section puts a lot of emphasis on HMC. If we end up choosing an alternative method, we should change the relevant weight}
 Monte Carlo simulation is a general sampling framework widely used in various domains such as
 statistical machine learning~\cite{M97},
 motion tracking~\cite{KBD04}, 
@@ -210,31 +211,20 @@ One of the popular classes of Monte Carlo simulation is
 Here, the samples are drawn by generating a Markov chain such that the distribution of points on the chain converges to the desired distribution.
 The Markov Chain can be generated by performing a random walk such as
 in Metropolis-Hastings~\cite{CG95}, 
-Gibbs sampling~\cite{CK94},
-hit-and-run~\cite{S84,KSZ11} and their many variants.
-Alternatively, samples on the chain can be generated by simulating Hamiltonian dynamics~\cite{N94} (instead of performing the random walk).
-This approach, termed Hybrid or Hamiltonian Monte Carlo (HMC)~\cite{N11} was shown to converge faster to the desired distribution, when compared to random-walk based MCMC algorithms.
+Gibbs sampling~\cite{CK94}
+or by simulating simulating Hamiltonian dynamics~\cite{N94} (instead of performing the random walk).
 
-%\deprecated{
-\ignore{ which means that future states in the Markov chain is proposed from simulating system dynamics instead of sampling from a jumping distribution.
-%
-%
-An alternative sampling framework, which is widely used in statistical machine learning, is Monte Carlo Simulation~\cite{M97}.
-%
-It uses the numerical experimental power of computers to generate samples toward a desired distribution $ \pi (x) $.
-The generated set of samples are a discrete approximation $ \hat{\pi} (x) $ of the desired distribution $ \pi (x) $.
-A approximated desired distribution $ \hat{\pi} (x) $ can be used in any problem that states are modeled random variable, e.g. motion tracking~\cite{KBD04}, data regression~\cite{TL11} and state estimation~\cite{ASC13}.
-%
-Markov Chain Monte Carlo (MCMC)~\cite{ADDJ03} is one most popular class that constructs a Markov chain of random transition that moves samples from an original proposed distribution to a desired distribution $ \pi (x) $.
-The random movement is driven by a jumping distribution $ g(x' \mid x) $, which samples a new state $ x' $ by a given state $ x $.
-The idea of MCMC is designing a jumping distribution $ g $ that makes the desired distribution a stationary distribution $ \pi = \pi * g $.
-\emph{Ergodic theorem} shows that if the jumping distribution is aperiodic, irreducible and positive recurrent~\cite{AG11}, samples generated from arbitrary distributions will gradually converge to the stationary (desired) distribution $ \pi $.
-In practice, samples are initially generated from an arbitrary distribution.
-They shall converge to the samples generated from the desired distribution () 
-A few MCMC algorithms, e.g. Gibbs sampling and Metropolis-Hastings, have been widely used in sampling from distributions that are difficult to directly sample.
-%
-The nature of random walk in MCMC sometimes requires too many iterations to converge, especially in high-dimension state spaces.
-}
+One variant, which is of special interest to us is 
+hit-and-run~\cite{S84,KSZ11}.
+Here, given the current point $x_i$ the next point~$x_{i+1}$ in the Markov chain is produced by sampling a random direction~$\theta$ on the surface of the unit sphere centered at $x_{i+1}$. This defines a ray $r_i$ rooted at $x_i$ and passing through~$\theta$. The point $x_{i+1}$ is chosen by randomly sampling a point on $r_i$.
+This algorithm is considered to be one of the most efficient algorithms for generating an asymptotically uniform point if the set under consideration is convex~\cite{L99, LV06}
+and it can also be extended to sample points that converge to an arbitrary target distribution in total variation~\cite{BRS93, RS94}.
+
+The attractiveness of hit and run for our problem domain stems from the fact that it performs a series of one-dimensional rejection samples which are extremely fast to compute, even in high-dimensional spaces. 
+Finally, it is worth noting that we are not the first to apply hit and run for motion-planning problems.
+Recently~\cite{YPVA17} was used as an alternative to RRT to produce \emph{feasible motions} (and not high-quality paths). 
+Interestingly the paper concludes with the statement ``\emph{One drawback is that the sample paths for Hit and-Run have no pruning and are therefore longer than the RRT paths. Hybrid approaches that yield short paths but also explore quickly are a promising future direction.}''
+Our paper can be seen as a hybrid approach marrying sampling-based planning with MCM-based approaches.
 
 \section{Problem definition}
 \label{sec:algorithm}
@@ -257,32 +247,7 @@ $
 		c ( \gamma^*(x) ) < \cbest \} $~\cite{GSB14}.
 Here~$ \gamma^*(x) $ denotes the optimal trajectory  from $ x_s $ to $ x_g $ constrained to pass through $ x $.
 Notice that we do not require that~$ \gamma^*(x) $ is collision free.
-\os{add fig}
 
-
-
-\ignore{
-Define the dynamics of a robot as 
-\begin{equation}
-\label{eq:kinematics}
-\dot{x}(t) = f( x(t) , u(t) ), 
-\end{equation}
-in which $ x \in \calX \subseteq \mathbb{R}^n $ is the state of the robot, and $ u \in \calU \subseteq \mathbb{R}^m $ is the control input.
-The dynamics determines how a state trajectory $ \gamma $ is like given duration $ T $, state $ x(t) $ and input $ u(t) $.
-There exists a free trajectory space $ \Pi_{free} $ that contains all feasible trajectories $ \gamma \in \Gamma_{\rm free} $.
-It is determined by the system dynamics, $\Cfree $ and $ \Ufree $, in which $ \Cfree \subseteq \calX $ is a free state space considering the obstacles in a workspace, and $ \Ufree \subseteq \calU $ is a free control space considering the bounds of control input. 
-The cost of a trajectory $ \gamma $ is defined as the accumulated cost $ c( x(t), u(t) ) $ along the path, which is 
-\begin{equation}
-\label{eq:path_cost}
-c(\gamma) = \int_0^{T} c( x(t), u(t) ) dt.
-\end{equation}
-An optimal kinodynamic path-planning problem that finds a kinodynamic path minimizing the cost $ \pi^* = \min_{ \pi \in \Gamma_{free} } c( \gamma ) $.
-
-Informed sampling-based planning algorithms (e.g. Informed RRT*~\cite{GSB14}, BIT*~\cite{GSB15}) samples new states only from an \emph{informed set}.
-An informed set is a subspace $ \Cinf \subseteq \calX $   that is possible to provide better solution than the current best $  \Cinf = \{ x \in \calX \mid c ( \gamma^*(x) ) < \cbest \} $~\cite{GSB14}, in which $ \gamma^*(x) $ means the optimal path from $ x_s $ to $ x_g $ constrained to pass through $ x $ without considering collision checking, and $ \cbest $ is the cost of the current best found.
-The current best $ \cbest $ constrains eligible $ x $ indirectly by an implicit $ \gamma^*(x) $.
-In an optimal kinodynamic path-planning problem, more constraints are considered in defining an informed set, which include the system dynamic constraint and the boundary of control input.
-If we consider a manifold that is defined by an informed set $ \Cinf $, the informed sampling becomes how to sample on this manifold in a high-dimensional space. }
 
 \section{Motivating example---Minimal-Time Double Integrator (MTDI)}
 \label{sec:mtdi}
@@ -354,8 +319,7 @@ and that
 To understand the differences recall that optimal trajectories  for MTDI follow a ``bang-bang`` controller~\cite{HN10, KS14}.
 Namely, we first apply maximal (or minimal) acceleration for some duration and then switch to applying minimal (or maximal, respectively) acceleration.
 It is straightforward to see that both the type and the amount of acceleration applied (and hence the structure of~\Cinf) depend on the specific values of~$x_s$ and~$x_g$. 
-Fig~\ref{fig:informed_sets} 
-depicts two informed sets defined using the same cost~$c_{\text{best}}$ but different start and goal states. Notice the difference in structure of~\Cinf. 
+%Fig~\ref{fig:informed_sets} depicts two informed sets defined using the same cost~$c_{\text{best}}$ but different start and goal states. Notice the difference in structure of~\Cinf. 
 Fig~\ref{fig:discont} depicts a simple example where the cost map is discontinuous.
 
 To summarize, the structure of \Cinf can change given different start and goal states.
@@ -486,18 +450,6 @@ while
 the probability of sampling any configuration $x \in \calX \setminus \Cinf$ is zero.
 The MCMC algorithm will allow us to  efficiently produce samples (approximately) from \Pinf.
 
-\begin{figure}[tb]
-  \centering
-  	\includegraphics[trim={4.5cm 0 4cm 2cm},clip,height = 5.25cm ]{fig/alg.pdf}
-  \caption{
-    \captionstyle
-  	Algorithmic approach.
-  	Cost function is depicted using isocontours (darker shades reflect lower cost) while the boundary of the informed set is depicted in purple. 
-  	The root-finding and MCMC algorithms are depicted in blue and green, respectively.
-  	}
-   	\label{fig:alg}
-\end{figure}
-
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
 		\STATE $x_{\text{rand}} \leftarrow \texttt{sample\_uniform(\calX)}$
@@ -512,7 +464,7 @@ The MCMC algorithm will allow us to  efficiently produce samples (approximately)
 		\ENDFOR
 		 
    	\end{algorithmic}
-	\caption{MCMC Informed Sampling $(c_{\text{best}})$}
+	\caption{MCMC-based Informed Sampling $(c_{\text{best}})$}
 	\label{alg:mcmc_informed_sampling}	
 \end{algorithm}
 
@@ -526,79 +478,9 @@ To do so we apply  Newton-Raphson's method to obtain a sample on $\partial \Cinf
 However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi}), thus if no sample was produced on $\partial \Cinf$ after a predefined number of steps, we restart the algorithm using a different random state~$x_\text{rand}$.
 
 
-\subsection{Sampling the interior of \Cinf via
-MCMC}
+\subsection{Sampling the interior of \Cinf via MCMC}
 \label{subsec:mcmc}
-\os{once we have results we need to discuss here (or in the implementation details), how is this used: Do we use one chain? Do we restart from scratch? Do we use every sample on the chain?}
 
-
-	Roughly speaking, HMC views the system as an energy function for which Hamiltonian dynamics are simulated in fixed time steps (for additional background on HMC see Appendix).
-	Thus, to sample from a desired distribution~$\pi$ using HMC, we need to convert the distribution to an energy function and vice-versa.
-	This is done using the concept of a canonical distribution from statistical mechanics~\cite{N11}. 
-	Given some energy function,~$E$, the canonical distribution over states has the Boltzman probability distribution $\pi = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and~$T$ is the temperature of the system.
-	%Viewing this the opposite way, if we are interested in some distribution with density function $P$, we can obtain it as a canonical distribution with $T = 1$ by setting $E = -\log P - \log Z$, where $Z$ is any convenient positive constant	
-
-The energy function's definition provides the flexibility to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. 
-Specifically, in our setting we want to approximate 
-a uniform distribution over points inside the informed set~\Cinf.
-
-Our energy for any given cost $c$, 
-denoted by~$E\left(c,\Cbest \right)$, 
-is a function of $c$ and the current best cost~$\Cbest$.
-To consider only points in the informed set, all with equal energy, one may consider taking 
-$$
-E\left(t,\Cbest \right) = 
-\begin{cases}
-    0,	& \text{if } c \leq \Cbest\\        
-    \infty,  	& \text{otherwise}.
-\end{cases}
-$$
-However, simulating Hamiltonian dynamics requires that the energy function defined is differentiable.
-This function has a discontinuity at $c = \Cbest$ 
-and contains no gradient information for $c \leq \Cbest$.
-Thus, we define our energy function\footnote{In practice we add another term to the energy function which we discuss in Sec.~\ref{sec:eval}. We omit the term here for clarity of exposition.} as  
-\begin{equation}
-\label{eq:energy}
-E\left( c, \Cbest \right) 
-= 
-E_{\text{grad}} \left( c \right) + 
-E_{\text{informed}} \left( c,\Cbest \right).
-\end{equation}
-Here, $E_{\text{grad}}$ is a user-defined function that
-controls the ``flatness`` of the distribution.
-Intuitively, this term biases the distribution towards states with smaller cost and balances between the uniformity of the distribution and the gradient information provided to the HMC algorithm.
-We used $E_{\text{grad}} (c) = \tanh(c + \alpha )$,  which whose gradient is close to zero for $c>0$.
-Here, $\alpha$ is some constant that controls the slope of the function\footnote{In our implementation we use $\alpha=3$.}.
-
-The term 
-$E_{\text{informed}} \left( c,\Cbest \right) 
-= \beta \cdot \text{sigm}\left(\Cbest - c\right)
-$
-penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some (large\footnote{The constant~$\beta$ gives points out of~\Cinf a large energy value which in turn implies a low probability of being sampled. In theory, we would like to have~$\beta \approx \infty$. However, choosing~$\beta$ to be too large may cause numerical instabilities.}) constant~$\beta$.
-The sigmoid can be seen as a differentiable function smoothing the boundary of~$\Cinf$.
-See Fig.~\ref{fig:energy} for a visualization.
-
-\begin{figure}[tb]
-  \centering
-  	\includegraphics[height = 4.5cm ]{fig/energy.pdf}
-  \caption{
-    \captionstyle
-  	Energy function used by HMC to obtain samples~$x \in \Cinf$.
-  	}
-   	\label{fig:energy}
-\end{figure}
-
-\subsection{Implementation details}
-In our implementation we add another term to our energy function (Eq.~\ref{eq:energy}) relating to system parameters that induce known bounds on states.
-Specifically, our robot has predefined joint limits. 
-The flexibility of the energy function allows us to incorporate these limits  to penalize states \emph{within} the informed set that are violating these limits.
-
-Specifically, we add to Eq.~\ref{eq:energy} the term 
-$
-E_{\text{limits}}\left(\mathbf{x}\right) = \beta\cdot \text{sigm} ( ||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2 )
-$
-where $||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2$ represents the L2 distance between the current state $\mathbf{x}$ and the state limits~$\mathbf{x}_{\text{limits}}$.
- 
 
 \subsection{Probabilistic completeness}
 
@@ -681,15 +563,28 @@ We are interested with
 The efficiency is shown by how the time is needed when the number of nodes are increased.
 (Y: time spent) and (X: number of nodes).
 
-\begin{figure}[tb]
+\begin{figure}[t!]
 	\centering
-	\includegraphics[height = 4.5cm ]{fig/sampling_efficiency.pdf}
-	\caption{
-		\captionstyle
-		Compare time efficiency of generating 1000 samplings.
-	}
-	\label{fig:compare_time_efficiency}
-\end{figure}
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
+		\caption{2D}
+		\label{fig:sampling_efficiency:2d}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_4d}
+		\caption{4D}
+		\label{fig:sampling_efficiency:4d}
+	\end{subfigure}	
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
+		\caption{6D}
+		\label{fig:sampling_efficiency:6d}
+	\end{subfigure}
+	\caption{\captionstyle Compare the sampling efficiency of different sampling methods.}
+	\label{fig:sampling_efficiency}
+\end{figure} 
+
+
 
 
 \subsection{Integration}
@@ -705,6 +600,50 @@ We are going to show how the solution cost falls along time.
 \item Airplane
 \end{itemize}
 
+\begin{figure}[t!]
+	\centering
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_example}
+		\caption{3DOF planar}
+		\label{fig:planning_efficiency:3dof:example}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_general}
+		\caption{Obstacle avoiding}
+		\label{fig:planning_efficiency:3dof:general}
+	\end{subfigure}	
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_hammering}
+		\caption{Hammering}
+		\label{fig:planning_efficiency:3dof:hammering}
+	\end{subfigure}
+	\caption{\captionstyle An example of a 3DOF planar manipulator.}
+	\label{fig:planning_efficiency:3dof}
+\end{figure} 
+
+\begin{figure}[t!]
+	\centering
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\linewidth]{fig/planning_efficiency/6dof_example}
+		\caption{6DOF snake}
+		\label{fig:planning_efficiency:6dof:example}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\linewidth]{fig/planning_efficiency/6dof_general}
+		\caption{Obstacle avoiding}
+		\label{fig:planning_efficiency:6dof:general}
+	\end{subfigure}	
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\linewidth]{fig/planning_efficiency/6dof_hammering}
+		\caption{Hammering}
+		\label{fig:planning_efficiency:6dof:hammering}
+	\end{subfigure}
+	\caption{\captionstyle An example of a 6DOF 3D snake.}
+	\label{fig:planning_efficiency:3dof}
+\end{figure} 
+
+
+
 \section{Conclusion}
 
 What MCMC algorithm is the best to use?
@@ -716,113 +655,6 @@ Application to different state spaces
 Parallel chains
 
 estimating volume of informed space
-
-%\appendix
-\appendices
-\section{HMC}
-%base on https://theclevermachine.wordpress.com/2012/11/18/mcmc-hamiltonian-monte-carlo-a-k-a-hybrid-monte-carlo/
-
-In this section we provide background on Hamiltonian Monte Carlo (HMC). 
-For a comprehensive description, see~\cite{N11},
-for intuition, see~\cite{ZRDPKDBS13}.
-Note that some of the notation in this section slightly differ from the ones used in the main body such as replacing the cost~$c$ with time~$t$. 
-
-MCMC algorithms typically make use of random-walks to convergence to a target stationary distribution.
-This is often inefficient, resulting in slow mixing\footnote{Informally, the \emph{mixing time} of a Markov chain is the time until it is ``close'' to its steady-state distribution.}.
-HMC is an MCMC method that adopts physical-system dynamics (specifically Hamiltonian dynamics) rather than a probability distribution to produce the next state in the Markov chain. 
-
-\subsection{Hamiltonian dynamics}
-Hamiltonian dynamics describe an object's motion in terms of its position $x$ and momentum $q$ at some time $t$. 
-Each position is associated with a potential energy $U(x)$.
-Similarly, each momentum is associated with a kinetic energy $K(q)$.
-The total energy (also called the Hamiltonian) of the system is constant and is defined as
-$$
-E(x, p) = U(x) + K(q).
-$$
-Hamiltonian dynamics describe how the kinetic and potential energies are converted one to the other as the object moves throughout a system in time. 
-This is done via a set of differential equations known as the Hamiltonian equations:
-$$
-\frac{dx}{dt} = \frac{\partial E}{\partial q}, 
-\hspace{5mm}
-\frac{dq}{dt} = - \frac{\partial E}{\partial x}. $$
-%
-%The Hamiltonian equations describe an object’s motion in time, which is a continuous variable. In order to simulate Hamiltonian dynamics numerically, the Leapfrog method is typically used.
-
-\subsection{From Hamiltonian dynamics to probability distribution}
-To sample from a desired distribution~$\pi$ using HMC, we need to convert the distribution to an energy function and vice-versa. This is done using the concept of a canonical distribution from statistical mechanics~\cite{N11}. Given some energy function,~$E$, the canonical distribution over states has the Boltzman probability distribution $\pi = \frac{1}{Z}\exp (-E/T)$, where $Z$ is a normalizing constant and~$T$ is the temperature of the system.
-Notice that in our setting
-$$
-\pi(x,q) 
-\propto e^{-E(x,q)} 
-= e^{-U(x)} \cdot e^{-K(q)}
-\propto \pi(x) \cdot \pi(q).
-$$
-This means that the distributions $\pi(x)$ and $\pi(q)$ are independent. Therefore, we can use Hamiltonian dynamics to sample from the joint distribution over $q$ and $x$ and ignore the momentum contributions.
-This is done by introducing auxiliary variables to represent the momentum and choosing any distribution from which to sample the momentum variables. A common choice is to use a zero-mean Normal distribution with unit variance.
-
-\subsection{Hamiltonian Monte Carlo}
-HMC uses Hamiltonian dynamics to explore the distribution $\pi(x)$ defined by $U(x)$. 
-Starting at an initial state~$(x_0, q_0)$, 
-(here, $q_0$ is the axillary variable used to simulate the momentum), Hamiltonian dynamics are simulated for a short time using the Leap-Frog method~\cite{S82}. 
-Let $(x', q')$ be the state at the end of the simulation. 
-This state is accepted using an update rule analogous to the Metropolis acceptance criterion~\cite{CG95}. 
-Specifically, if the probability of $(x', q')$ after Hamiltonian dynamics is greater than probability of the state prior to the Hamiltonian dynamics, then $(x', q')$ is accepted.
-Otherwise, $(x', q')$ is accepted randomly. 
-If~$(x', q')$ is rejected, the next state of the Markov chain is set as the state at the previous time step. 
-
-To explore the entire space, the dynamics are randomly perturbed. This is done by drawing a random momentum from $\pi(q)$ before running the dynamics prior to each sampling iteration $t$. Combining these steps, sampling random momentum, followed by Hamiltonian dynamics and Metropolis acceptance criterion defines the HMC algorithm.
-
-\section{Gibbs sampling and Hit-and-run}
-Gibbs sampling is a simple MCMC algorithm which samples each dimension (or variable) from its \emph{conditional distribution} with the remaining variables fixed to their current values.
-Specifically, 
-
-
-
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Old text that may be re-used
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\ignore{
-In order to take advantage of these powerful methods, we propose to reformulate the cost surface as a probability density. Specifically, we consider a Boltzmann distribution in order to formulate the cost function using flexible energy based methods. Because Monte Carlo methods only consider the ratio of the probabilities, we do not need to consider the problem of estimating the intractable partition function.
-
-\begin{equation}
-E_{\text{informed}}\left(t,t_0\right) = \beta_{\text{informed}} \text{sigm}\left(t_0 - t\right)
-\end{equation}
-where $\text{sigm}\left(\cdot\right)$ represents a tight sigmoid function that can be seen as a differentiable $\text{sign}\left(\cdot\right)$ function. $\beta_{\text{informed}}$ is some large number that controls how much we want to penalize states outside of the level set. In theory, the energy should be infinity (which represents zero probability). In practice, however, setting $\beta_{\text{informed}}$ to be some high number such as $100$ works well and is more stable.
-
-
-
-
-Formally, we consider the probability distribution to be a Boltzmann distribution in the form of:
-
-\begin{equation}
-P\left(t,t_0\right) = \frac{1}{Z}\exp\left(-E\left(t,t_0\right)\right)
-\end{equation}
-where $Z$ is the intractable partition function that denotes the normalizing constant of the distribution and  $E\left(t,t_0\right)$ is the energy function which is dependent on the current best cost, $t_0$, and the cost of the path in question $t$.
-
-The flexibility of the energy function is in the ability to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. Specifically for our problem, we defined the energy function to be:
-
-\begin{equation}
-E\left(t, t_0\right) = E_{\text{grad}}\left(t\right) + E_{\text{informed}}\left(t,t_0\right) + E_{\text{region}}\left(\mathbf{x}\right)
-\end{equation}
-
-\begin{equation}
-E_{\text{grad}}\left(t\right) = \sigma\left(t\right)
-\end{equation}
-where $\sigma\left(\cdot\right)$ is some function that controls the flatness of the distribution.  Intuitively, this function prefers states with smaller costs. The flatter the function, the less pronounced this becomes. We experimented with using $\log\left(1 + \log\left(t\right)\right)$ and $\tanh\left(t\right)$. $\tanh$ resorts in a flatter distribution which may result in more uniform samples, but contains less gradient information for methods that use them such as Hamiltonian Monte Carlo.
-
-\begin{equation}
-E_{\text{informed}}\left(t,t_0\right) = \beta_{\text{informed}} \text{sigm}\left(t_0 - t\right)
-\end{equation}
-where $\text{sigm}\left(\cdot\right)$ represents a tight sigmoid function that can be seen as a differentiable $\text{sign}\left(\cdot\right)$ function. $\beta_{\text{informed}}$ is some large number that controls how much we want to penalize states outside of the level set. In theory, the energy should be infinity (which represents zero probability). In practice, however, setting $\beta_{\text{informed}}$ to be some high number such as $100$ works well and is more stable.
-
-\begin{equation}
-E_{\text{region}}\left(\mathbf{x}\right) = \beta_{\text{region}}||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2
-\end{equation}
-where $||\mathbf{x}_{\text{limits}} - \mathbf{x}||_2$ represents the L2 distance between the current state $\mathbf{x}$ and the state limits $\mathbf{x}_{\text{limits}}$ and $\beta_{\text{region}}$ is some high number that controls how much to penalize states close to the limits. The same intuition for values of $\beta_{\text{region}}$ is the same as for $\beta_{\text{informed}}$.
-
-}
-
 
 
 

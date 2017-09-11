@@ -1,0 +1,17 @@
+{
+"link_num" : 3,
+"links" : [
+{"name" : "1", "orientation" : "Z", "width" : 0.5, "height" : 0.1, "depth" : 0.1, "initConfig" : 1.57, "euler" : [0.0, 0.0, 0.0], "trans" : [0.0, 0.0, 0.0]},
+{"name" : "2", "orientation" : "Z", "width" : 0.5, "height" : 0.1, "depth" : 0.1, "initConfig" : 0.0, "euler" : [0.0, 0.0, 0.0], "trans" : [0.5, 0.0, 0.0]},
+{"name" : "3", "orientation" : "Z", "width" : 0.5, "height" : 0.1, "depth" : 0.1, "initConfig" : 0.0, "euler" : [0.0, 0.0, 0.0], "trans" : [0.5, 0.0, 0.0]}
+],
+"plane" : [
+{"plane_pos" : [0.0, 0.0, 0.0], "plane_size" : [8.0, 8.0, 0.02]}],
+"start" : [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+"goal" :  [1.56, 0.2, 0.0, 0.1, 0.1, 0.0],
+"di_pos" : [0.0, 0.0, 0.1],
+"obstacles": [
+{"type": "hypercube", "center": [-1.0, 0.5, 0.25], "size": [0.5, 0.5, 0.5]},
+{"type": "hypercube", "center": [1.0, 0.5, 0.25], "size": [0.5, 0.5, 0.5]}
+]
+}
