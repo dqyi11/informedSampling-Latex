@@ -432,6 +432,7 @@ See Fig.~\ref{fig:cost_surface_1d} for a side view of the cost surface for one d
 }
 
 \section{MCMC-based Informed Sampling}
+
 In this section we describe our approach to efficiently produce samples in the informed set~\Cinf given a specific cost~$c_{\text{best}}$.
 Our algorithm (see Alg.~\ref{alg:mcmc_informed_sampling}) starts by randomly sampling a state~$x_\text{rand} \in \calX$ (line~1).
 This sample is used to produces a 
@@ -441,7 +442,8 @@ which lies (approximately) on the boundary of the informed set (Sec.~\ref{subsec
 Finally,~$x_0$ 
 %use~$x_\text{boundary}$ 
 is used (lines~3-5)
-to initialize an MCMC algorithm which produces a series of samples within \Cinf (Sec.~\ref{subsec:mcmc}). Specifically, we chose to use HMC due to its favourable properties (see Sec.~\ref{sec:intro}). 
+to initialize an MCMC algorithm which produces a series of samples within \Cinf (Sec.~\ref{subsec:mcmc}). 
+%Specifically, we chose to use HMC due to its favourable properties (see Sec.~\ref{sec:intro}). 
 For a visualization of the approach, see Fig.~\ref{fig:alg}.
 
 We apply MCMC by using the cost function to define a probability distribution \Pinf.
@@ -449,6 +451,10 @@ Specifically, points in \Cinf are distributed uniformly
 while 
 the probability of sampling any configuration $x \in \calX \setminus \Cinf$ is zero.
 The MCMC algorithm will allow us to  efficiently produce samples (approximately) from \Pinf.
+
+\dy{Basically we follows a MCMC framework for informed sampling, which takes the advantage of a balanced exploration and exploitation.
+Under the MCMC framework, we use both Metropolis-Hastings and Hit-And-Run to generate samples.
+}
 
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
@@ -481,6 +487,47 @@ However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi
 \subsection{Sampling the interior of \Cinf via MCMC}
 \label{subsec:mcmc}
 
+(a) we use Metropolis-Hasting 
+
+\begin{algorithm}[t]
+	\begin{algorithmic}[1]
+		\STATE $ x'_{i+1} \leftarrow g( x'_{i+1} \mid x_{i} ) $
+		\STATE $ \alpha = \frac{ P( x'_{i} ) }{ P( x_{i} ) } $ 
+		\IF{ $ random() \leq \alpha $ \AND \textsc{Cost}($ x'_{i+1} $) $ < c_{\text{best}} $  }
+		  \STATE $ x_{i+1} \leftarrow x'_{i+1} $ 
+		\ELSE
+		  \STATE $ x_{i+1} \leftarrow x_{i} $
+		\ENDIF 
+	\end{algorithmic}
+	\caption{Metropolis-Hastings MCMC $(x_{i}, c_{\text{best}})$}
+	\label{alg:mh_mcmc}	
+\end{algorithm}
+
+
+
+\subsection{Sampling using Hit-And-Run Sampler}
+
+\begin{algorithm}[t]
+	\begin{algorithmic}[1]
+		\STATE Sample random direction in $ d_i $
+		\STATE Find the line set $ L = \{  x \mid x = x_i + \lambda d_i \} $
+		\STATE $ \lambda^{+} \leftarrow \sup L $, $ \lambda^{-} \leftarrow \inf L $
+		\STATE $ \lambda'_{i} \leftarrow ( \lambda^{-} , \lambda^{+} ) $
+		\STATE $ x'_{i+1} = x_{i} + \lambda'_{i} d_i $
+		\IF{ \textsc{Cost}($ x'_{i+1} $) $ < c_{\text{best}} $ }
+		  \STATE $ x_{i+1} = x'_{i+1} $
+ 		\ELSE
+		  \IF{ $ \lambda'_{i} > 0 $ }
+			  \STATE $ \lambda^{+} \leftarrow \lambda'_{i} $
+		  \ELSE
+			  \STATE $ \lambda^{-} \leftarrow \lambda'_{i} $
+		  \ENDIF 
+		  \STATE go back to line 4
+		\ENDIF 	
+	\end{algorithmic}
+	\caption{Hit-And-Run MCMC $(x_{i}, c_{\text{best}})$}
+	\label{alg:hit_and_run_mcmc}	
+\end{algorithm}
 
 \subsection{Probabilistic completeness}
 
