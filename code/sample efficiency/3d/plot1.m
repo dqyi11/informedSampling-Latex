@@ -1,4 +1,4 @@
-data = sortrows(dim2, 5);
+data = sortrows(dim3, 5);
 
 data(:,1) = log(data(:,1));
 data(:,2) = log(data(:,2));
@@ -24,4 +24,3 @@ xlabel('informed set volume ratio');
 ylabel('time per sample (ms)');
 legend('Rejection', 'HRS', 'MCMC', 'Hit&Run');
 hold off;
-
