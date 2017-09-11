@@ -30,6 +30,7 @@
 \usepackage{color}
 \usepackage{cite}
 \usepackage{hyperref}
+\usepackage{eqparbox}
 %\hypersetup{bookmarksopen,
 %bookmarksnumbered,
 %pdfpagemode=UseOutlines,
@@ -492,8 +493,8 @@ However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
 		\STATE $ x'_{i+1} \leftarrow g( x'_{i+1} \mid x_{i} ) $
-		\STATE $ \alpha = \frac{ P( x'_{i} ) }{ P( x_{i} ) } $ 
-		\IF{ $ random() \leq \alpha $ \AND \textsc{Cost}($ x'_{i+1} $) $ < c_{\text{best}} $  }
+		\COMMENT {$g$~is a Gaussian}		
+		\IF{ \textsc{Cost}($ x'_{i+1} $) $ < c_{\text{best}} $  }
 		  \STATE $ x_{i+1} \leftarrow x'_{i+1} $ 
 		\ELSE
 		  \STATE $ x_{i+1} \leftarrow x_{i} $
@@ -509,22 +510,31 @@ However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi
 
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
-		\STATE Sample random direction in $ d_i $
-		\STATE Find the line set $ L = \{  x \mid x = x_i + \lambda d_i \} $
-		\STATE $ \lambda^{+} \leftarrow \sup L $, $ \lambda^{-} \leftarrow \inf L $
-		\STATE $ \lambda'_{i} \leftarrow ( \lambda^{-} , \lambda^{+} ) $
-		\STATE $ x'_{i+1} = x_{i} + \lambda'_{i} d_i $
-		\IF{ \textsc{Cost}($ x'_{i+1} $) $ < c_{\text{best}} $ }
-		  \STATE $ x_{i+1} = x'_{i+1} $
- 		\ELSE
-		  \IF{ $ \lambda'_{i} > 0 $ }
-			  \STATE $ \lambda^{+} \leftarrow \lambda'_{i} $
-		  \ELSE
-			  \STATE $ \lambda^{-} \leftarrow \lambda'_{i} $
-		  \ENDIF 
-		  \STATE go back to line 4
-		\ENDIF 	
-	\end{algorithmic}
+		\STATE $d \leftarrow$ \texttt{sample\_random\_direction}$()$
+		\STATE $ L(\lambda) = \{  x \mid x = x_i + \lambda d_i \} $
+		\STATE $ \lambda^{+} \leftarrow \sup L(\lambda) $; 
+				\hspace{3mm} 
+			   $ \lambda^{-} \leftarrow \inf L(\lambda) $
+			   
+		\LOOP
+
+
+		\STATE $ \lambda' \leftarrow$ \texttt{sample\_random}$ (\lambda^{-} , \lambda^{+})$
+		\STATE $ x_{i+1} \leftarrow x_{i} + \lambda'_{i} d_i $
+		
+		\IF{ \textsc{Cost}($ x_{i+1} $) $ < c_{\text{best}} $ }
+		  \RETURN $ x_{i+1}$
+		\ENDIF
+
+
+		\IF{ $ \lambda' > 0 $ }
+			\STATE $ \lambda^{+} \leftarrow \lambda' $
+		\ELSE
+			\STATE $ \lambda^{-} \leftarrow \lambda'$
+		\ENDIF
+		
+		\ENDLOOP
+  	\end{algorithmic}
 	\caption{Hit-And-Run MCMC $(x_{i}, c_{\text{best}})$}
 	\label{alg:hit_and_run_mcmc}	
 \end{algorithm}
