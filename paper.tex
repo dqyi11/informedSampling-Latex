@@ -157,7 +157,7 @@ Indeed, we demonstrate the efficiency of our approach on a wide variety of syste
 \label{sec:related_work}
 We start in Sec.~\ref{subsec:planning} by giving an overview of relevant sampling-based motion-planning algorithms.
 We then continue in Sec.~\ref{subsec:sampling} to describe different approaches that can be used by  these algorithms to sample~$\calX$.
-We conclude our literature review in Sec.~\ref{subsec:mcmc0} with a brief overview of Markov Chain Monte Carlo methods.
+We conclude our literature review in Sec.~\ref{subsec:mcmc} with a brief overview of Markov Chain Monte Carlo methods.
 
 \subsection{Sampling-based motion-planning algorithms}
 \label{subsec:planning}
@@ -198,7 +198,7 @@ As mentioned in Sec.~\ref{sec:intro} Gammel et al.~\cite{GSB14} describe an appr
 To the best of our knowledge, the only method to produce samples in non-Euclidean spaces (other than rejection sampling) is HRS by Kunz et al.~\cite{KTC16}.
 
 \subsection{Markov Chain Monte Carlo (MCMC)}
-\label{subsec:mcmc0}
+\label{subsec:mcmc}
 Monte Carlo simulation is a general sampling framework widely used in various domains such as
 statistical machine learning~\cite{M97},
 motion tracking~\cite{KBD04}, 
@@ -217,7 +217,7 @@ or by simulating simulating Hamiltonian dynamics~\cite{N94} (instead of performi
 
 One variant, which is of special interest to us is 
 hit-and-run~\cite{S84,KSZ11}.
-Here, given the current point $x_i$ the next point~$x_{i+1}$ in the Markov chain is produced by sampling a random direction~$\theta$ on the surface of the unit sphere centered at $x_{i+1}$. This defines a line $\ell_i$ rooted at $x_i$ and passing through~$\theta$. The point $x_{i+1}$ is chosen by randomly sampling a point on $\ell_i$ (see also Sec.~\ref{sec:algorithm}).
+Here, given the current point $x_i$ the next point~$x_{i+1}$ in the Markov chain is produced by sampling a random direction~$\theta$ on the surface of the unit sphere centered at $x_{i+1}$. This defines a ray $r_i$ rooted at $x_i$ and passing through~$\theta$. The point $x_{i+1}$ is chosen by randomly sampling a point on $r_i$.
 This algorithm is considered to be one of the most efficient algorithms for generating an asymptotically uniform point if the set under consideration is convex~\cite{L99, LV06}
 and it can also be extended to sample points that converge to an arbitrary target distribution in total variation~\cite{BRS93, RS94}.
 
@@ -225,7 +225,7 @@ The attractiveness of hit and run for our problem domain stems from the fact tha
 Finally, it is worth noting that we are not the first to apply hit and run for motion-planning problems.
 Recently~\cite{YPVA17} was used as an alternative to RRT to produce \emph{feasible motions} (and not high-quality paths). 
 Interestingly the paper concludes with the statement ``\emph{One drawback is that the sample paths for Hit and-Run have no pruning and are therefore longer than the RRT paths. Hybrid approaches that yield short paths but also explore quickly are a promising future direction.}''
-Our paper can be seen as a hybrid approach marrying sampling-based planning with MCM-based approaches.
+Our paper can be seen as a hybrid approach marrying sampling-based planning with MCMC-based approaches.
 
 \section{Problem definition}
 \label{sec:pdef}
@@ -591,108 +591,120 @@ For this algorithm, we continue sampling along the Markov Chain as long as new s
 
 
 
-%\subsection{Probabilistic completeness}
-
-
-\section{Evaluation}
 \label{sec:eval}
+% \subsection{Uniformity}
 
-\subsection{Uniformity}
+% (Give a set of parameters)
+% We firstly need to propose a way of measuring uniformity.
+% Then we can apply it to compare MCMC approach with rejection sampling and hierarchical rejection sampling.
+% We are interested with
+% \begin{itemize}
+% 	\item asymptotic behavior (assumption: MCMC converge to a close uniformity)
+% 	\item convergence rate (assumption: MCMC converge faster)
+% \end{itemize}
 
-(Give a set of parameters)
-We firstly need to propose a way of measuring uniformity.
-Then we can apply it to compare MCMC approach with rejection sampling and hierarchical rejection sampling.
-We are interested with
-\begin{itemize}
-	\item asymptotic behavior (assumption: MCMC converge to a close uniformity)
-	\item convergence rate (assumption: MCMC converge faster)
-\end{itemize}
+\subsection{Sampling Efficiency}
 
-\subsection{Efficiency}
-
-The efficiency is shown by how the time is needed when the number of nodes are increased.
-(Y: time spent) and (X: number of nodes).
+Fig. \ref{fig:sampling_efficiency} shows the semi-log plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio, i.e. the ratio of the volume of informed space to the volume of entire state space for 5000 samples. The informed set volume ratio is approximated by the ratio of the number of accepted to the total number samples obtained while running rejection sampling. Efficiency of rejection sampling based methods is very low for high dimesions because this ratio decreases exponentially w.r.t the dimension of the space due to the curse of dimensionality. The Fig. \ref{fig:sampling_efficiency} shows that MCMC and Hit\&Run have a better sampling efficiency compared to HRS and RS with decrease in informed set ratio or increase in dimensions. TODO: Brag about order of magnitude improvement (mostly for 6 DoF example)
 
 \begin{figure*}[t!]
 	\centering
 	\begin{subfigure}[b]{0.32\textwidth}
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
-		\caption{2D}
+		\caption{2DoF - 4D TODO: rescale x axis}
 		\label{fig:sampling_efficiency:2d}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.32\textwidth}
-		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_3d}
-		\caption{3D}
-		\label{fig:sampling_efficiency:4d}
-	\end{subfigure}	
+% 	\begin{subfigure}[b]{0.32\textwidth}
+% 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_3d}
+% 		\caption{3DoF - 6D}
+% 		\label{fig:sampling_efficiency:3d}
+% 	\end{subfigure}	
 	\begin{subfigure}[b]{0.32\textwidth}
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
-		\caption{6D}
+		\caption{6DoF - 12D. TODO: rescale x axis}
+		\label{fig:sampling_efficiency:6d}
+	\end{subfigure}\\
+	\begin{subfigure}[b]{0.32\textwidth}
+		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
+		\caption{2DoF - 4D. TODO:Time per sample vs level set}
 		\label{fig:sampling_efficiency:6d}
 	\end{subfigure}
-	\caption{\captionstyle Compare the sampling efficiency of different sampling methods.}
+	\begin{subfigure}[b]{0.32\textwidth}
+		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
+		\caption{6DoF - 12D. TODO:Time per sample vs level set}
+		\label{fig:sampling_efficiency:6d}
+	\end{subfigure}
+	\caption{\captionstyle Sampling efficiency of different sampling methods}
 	\label{fig:sampling_efficiency}
 \end{figure*} 
 
+\subsection{Planning Efficiency}
+
+To test the planning efficiency we run the samplers with the informed RRT* planner on 3 different problems described below and shown in Fig. \ref{fig:problems}. For each problem the start and goal states (positions and velocities) are known in the joint space.
+
+\subsubsection{Problem 1: 3 DoF Planar Manipulator}
+
+\subsubsection{Problem 2: 6 DoF Snake Arm}
+
+\subsubsection{Problem 3: 7 DoF HERB}
 
 
-
-\subsection{Integration}
-
-We're going to test with RRT*, which falls into a informed RRT*.
-
-We are going to show how the solution cost falls along time.
-(Y: solution cost) and (X: time spent).
-
-\begin{itemize}
-\item DIMT (double integrator minimum time)
-\item Dubins car
-\item Airplane
-\end{itemize}
-
-\begin{figure}[t!]
+\begin{figure*}[t!]
 	\centering
-	\begin{subfigure}[b]{0.5\textwidth}
-		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_example}
+	\begin{subfigure}[b]{\textwidth}
+	    \centering
+		\includegraphics[height=3cm]{fig/planning_efficiency/3dof_example}
+		\includegraphics[height=3cm]{fig/planning_efficiency/3dof_example}
+		\includegraphics[height=3cm]{fig/planning_efficiency/3dof_example}
+		\includegraphics[height=3cm]{fig/planning_efficiency/3dof_example}
 		\caption{3DOF planar}
 		\label{fig:planning_efficiency:3dof:example}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.5\textwidth}
-		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_general}
-		\caption{Obstacle avoiding}
-		\label{fig:planning_efficiency:3dof:general}
-	\end{subfigure}	
-	\begin{subfigure}[b]{0.5\textwidth}
-		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_hammering}
-		\caption{Hammering}
-		\label{fig:planning_efficiency:3dof:hammering}
+	\begin{subfigure}[b]{\textwidth}
+	    \centering
+		\includegraphics[height=3cm]{fig/planning_efficiency/6dof_example}
+		\includegraphics[height=3cm]{fig/planning_efficiency/6dof_example}
+		\includegraphics[height=3cm]{fig/planning_efficiency/6dof_example}
+		\includegraphics[height=3cm]{fig/planning_efficiency/6dof_example}
+		\caption{6DOF snake}
+		\label{fig:planning_efficiency:6dof:example}
 	\end{subfigure}
-	\caption{\captionstyle An example of a 3DOF planar manipulator.}
-	\label{fig:planning_efficiency:3dof}
-\end{figure} 
+	\begin{subfigure}[b]{\textwidth}
+    \centering
+    \includegraphics[height=3cm]{fig/planning_efficiency/6dof_example}
+	\caption{HERB}
+	\label{fig:planning_efficiency:6dof:example}
+	\end{subfigure}
+	\caption{Test problems to evaluate planning efficiency. TODO: Add herb and update figures}
+	\label{fig:problems}
+\end{figure*} 
+
 
 \begin{figure}[t!]
 	\centering
 	\begin{subfigure}[b]{0.5\textwidth}
-		\includegraphics[width=\linewidth]{fig/planning_efficiency/6dof_example}
-		\caption{6DOF snake}
-		\label{fig:planning_efficiency:6dof:example}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.5\textwidth}
-		\includegraphics[width=\linewidth]{fig/planning_efficiency/6dof_general}
-		\caption{Obstacle avoiding}
-		\label{fig:planning_efficiency:6dof:general}
+		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_general}
+		\caption{\captionstyle Planning Efficiency for Problem 1: 3 DoF Manipulator}
+		\label{fig:planning_efficiency:3dof:general}
 	\end{subfigure}	
+% 	\begin{subfigure}[b]{0.5\textwidth}
+% 		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_hammering}
+% 		\caption{Hammering}
+% 		\label{fig:planning_efficiency:3dof:hammering}
+% 	\end{subfigure}
+% 	\begin{subfigure}[b]{0.5\textwidth}
+% 		\includegraphics[width=\linewidth]{fig/planning_efficiency/6dof_general}
+% 		\caption{Obstacle avoiding}
+% 		\label{fig:planning_efficiency:6dof:general}
+% 	\end{subfigure}	
 	\begin{subfigure}[b]{0.5\textwidth}
 		\includegraphics[width=\linewidth]{fig/planning_efficiency/6dof_hammering}
-		\caption{Hammering}
-		\label{fig:planning_efficiency:6dof:hammering}
+		\caption{Planning Efficiency for Problem 2: 6DoF Hammering Task}
+		\label{\captionstyle An example of a 6DOF 3D snake.}
 	\end{subfigure}
-	\caption{\captionstyle An example of a 6DOF 3D snake.}
-	\label{fig:planning_efficiency:3dof}
+	\caption{Planning Efficiency}
+	\label{fig:planning_efficiency}
 \end{figure} 
-
-
 
 \section{Conclusion}
 
