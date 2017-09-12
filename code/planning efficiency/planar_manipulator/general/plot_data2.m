@@ -30,7 +30,7 @@ plot(T1, mean(MCMC2,1), 'o', 'MarkerFaceColor', green, 'MarkerEdgeColor', green,
 plot(T4, mean(HNR2,1), 'o', 'MarkerFaceColor', purple, 'MarkerEdgeColor', purple, 'MarkerSize', 4);
 
 xlim([0, 10]);
-legend('MCMC', 'RS', 'HRS', 'HNR');
+legend('RS', 'HRS', 'MCMC', 'HNR');
 xlabel('Time - s');
 ylabel('Ratio to minimum');
 hold off;
