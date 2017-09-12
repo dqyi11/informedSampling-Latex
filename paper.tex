@@ -157,7 +157,7 @@ Indeed, we demonstrate the efficiency of our approach on a wide variety of syste
 \label{sec:related_work}
 We start in Sec.~\ref{subsec:planning} by giving an overview of relevant sampling-based motion-planning algorithms.
 We then continue in Sec.~\ref{subsec:sampling} to describe different approaches that can be used by  these algorithms to sample~$\calX$.
-We conclude our literature review in Sec.~\ref{subsec:mcmc} with a brief overview of Markov Chain Monte Carlo methods.
+We conclude our literature review in Sec.~\ref{subsec:mcmc0} with a brief overview of Markov Chain Monte Carlo methods.
 
 \subsection{Sampling-based motion-planning algorithms}
 \label{subsec:planning}
@@ -198,7 +198,7 @@ As mentioned in Sec.~\ref{sec:intro} Gammel et al.~\cite{GSB14} describe an appr
 To the best of our knowledge, the only method to produce samples in non-Euclidean spaces (other than rejection sampling) is HRS by Kunz et al.~\cite{KTC16}.
 
 \subsection{Markov Chain Monte Carlo (MCMC)}
-\label{subsec:mcmc}
+\label{subsec:mcmc0}
 Monte Carlo simulation is a general sampling framework widely used in various domains such as
 statistical machine learning~\cite{M97},
 motion tracking~\cite{KBD04}, 
@@ -217,7 +217,7 @@ or by simulating simulating Hamiltonian dynamics~\cite{N94} (instead of performi
 
 One variant, which is of special interest to us is 
 hit-and-run~\cite{S84,KSZ11}.
-Here, given the current point $x_i$ the next point~$x_{i+1}$ in the Markov chain is produced by sampling a random direction~$\theta$ on the surface of the unit sphere centered at $x_{i+1}$. This defines a ray $r_i$ rooted at $x_i$ and passing through~$\theta$. The point $x_{i+1}$ is chosen by randomly sampling a point on $r_i$.
+Here, given the current point $x_i$ the next point~$x_{i+1}$ in the Markov chain is produced by sampling a random direction~$\theta$ on the surface of the unit sphere centered at $x_{i+1}$. This defines a line $\ell_i$ rooted at $x_i$ and passing through~$\theta$. The point $x_{i+1}$ is chosen by randomly sampling a point on $\ell_i$ (see also Sec.~\ref{sec:algorithm}).
 This algorithm is considered to be one of the most efficient algorithms for generating an asymptotically uniform point if the set under consideration is convex~\cite{L99, LV06}
 and it can also be extended to sample points that converge to an arbitrary target distribution in total variation~\cite{BRS93, RS94}.
 
@@ -228,7 +228,7 @@ Interestingly the paper concludes with the statement ``\emph{One drawback is tha
 Our paper can be seen as a hybrid approach marrying sampling-based planning with MCM-based approaches.
 
 \section{Problem definition}
-\label{sec:algorithm}
+\label{sec:pdef}
 Let $\calX, \calU$ denote the state and controls spaces, respectively and set $\Cfree \subset \calX$ to be the set of states where the robot is collision free.
 A \emph{trajectory} $\gamma$ is a timed path through~$\calX$ obtained by applying at time $t$ control $u(t) \in \calU$ and satisfying the system dynamics 
 $\dot{x}(t) = f( x(t) , u(t) )$.
@@ -433,6 +433,7 @@ See Fig.~\ref{fig:cost_surface_1d} for a side view of the cost surface for one d
 }
 
 \section{MCMC-based Informed Sampling}
+\label{sec:algorithm}
 
 In this section we describe our approach to efficiently produce a sequence of samples in the informed set~\Cinf given a specific cost~$c_{\text{best}}$.
 Our algorithm (see Alg.~\ref{alg:mcmc_informed_sampling}) starts by randomly sampling a state~$x_\text{rand} \in \calX$ (line~2).
@@ -443,20 +444,14 @@ which lies (approximately) on the boundary of the informed set (Sec.~\ref{subsec
 Finally,~$x_0$ 
 %use~$x_\text{boundary}$ 
 is used (lines~4-6)
-to initialize an MCMC algorithm which produces a series of samples within \Cinf until some termination criterion is met.
-This process is then repeated (Sec.~\ref{subsec:mcmc}). 
+to initialize an MCMC algorithm which outputs a series of samples within \Cinf by constructing a Markov Chain.
+This is done until some termination criterion is met and the entire process is repeated (Sec.~\ref{subsec:mcmc}). 
 %Specifically, we chose to use HMC due to its favourable properties (see Sec.~\ref{sec:intro}). 
 For a visualization of the approach, see Fig.~\ref{fig:alg}.
 
 It is important to note that at each iteration, we will query our algorithm for one sample. However, this sample depends on the previous iterations of the algorithm which is why we describe it as a method to produce a sequence of samples.
 Furthermore, the value~$c_{\text{best}}$ can decrease between consecutive iterations.
 This will occur if the search algorithm that uses our sampler finds a path to the goal whose cost is lower than~$c_{\text{best}}$.
-
-We apply MCMC by using the cost function to define a probability distribution \Pinf.
-Specifically, points in \Cinf are distributed uniformly
-while 
-the probability of sampling any configuration $x \in \calX \setminus \Cinf$ is zero.
-MCMC algorithms allow us to  efficiently produce samples (approximately) from \Pinf.
 
 
 \begin{algorithm}[t]
@@ -495,11 +490,15 @@ MCMC algorithms allow us to  efficiently produce samples (approximately) from \P
 \subsection{Sampling the boundary of \Cinf via Newton-Raphson}
 \label{subsec:grad}
 In theory, MCMC methods converge to the desired distribution regardless of the initial sample used to seed the chain.
-However, in practice it is common to discard an initial set of samples (a process referred to as ``burn-in'') to avoid starting biases~\cite{ADDJ03}. 
+In our setting, the probability distribution~\Pinf is defined by having all points in \Cinf distributed uniformly
+while 
+the probability of sampling any configuration $x \in \calX \setminus \Cinf$ is zero.
+A common practice to avoid starting biases in MCMC-type algorithm is to discard an initial set of samples (a process referred to as ``burn-in'')~\cite{ADDJ03}. 
 
 In our setting, we are only interested in points in~\Cinf, thus we can start the Markov Chain in~\Cinf and avoid this burn-in stage. 
 To do so we apply  Newton-Raphson's method to obtain a sample on $\partial \Cinf$. 
-However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi}), thus if no sample was produced on $\partial \Cinf$ after a predefined number of steps, we restart the algorithm using a different random state~$x_\text{rand}$.
+However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi}), thus if no sample was produced on $\partial \Cinf$ after a predefined number of steps, we restart the algorithm using a different random state~$x_\text{rand}$
+(see also Sec.~\ref{subsec:mcmc}).
 
 
 \subsection{Sampling the interior of \Cinf via MCMC}
@@ -510,32 +509,14 @@ We demonstrate how to instantiate it with two different algorithms:
 Hit and Run and Metropolis-Hastings.
 
 For each algorithm, 
-one has to describe how it is used to (i)~sample points 
+we describe how it is used to 
+(i)~sample points 
 (\texttt{MCMC\_sample, line 5})
 and 
 (ii)~decide if to continue sampling along the Markov Chain or to restart the entire process 
-(\texttt{MCMC\_continue\_chain, line 5}).
+(\texttt{MCMC\_continue\_chain, line 4}).
  
 \subsubsection{Hit and Run}
-
-\subsubsection{Metropolis-Hasting}
-
-\begin{algorithm}[t]
-	\begin{algorithmic}[1]
-		\STATE $ x'_{i+1} \leftarrow g( x'_{i+1} \mid x_{i} ) $
-		\COMMENT {$g$~is a Gaussian}		
-		\IF{ \textsc{Cost}($ x'_{i+1} $) $ < c_{\text{best}} $  }
-		  \STATE $ x_{i+1} \leftarrow x'_{i+1} $ 
-		\ELSE
-		  \STATE $ x_{i+1} \leftarrow x_{i} $
-		\ENDIF 
-	\end{algorithmic}
-	\caption{Metropolis-Hastings MCMC $(x_{i}, c_{\text{best}})$}
-	\label{alg:mh_mcmc}	
-\end{algorithm}
-
-
-
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
 		\STATE $d \leftarrow$ \texttt{sample\_random\_direction}$()$
@@ -567,67 +548,51 @@ and
 	\label{alg:hit_and_run_mcmc}	
 \end{algorithm}
 
-\subsection{Probabilistic completeness}
 
-%\newpage
-%\begin{thm}
-%For each node $u$ that was removed from the priority $\calQ$, $g(u) = \delta(u)$, where $\delta(u)$ denotes the shortest path to reach $u$ from $s$.
-%\end{thm}
-%
-%The proof is by induction on the order of vertices removed from $\calQ$. 
-%
-%\textbf{Base} holds trivially for $s$.
-%
-%\textbf{Step:}
-%Let $v$ be the current node on the top of the priority queue and let $u$ be its parent.
-%Notice that by the induction hypothesis we have that $g(u) = \delta(u)$.
-%
-%We have two case to consider: 
-%(i) the shortest path does not pass through $u$ but through some other node $u'$ which is not in $\calQ$,
-%and
-%(i) the shortest path does not pass through $u$ but through some other node $y$ which is in $\calQ$.
-%
-%For case (i), we have that when $u'$ was removed from $\calQ$, then $v$'s cost was $g(v) \leq g(u') + c(u',v)$.
-%Since $g(u') = \delta(u')$ this is equal to $\delta(v)$.
-%
-%For case (ii), let $x$ be $y$'s parent which was already removed from $\calQ$.
-%Note that $g(x) = \delta(x)$ and (similar to the previous case) we have that $g(y) < g(x) + c(x,y)$.
-%Furthermore notice that $v$ was before $y$ in $\calQ$ thus $g(v) \leq g(y)$.
-%Purring everything together we have that
-%$$
-%\delta(v)   > \delta(x) + c(x,y)
-%			\geq g(y)
-%			\geq g(v).
-%$$
-%Here, the first transition is due to the assumption that the shortest path goes from $s$ to $v$ through the edge $(x,y)$.
-%The second (which I got confused about in class) is due to the fact that when $x$ was popped from $\calQ$ it updated $y$'s cost.
-% \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\
-% 
-%\vspace{20cm}
+Hit and Run, described in Alg.~\ref{alg:hit_and_run_mcmc} produces a series of samples $x_0, \ldots$.
+Given the previous sample~$x_i$ it first  samples a random direction on the unit sphere (line 1).
+This induces a line~$L(\lambda)$ passing through~$x_i$  in the direction sampled (line 2) parametrized by a scalar~$\lambda$.
+We obtain upper and lower bounds on~$\lambda$ (line 3) that are problem dependant (e.g. these can relate to joint limits of the robot, bounds on maximum velocity etc.).
+We then sample a point along~$L(\lambda)$ by sampling a scalar~$\lambda'$ within our bounds (line 5).
+This defines a point~$x_{i+1}$ which is a candidate for the next sample along the Markov Chain (line 6).
+We then check if the point lies in the informed set (line 7) and if it does we return it.
+If not, we update our bounds (lines~9-12) and repeat the process.
+The algorithm can be view as an efficient method to perform rejection sampling around the previous sample using in a one-dimensional search space parametrized by $\lambda$.
 
-\ignore{
-\section{MCMC-based Informed Sampling}
-
-Rejection sampling is the simplest ways of constrained sampling~\cite{CRCW04}, but is also known for high rejection-rate on a manifold in a high-dimensional space~\cite{KTC16}.
-Hierarchical Rejection Sampling (HRS)~\cite{KTC16} is thus proposed that sequentially samples each dimension so that an unqualified candidate can be rejected before all dimensions are sampled. 
-However, the rejection rate is still relatively high~\cite{KTC16}.
-In this paper, we propose an informed sampling by an MCMC approach.
-In order to obtained uniformly sampling on a manifold, MCMC provides an approach that samples from a high-dimensional uniform distribution subject to a manifold constraint.
-Instead of rejecting samplings, original samples are purposefully driven onto a manifold.
-
-One of the major difficulties of sampling the informed level set is that the shape of the cost function can change dramatically with the start and goal states. Because of this, there is not a principled way to sample from the informed set for each possible start and goal combination.  
-
-Following the example of recent work in path planning algorithms such as CHOMP~\cite{RZBS09}, we propose to solve the problem of efficiently sampling uniformly in the level set by using Monte Carlo sampling methods. Monte Carlo sampling methods have been used in the statics and machine learning fields to sample from intractable posteriors. Monte Carlo methods have the desirable property that they are guaranteed to sample the true posterior as the number of steps goes toward infinity.
+For this algorithm, we continue sampling along the Markov Chain until either 
+(i)~the difference between the lower and upper bounds ($\lambda^-$ and $\lambda^+)$ 
+that define our sampling domain is below a predefined threshold or
+(ii)~a predefined number of samples was exceeded.
 
 
-\begin{algorithm}
+\subsubsection{Metropolis-Hasting}
+
+\begin{algorithm}[t]
 	\begin{algorithmic}[1]
-		\STATE
-   	\end{algorithmic}
-	\caption{MCMC Informed Sampling}
-	\label{alg:mcmc_informed_sampling}
+		\STATE $ x'_{i+1} \leftarrow g( x'_{i+1} \mid x_{i} ) $
+		\COMMENT {$g$~is a Gaussian}		
+		\IF{ \textsc{Cost}($ x'_{i+1} $) $ < c_{\text{best}} $  }
+		  \RETURN $ x_{i+1} \leftarrow x'_{i+1} $ 
+		\ELSE
+		  \RETURN $ x_{i+1} \leftarrow x_{i} $
+		\ENDIF 
+	\end{algorithmic}
+	\caption{Metropolis-Hastings MCMC $(x_{i}, c_{\text{best}})$}
+	\label{alg:mh_mcmc}	
 \end{algorithm}
-}
+
+The Metropolis-Hastings algorithm, describe in Alg.~\ref{alg:mh_mcmc}, also uses rejection sampling around the previously generated sample to propose the next sample of the Markov Chain.
+While the general algorithm is slightly more complex, for our setting it can be described as follows:
+We generate a new sample $ x_{i+1}$ around the previous sample $ x_{i}$ using a Gaussian distribution (line~1).
+We then check if the point lies in the informed set (lines 2-5) and if it does we return it.
+If not, we return the previous sample.
+%
+For this algorithm, we continue sampling along the Markov Chain as long as new samples are produced.
+
+
+
+%\subsection{Probabilistic completeness}
+
 
 \section{Evaluation}
 \label{sec:eval}
