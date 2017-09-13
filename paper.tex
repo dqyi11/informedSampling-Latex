@@ -50,12 +50,12 @@ Informed sampling by Markov Chain Monte Carlo methods
 
 
 \author{
+Daqing Yi$^{*}$,
 Rohan Thakker$^{*}$,
-Cole Gulino$^{*}$,
-Daqing Yi$^{}$,
-Oren Salzman$^{}$ and
+Cole Gulino$^{}$, 
+Oren Salzman$^{}$, and
 Siddhartha Srinivasa$^{}$% <-this % stops a space
-\thanks{*R. Thakker and C. Gulino contributed equally to this paper.}
+\thanks{*Daqing Yi and R. Thakker contributed equally to this paper.}
 \thanks{This work was (partially) funded by the National Science Foundation IIS (\#1409003), Toyota Motor Engineering \& Manufacturing (TEMA), and the Office of Naval Research.}% <-this % stops a space
 \thanks{$^{1}${\tt\small \{rthakker, cgulino, daqingy, osalzman, ss5\} @andrew.cmu.edu}}%
 %
@@ -134,7 +134,6 @@ This may cause the planning algorithm to spend most of its time trying to produc
 \end{figure}
 
 
-
 In this paper, we suggest an alternative approach to produce samples in the informed set \Cinf for a wide range of settings.
 \textbf{
 Our main insight is to recast this problem as one of sampling uniformly within a level set of an implicit function.
@@ -195,7 +194,7 @@ reachability-guided sampling~\cite{SWT09, PLAEFRA17} focuses on sampling regions
 
 Of specific interest to our work are approaches that produce samples in the informed set~\Cinf.
 As mentioned in Sec.~\ref{sec:intro} Gammel et al.~\cite{GSB14} describe an approach to sample uniformly in~\Cinf for the specific case of where $\calX = \R^d$ and when optimizing for path length.
-To the best of our knowledge, the only method to produce samples in non-Euclidean spaces (other than rejection sampling) is HRS by Kunz et al.~\cite{KTC16}.
+To the best of our knowledge, the only method to produce samples in non-Euclidean spaces that are applied to motion planning problems (other than rejection sampling) is HRS by Kunz et al.~\cite{KTC16}.
 
 \subsection{Markov Chain Monte Carlo (MCMC)}
 \label{subsec:mcmc}
@@ -435,7 +434,7 @@ See Fig.~\ref{fig:cost_surface_1d} for a side view of the cost surface for one d
 \section{MCMC-based Informed Sampling}
 \label{sec:algorithm}
 
-In this section we describe our approach to efficiently produce a sequence of samples in the informed set~\Cinf given a specific cost~$c_{\text{best}}$.
+In this section we describe our approach to efficiently produce a sequence of samples in the informed set~\Cinf given a specific cost~$c_{\text{best}}$ of trajectory $x_{best}(t)$.
 Our algorithm (see Alg.~\ref{alg:mcmc_informed_sampling}) starts by randomly sampling a state~$x_\text{rand} \in \calX$ (line~2).
 This sample is used to produces a 
 sample~$x_0 \in \partial\Cinf$ 
@@ -457,15 +456,11 @@ This will occur if the search algorithm that uses our sampler finds a path to th
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
 		\LOOP
-			\STATE $x_{\text{rand}} \leftarrow \texttt{sample\_uniform(\calX)}$
-			\STATE $x_{0} 
-		 \leftarrow
-		 \texttt{newton\_raphson}(x_{\text{rand}}, c_{\text{best}})$ ; \hspace{3mm} $i\leftarrow 0$
+			\STATE $x_{0} \leftarrow \texttt{sample\_in\_informed\_space}( method )$
 			\WHILE {\texttt{MCMC\_continue\_chain()}}
 			\STATE $x_{i} \leftarrow \texttt{MCMC\_sample} (x_{i-1}, c_{\text{best}})$
 			\STATE \textbf{output} $x_{i}$
 			\ENDWHILE
-	
 		\ENDLOOP 
 %		\STATE $x_{\text{rand}} \leftarrow \texttt{sample\_uniform(\calX)}$
 %%		\STATE $x_{\text{boundary}} 
@@ -481,14 +476,15 @@ This will occur if the search algorithm that uses our sampler finds a path to th
 %			\STATE $x_{i} \leftarrow \texttt{MCMC} (x_{i-1}, c_{\text{best}})$
 %			\STATE \textbf{output} $x_{i}$
 %		\ENDFOR
-%		 
    	\end{algorithmic}
 	\caption{MCMC-based Informed Sampling $(c_{\text{best}})$}
 	\label{alg:mcmc_informed_sampling}	
 \end{algorithm}
 
-\subsection{Sampling the boundary of \Cinf via Newton-Raphson}
+\subsection{Sampling the boundary of \Cinf}
 \label{subsec:grad}
+We can use either of the following two approaches to sample points in the informed space:
+\subsubsection{Newton-Raphson Method}
 In theory, MCMC methods converge to the desired distribution regardless of the initial sample used to seed the chain.
 In our setting, the probability distribution~\Pinf is defined by having all points in \Cinf distributed uniformly
 while 
@@ -499,6 +495,8 @@ In our setting, we are only interested in points in~\Cinf, thus we can start the
 To do so we apply  Newton-Raphson's method to obtain a sample on $\partial \Cinf$. 
 However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi}), thus if no sample was produced on $\partial \Cinf$ after a predefined number of steps, we restart the algorithm using a different random state~$x_\text{rand}$
 (see also Sec.~\ref{subsec:mcmc}).
+
+\subsubsection{Previous-Trajectory Method}
 
 
 \subsection{Sampling the interior of \Cinf via MCMC}
@@ -520,7 +518,7 @@ and
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
 		\STATE $d \leftarrow$ \texttt{sample\_random\_direction}$()$
-		\STATE $ L(\lambda) = \{  x \mid x = x_i + \lambda d_i \} $
+		\STATE $ L(\lambda) = \{  x \mid x = x_{i-1} + \lambda d_i \} $
 		\STATE $ \lambda^{+} \leftarrow \sup L(\lambda) $; 
 				\hspace{3mm} 
 			   $ \lambda^{-} \leftarrow \inf L(\lambda) $
@@ -529,10 +527,10 @@ and
 
 
 		\STATE $ \lambda' \leftarrow$ \texttt{sample\_random}$ (\lambda^{-} , \lambda^{+})$
-		\STATE $ x_{i+1} \leftarrow x_{i} + \lambda'_{i} d_i $
+		\STATE $ x_{i} \leftarrow x_{i-1} + \lambda'_{i} d_i $
 		
-		\IF{ \textsc{Cost}($ x_{i+1} $) $ < c_{\text{best}} $ }
-		  \RETURN $ x_{i+1}$
+		\IF{ \textsc{Cost}($ x_{i} $) $ < c_{\text{best}} $ }
+		  \RETURN $ x_{i}$
 		\ENDIF
 
 
@@ -544,46 +542,59 @@ and
 		
 		\ENDLOOP
   	\end{algorithmic}
-	\caption{Hit-And-Run MCMC $(x_{i}, c_{\text{best}})$}
+	\caption{Hit-And-Run MCMC $(x_{i-1}, c_{\text{best}})$}
 	\label{alg:hit_and_run_mcmc}	
 \end{algorithm}
 
-
-Hit and Run, described in Alg.~\ref{alg:hit_and_run_mcmc} produces a series of samples $x_0, \ldots$.
-Given the previous sample~$x_i$ it first  samples a random direction on the unit sphere (line 1).
-This induces a line~$L(\lambda)$ passing through~$x_i$  in the direction sampled (line 2) parametrized by a scalar~$\lambda$.
-We obtain upper and lower bounds on~$\lambda$ (line 3) that are problem dependant (e.g. these can relate to joint limits of the robot, bounds on maximum velocity etc.).
+We use the Accelerated Hit and Run algorithm \cite{KSZ11}, described in Alg.~\ref{alg:hit_and_run_mcmc} that produces a series of samples $x_0, \ldots$.
+Given the previous sample~$x_{i-1}$ it first  samples a random direction on the unit sphere (line 1).
+This induces a line~$L(\lambda)$ passing through~$x_{i-1}$  in the direction sampled (line 2) parametrized by a scalar~$\lambda$.
+We obtain upper and lower bounds on $\lambda$ (line 3) that are problem dependant. For example, if we have box constraints on joint limits of the robot and on maximum velocity, then bounds are given by $\lambda^{+} = -\lambda^{-} = l_{diag}$; where $l_{diag}$ is the length of the longest diagonal of the box.
 We then sample a point along~$L(\lambda)$ by sampling a scalar~$\lambda'$ within our bounds (line 5).
-This defines a point~$x_{i+1}$ which is a candidate for the next sample along the Markov Chain (line 6).
+This defines a point~$x_{i}$ which is a candidate for the next sample along the Markov Chain (line 6).
 We then check if the point lies in the informed set (line 7) and if it does we return it.
 If not, we update our bounds (lines~9-12) and repeat the process.
-The algorithm can be view as an efficient method to perform rejection sampling around the previous sample using in a one-dimensional search space parametrized by $\lambda$.
+The algorithm can be viewed as an efficient method that performs rejection sampling along a one-dimensional line passing through the previous sample parametrized by $\lambda$.
 
 For this algorithm, we continue sampling along the Markov Chain until either 
 (i)~the difference between the lower and upper bounds ($\lambda^-$ and $\lambda^+)$ 
 that define our sampling domain is below a predefined threshold or
 (ii)~a predefined number of samples was exceeded.
 
-
-\subsubsection{Metropolis-Hasting}
-
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
-		\STATE $ x'_{i+1} \leftarrow g( x'_{i+1} \mid x_{i} ) $
-		\COMMENT {$g$~is a Gaussian}		
-		\IF{ \textsc{Cost}($ x'_{i+1} $) $ < c_{\text{best}} $  }
-		  \RETURN $ x_{i+1} \leftarrow x'_{i+1} $ 
-		\ELSE
-		  \RETURN $ x_{i+1} \leftarrow x_{i} $
+	    \LOOP
+		\STATE $ x_{i} \leftarrow \texttt{sample\_normal}(x_{i-1},\Sigma) $ 
+		\label{start}
+		\IF{ \textsc{Cost}($ x_{i} $) $ < c_{\text{best}} $  }
+		  \RETURN $x_{i}$
 		\ENDIF 
+		\ENDLOOP
 	\end{algorithmic}
-	\caption{Metropolis-Hastings MCMC $(x_{i}, c_{\text{best}})$}
+	\caption{Metropolis-Hastings MCMC $(x_{i-1}, c_{\text{best}})$}
 	\label{alg:mh_mcmc}	
 \end{algorithm}
 
+\begin{algorithm}[t]
+	\begin{algorithmic}[1]
+	\IF{ $method = \texttt{Newton-Rapson}$  }
+		\STATE $x_{\text{rand}} \leftarrow \texttt{sample\_uniform(\calX)}$
+		\STATE $x_{0} \leftarrow \texttt{newton\_raphson}(x_{\text{rand}}, c_{\text{best}})$ ; \hspace{3mm} $i\leftarrow 0$
+	\ELSIF{ $method = \texttt{Previous-Trajectory}$ }
+	    \STATE $t_{rand} \leftarrow \texttt{sample\_random\_time()}$
+	    \STATE $x_{0} \leftarrow x_{best}(t_{rand})$
+	\ENDIF
+	\RETURN $x_0$
+	\end{algorithmic}
+	\caption{sample\_in\_informed\_space$(method, c_{best})$}
+	\label{alg:sample_inf}	
+\end{algorithm}
+
+\subsubsection{Metropolis-Hasting}
+
 The Metropolis-Hastings algorithm, describe in Alg.~\ref{alg:mh_mcmc}, also uses rejection sampling around the previously generated sample to propose the next sample of the Markov Chain.
 While the general algorithm is slightly more complex, for our setting it can be described as follows:
-We generate a new sample $ x_{i+1}$ around the previous sample $ x_{i}$ using a Gaussian distribution (line~1).
+We generate a new sample $ x_{i}$ around the previous sample $ x_{i-1}$ using a Gaussian distribution (line~1).
 We then check if the point lies in the informed set (lines 2-5) and if it does we return it.
 If not, we return the previous sample.
 %
@@ -591,8 +602,8 @@ For this algorithm, we continue sampling along the Markov Chain as long as new s
 
 
 \section{Evaluation}
-
 \label{sec:eval}
+
 % \subsection{Uniformity}
 
 % (Give a set of parameters)
@@ -606,11 +617,14 @@ For this algorithm, we continue sampling along the Markov Chain as long as new s
 
 \subsection{Sampling Efficiency}
 
-Fig. \ref{fig:sampling_efficiency} shows the semi-log plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio, i.e. the ratio of the volume of informed space to the volume of entire state space for 5000 samples. The informed set volume ratio is approximated by the ratio of the number of accepted to the total number samples obtained while running rejection sampling. Efficiency of rejection sampling based methods is very low for high dimesions because this ratio decreases exponentially w.r.t the dimension of the space due to the curse of dimensionality. The Fig. \ref{fig:sampling_efficiency} shows that MCMC and Hit\&Run have a better sampling efficiency compared to HRS and RS with decrease in informed set ratio or increase in dimensions. TODO: Brag about order of magnitude improvement (mostly for 6 DoF example)
+Fig. \ref{fig:sampling_efficiency} shows the log plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio, i.e. the ratio of the volume of informed space to the volume of entire state space for 5000 samples. 
+The informed set volume ratio is approximated by the ratio of the number of accepted to the total number samples obtained while running rejection sampling. Efficiency of rejection sampling based methods is very low for high dimesions because this ratio decreases exponentially w.r.t the dimension of the space due to the curse of dimensionality. 
+The Fig. \ref{fig:sampling_efficiency} shows that MCMC and Hit\&Run have a better sampling efficiency compared to HRS and RS with decrease in informed set ratio or increase in dimensions. 
+TODO: Brag about order of magnitude improvement!
 
-\begin{figure*}[t!]
+\begin{figure}[t!]
 	\centering
-	\begin{subfigure}[b]{0.32\textwidth}
+	\begin{subfigure}[b]{0.48\linewidth}
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
 		\caption{2DoF - 4D TODO: rescale x axis}
 		\label{fig:sampling_efficiency:2d}
@@ -620,45 +634,69 @@ Fig. \ref{fig:sampling_efficiency} shows the semi-log plot of the average time t
 % 		\caption{3DoF - 6D}
 % 		\label{fig:sampling_efficiency:3d}
 % 	\end{subfigure}	
-	\begin{subfigure}[b]{0.32\textwidth}
+	\begin{subfigure}[b]{0.48\linewidth}
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
 		\caption{6DoF - 12D. TODO: rescale x axis}
 		\label{fig:sampling_efficiency:6d}
 	\end{subfigure}\\
-	\begin{subfigure}[b]{0.32\textwidth}
+	\begin{subfigure}[b]{0.48\linewidth}
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
 		\caption{2DoF - 4D. TODO:Time per sample vs level set}
 		\label{fig:sampling_efficiency:6d}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.32\textwidth}
+	\begin{subfigure}[b]{0.48\linewidth}
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
 		\caption{6DoF - 12D. TODO:Time per sample vs level set}
 		\label{fig:sampling_efficiency:6d}
 	\end{subfigure}
 	\caption{\captionstyle Sampling efficiency of different sampling methods}
 	\label{fig:sampling_efficiency}
-\end{figure*} 
+\end{figure} 
 
 \subsection{Planning Efficiency}
 
-To test the planning efficiency we run the samplers with the informed RRT* planner on 3 different problems described below and shown in Fig. \ref{fig:problems}. For each problem the start and goal states (positions and velocities) are known in the joint space.
+The quality of samples determines the efficiency of resulting planning algorithms.
+To evaluate how the samplers impact the planning efficiency, we run the samplers with the informed RRT* planner~\cite{GSB14} on three different problems described below and shown in Fig. \ref{fig:problems}. 
+For each problem the start and goal states (positions and velocities) are known in the joint space.
 
 \subsubsection{Problem 1: 3 DoF Planar Manipulator}
 
+Problem 1 is a 3 DoF manipulator that moves on a plane.
+The state boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ 1 $.
+
+
 \subsubsection{Problem 2: 6 DoF Snake Arm}
 
+Problem 2 is a 6 DoF snake arm that moves in a 3D workspace.
+The state boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ 1 $.
+
 \subsubsection{Problem 3: 7 DoF HERB}
+
+Dimension 0 [0.541593 , 5.74159]
+Dimension 1 [-2 , 2]
+Dimension 2 [-2.8 , 2.8]
+Dimension 3 [-0.9 , 3.1]
+Dimension 4 [-4.76 , 1.24]
+Dimension 5 [-1.6 , 1.6]
+Dimension 6 [-3 , 3]
+Dimension 7 [-0.75 , 0.75]
+Dimension 8 [-0.75 , 0.75]
+Dimension 9 [-2 , 2]
+Dimension 10 [-2 , 2]
+Dimension 11 [-2.5 , 2.5]
+Dimension 12 [-2.5 , 2.5]
+Dimension 13 [-2.5 , 2.5]
 
 
 \begin{figure*}[t!]
 	\centering
 	\begin{subfigure}[b]{\textwidth}
 	    \centering
-		\includegraphics[height=2.7cm]{fig/planning_efficiency/3dof_1}
-		\includegraphics[height=2.7cm]{fig/planning_efficiency/3dof_2}
-		\includegraphics[height=2.7cm]{fig/planning_efficiency/3dof_3}
-		\includegraphics[height=2.7cm]{fig/planning_efficiency/3dof_4}
-		\includegraphics[height=2.7cm]{fig/planning_efficiency/3dof_5}
+		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_1}
+		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_2}
+		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_3}
+		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_4}
+		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_5}
 		\caption{3DOF planar}
 		\label{fig:planning_efficiency:3dof:example}
 	\end{subfigure}
@@ -709,6 +747,8 @@ To test the planning efficiency we run the samplers with the informed RRT* plann
 \end{figure} 
 
 \section{Conclusion}
+
+The Met
 
 What MCMC algorithm is the best to use?
 

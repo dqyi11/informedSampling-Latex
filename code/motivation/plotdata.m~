@@ -1,0 +1,32 @@
+
+fastX = [1:1:45]';
+slowX = [1:1:14]';
+
+green = [49,163,84]/255;
+red = [222 45 38]/255;
+blue = [49,130,189]/255;
+orange = [230,85,13]/255;
+purple = [117,107,177]/255;
+pink = [197,27,138]/255;
+
+
+hold on;
+plot(fastX, fastpath(:,9)/1.5,'-', 'linewidth', 2, 'color', );
+plot(fastX, fastpath(:,11)/4,'-', 'linewidth', 2);
+plot(fastX, fastpath(:,13)/5,'-', 'linewidth', 2);
+
+plot(fastX, fastpath(:,2), '--', 'linewidth', 2);
+plot(fastX, fastpath(:,4), '--', 'linewidth', 2);
+plot(fastX, fastpath(:,6), '--', 'linewidth', 2);
+hold off;
+
+figure;
+hold on;
+plot(slowX, slowpath(:,9)/1.5, '-', 'linewidth', 2);
+plot(slowX, slowpath(:,11)/4, '-', 'linewidth', 2);
+plot(slowX, slowpath(:,13)/5, '-', 'linewidth', 2);
+
+plot(slowX, fastpath(:,2), '--', 'linewidth', 2);
+plot(slowX, fastpath(:,4), '--', 'linewidth', 2);
+plot(slowX, fastpath(:,6), '--', 'linewidth', 2);
+hold off;
