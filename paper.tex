@@ -45,7 +45,9 @@
 
 
 \title{\LARGE \bf
-Informed sampling by Markov Chain Monte Carlo methods
+Generalizing Informed Sampling
+for Asymptotically Optimal Sampling-based Planning via Markov Chain
+Monte Carlo Methods
 }
 
 
@@ -281,8 +283,10 @@ Notice that we do not require that~$ \gamma^*(x) $ is collision free.
 
 
 
-\subsection{Motivating example---Minimal-Time Double Integrator (MTDI)}
+\subsection{Motivating example---Minimal-Time Double Integrator}
 \label{sec:mtdi}
+
+\os{mention~\cite{LM97} here or in related work}
 
 To understand why we resort to optimization-based methods and do not attempt to provide a closed-form solution to sample $\Cinf$ we study the structure of the informed set for a simple yet important dynamical system---the double integrator minimizing time (MTDI). 
 Here, we are given a one-dimensional point robot with bounded acceleration moving amid obstacles. We wish to compute the minimal-time trajectory between two states $x_s, x_g$.
@@ -484,6 +488,7 @@ It is important to note that at each iteration, we will query our algorithm for 
 Furthermore, the value~$c_{\text{best}}$ can decrease between consecutive iterations.
 This will occur if the search algorithm that uses our sampler finds a path to the goal whose cost is lower than~$c_{\text{best}}$.
 
+\os{mention that it is AO}
 
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
@@ -592,6 +597,8 @@ For this algorithm, we continue sampling along the Markov Chain until either
 (i)~the difference between the lower and upper bounds ($\lambda^-$ and $\lambda^+)$ 
 that define our sampling domain is below a predefined threshold or
 (ii)~a predefined number of samples was exceeded.
+
+\os{Mention that we do not need convexity}
 
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
@@ -705,7 +712,7 @@ All the samplers have close performances.
 RS and HRS can be the most efficient because of its simple design.
 But when problems get harder, HNR outperforms HRS significantly.
 
-
+\os{Explain why MCMC is flat, mention strawman approach}
 
 \subsection{Planning Efficiency}
 
@@ -803,6 +810,11 @@ But in higher dimension performance, the advantage of HNR in sampling efficiency
 In Figure~\ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}, the cost of current best solution by planners with HNR sampler converge significantly faster.
 
 \section{Conclusion}
+\os{Discuss param tuning, we did nothing + there is a wealth of literature}
+
+\os{use with BIT*, challenge - distance function is not a metric}
+
+
 
 The Met
 
