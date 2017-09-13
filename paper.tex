@@ -150,6 +150,34 @@ performs a series of one-dimensional rejection samples which are extremely fast 
 Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06, H02} and that a gradient can be defined over the cost function.
 Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitude when compared to algorithms using rejection sampling or HRS.
 
+\begin{figure*}[t!]
+	\centering
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[height=3cm]{fig/motivation/slow1}
+		\includegraphics[height=3cm]{fig/motivation/slow2}
+		\includegraphics[height=3cm]{fig/motivation/slow3}
+		\includegraphics[height=3cm]{fig/motivation/slow4}
+		\includegraphics[height=3cm]{fig/motivation/slowmotion}
+		\caption{Zero goal velocity}
+		\label{fig:motivation:slow}
+	\end{subfigure}
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[height=3cm]{fig/motivation/fast1}
+		\includegraphics[height=3cm]{fig/motivation/fast2}
+		\includegraphics[height=3cm]{fig/motivation/fast3}
+		\includegraphics[height=3cm]{fig/motivation/fast4}
+		\includegraphics[height=3cm]{fig/motivation/fastmotion}
+		\caption{Non-zero goal velocity}
+		\label{fig:motivation:fast}
+	\end{subfigure}
+	\caption{HERB moves right arm from a start configuration to a goal configuration, which are very close.
+    When the goal velocity is non-zero, HERB needs to move right arm further away to accelerate.
+	}
+	\label{fig:motivation}
+\end{figure*} 
+
 \os{structure}
 
 \section{Related work}
@@ -228,6 +256,9 @@ Our paper can be seen as a hybrid approach marrying sampling-based planning with
 
 \section{Problem definition}
 \label{sec:pdef}
+
+
+
 Let $\calX, \calU$ denote the state and controls spaces, respectively and set $\Cfree \subset \calX$ to be the set of states where the robot is collision free.
 A \emph{trajectory} $\gamma$ is a timed path through~$\calX$ obtained by applying at time $t$ control $u(t) \in \calU$ and satisfying the system dynamics 
 $\dot{x}(t) = f( x(t) , u(t) )$.
@@ -249,7 +280,8 @@ Here~$ \gamma^*(x) $ denotes the optimal trajectory  from $ x_s $ to $ x_g $ con
 Notice that we do not require that~$ \gamma^*(x) $ is collision free.
 
 
-\section{Motivating example---Minimal-Time Double Integrator (MTDI)}
+
+\subsection{Motivating example---Minimal-Time Double Integrator (MTDI)}
 \label{sec:mtdi}
 
 To understand why we resort to optimization-based methods and do not attempt to provide a closed-form solution to sample $\Cinf$ we study the structure of the informed set for a simple yet important dynamical system---the double integrator minimizing time (MTDI). 
@@ -564,8 +596,11 @@ that define our sampling domain is below a predefined threshold or
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
 	    \LOOP
-		\STATE $ x_{i} \leftarrow \texttt{sample\_normal}(x_{i-1},\Sigma) $ 
+		\STATE $ x'_{i} \leftarrow \texttt{sample\_normal}(x_{i-1},\Sigma) $ 
 		\label{start}
+		\IF{ $ x'_{i} \leftarrow$ \texttt{sample\_random}$ (0.0 , 1.0) >  \pi( x'_{i} ) / \pi( x_{i} ) $  }
+		\STATE x
+ 		\ENDIF
 		\IF{ \textsc{Cost}($ x_{i} $) $ < c_{\text{best}} $  }
 		  \RETURN $x_{i}$
 		\ENDIF 
@@ -615,16 +650,32 @@ For this algorithm, we continue sampling along the Markov Chain as long as new s
 % 	\item convergence rate (assumption: MCMC converge faster)
 % \end{itemize}
 
+We evaluate the performance of proposed MCMC methods by comparing four types of samplers, which are rejection sampler (RS), hierarchical rejection sampler (HRS), Metropolis-Hastings sampler (MHS), and Hit-and-run sampler (HNR).
+We use different samplers to generate a fixed number of samples in different informed sets to check the sampling efficiency, especially when the sampling is harder (in a small informed set).
+We then evaluate how the samplers works with informed RRT*~\cite{GSB14}, which reflect the quality of samples in an informed set.
+
 \subsection{Sampling Efficiency}
 
 Fig. \ref{fig:sampling_efficiency} shows the log plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio, i.e. the ratio of the volume of informed space to the volume of entire state space for 5000 samples. 
 The informed set volume ratio is approximated by the ratio of the number of accepted to the total number samples obtained while running rejection sampling. Efficiency of rejection sampling based methods is very low for high dimesions because this ratio decreases exponentially w.r.t the dimension of the space due to the curse of dimensionality. 
 The Fig. \ref{fig:sampling_efficiency} shows that MCMC and Hit\&Run have a better sampling efficiency compared to HRS and RS with decrease in informed set ratio or increase in dimensions. 
-TODO: Brag about order of magnitude improvement!
+Figure \ref{fig:sampling_efficiency:levelset} shows how the informed set volume ratio decreases as the level set cost $ c_{best} $ becomes smaller in problems of different dimensions.
+In a higher dimension, the informed set volume ratio falls much more quickly as the level set cost $ c_{best} $ decreases in planning process, as new better solutions are kept being found.
 
 \begin{figure}[t!]
 	\centering
 	\begin{subfigure}[b]{0.48\linewidth}
+		\includegraphics[width=\linewidth]{fig/sampling_efficiency/levelset}
+		\caption{2DoF - 4D. TODO:Time per sample vs level set}
+		\label{fig:sampling_efficiency:levelset}
+	\end{subfigure}
+	%\begin{subfigure}[b]{0.48\linewidth}
+	%	\includegraphics[width=\linewidth]{fig/sampling_efficiency/levelset_6d}
+	%	\caption{6DoF - 12D. TODO:Time per sample vs level set}
+	%	\label{fig:sampling_efficiency:6d}
+	%\end{subfigure}
+	 \\
+	\begin{subfigure}[b]{0.78\linewidth}
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
 		\caption{2DoF - 4D TODO: rescale x axis}
 		\label{fig:sampling_efficiency:2d}
@@ -634,24 +685,27 @@ TODO: Brag about order of magnitude improvement!
 % 		\caption{3DoF - 6D}
 % 		\label{fig:sampling_efficiency:3d}
 % 	\end{subfigure}	
-	\begin{subfigure}[b]{0.48\linewidth}
+	\begin{subfigure}[b]{0.78\linewidth}
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
 		\caption{6DoF - 12D. TODO: rescale x axis}
-		\label{fig:sampling_efficiency:6d}
-	\end{subfigure}\\
-	\begin{subfigure}[b]{0.48\linewidth}
-		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
-		\caption{2DoF - 4D. TODO:Time per sample vs level set}
-		\label{fig:sampling_efficiency:6d}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.48\linewidth}
-		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
-		\caption{6DoF - 12D. TODO:Time per sample vs level set}
 		\label{fig:sampling_efficiency:6d}
 	\end{subfigure}
 	\caption{\captionstyle Sampling efficiency of different sampling methods}
 	\label{fig:sampling_efficiency}
 \end{figure} 
+vantage of sampling a near state.
+Both the per-sampling time of HRS 
+It is noticeable that both x axis and y axis are converted by $ \log_{10} () $ in Figure~\ref{fig:sampling_efficiency:2d} and Figure~\ref{fig:sampling_efficiency:6d}.
+This reserves the linearity of the data from rejection sampler, but also scales the difference in a smaller range for comparison.
+Keep in mind that the differences in unit (ms) are much bigger.
+\dy{TODO: change MCMC to MH (Metropolis Hasting) in the plots}
+Metropolis-Hasting shows consistent performance when the informed set volume ratio is decreased, because it takes the adand HNR increases with the decrease of the informed set volume ratio. 
+When informed set volume ratio is relatively high, it is easy to generate qualified samples.
+All the samplers have close performances.
+RS and HRS can be the most efficient because of its simple design.
+But when problems get harder, HNR outperforms HRS significantly.
+
+
 
 \subsection{Planning Efficiency}
 
@@ -661,32 +715,23 @@ For each problem the start and goal states (positions and velocities) are known 
 
 \subsubsection{Problem 1: 3 DoF Planar Manipulator}
 
-Problem 1 is a 3 DoF manipulator that moves on a plane.
-The state boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ 1 $.
-
+Problem 1 is a 3 DoF manipulator that moves on a plane, which results in a 6 dimension space.
+The position boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ 1 $.
+Figure~\ref{fig:planning_efficiency:3dof:example} shows a few steps of a planned path.
 
 \subsubsection{Problem 2: 6 DoF Snake Arm}
 
-Problem 2 is a 6 DoF snake arm that moves in a 3D workspace.
-The state boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ 1 $.
+Problem 2 is a 6 DoF snake arm that moves in a 3D workspace, which results in a 12 dimension space.
+The position boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ 1 $.
+Figure~\ref{fig:planning_efficiency:6dof:example} shows a few steps of a planned path.
 
 \subsubsection{Problem 3: 7 DoF HERB}
 
-Dimension 0 [0.541593 , 5.74159]
-Dimension 1 [-2 , 2]
-Dimension 2 [-2.8 , 2.8]
-Dimension 3 [-0.9 , 3.1]
-Dimension 4 [-4.76 , 1.24]
-Dimension 5 [-1.6 , 1.6]
-Dimension 6 [-3 , 3]
-Dimension 7 [-0.75 , 0.75]
-Dimension 8 [-0.75 , 0.75]
-Dimension 9 [-2 , 2]
-Dimension 10 [-2 , 2]
-Dimension 11 [-2.5 , 2.5]
-Dimension 12 [-2.5 , 2.5]
-Dimension 13 [-2.5 , 2.5]
-
+Problem 3 is a 7 DoF Barrett WAM arm of HERB that moves in a 3D workspace, which results in a 14 dimension space.
+The position boundaries of 7 joints of the arm are $  [0.541593 , 5.74159] $, $  [-2 , 2] $, $ [-2.8 , 2.8] $, $ [-0.9 , 3.1] $, $ [-4.76 , 1.24] $, $ [-1.6 , 1.6] $ and $ [-3 , 3] $.
+The velocity boundary of 7 joints of the arm are $ [-0.75 , 0.75] $, $ [-0.75 , 0.75] $, $ [-2 , 2] $, $ [-2 , 2] $, $ [-2.5 , 2.5] $, $ [-2.5 , 2.5] $ and $ [-2.5 , 2.5] $.
+The accelerations of all the joints are set to $ 1 $.
+Figure~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned path.
 
 \begin{figure*}[t!]
 	\centering
@@ -725,26 +770,37 @@ Dimension 13 [-2.5 , 2.5]
 \end{figure*} 
 
 
-\begin{figure}[t!]
+\begin{figure*}[t!]
 	\centering
-	\begin{subfigure}[b]{0.5\textwidth}
+	\begin{subfigure}[b]{0.32\textwidth}
 		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_general}
 		\caption{\captionstyle Planning Efficiency for Problem 1: 3 DoF Manipulator}
 		\label{fig:planning_efficiency:3dof:general}
 	\end{subfigure}	
-	\begin{subfigure}[b]{0.5\textwidth}
+	\begin{subfigure}[b]{0.32\textwidth}
 		\includegraphics[width=\linewidth]{fig/planning_efficiency/6dof_hammering}
 		\caption{\captionstyle Planning Efficiency for Problem 2: 6DoF Hammering Task}
 		\label{fig:planning_efficiency:6dof:hammering}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.5\textwidth}
+	\begin{subfigure}[b]{0.32\textwidth}
 	\includegraphics[width=\linewidth]{fig/planning_efficiency/herb_batting_efficiency}
 	\caption{\captionstyle Planning Efficiency for Problem 3: 7DoF HERB Batting Task}
 	\label{fig:planning_efficiency:herb:batting}
     \end{subfigure}
 	\caption{Planning Efficiency}
 	\label{fig:planning_efficiency}
-\end{figure} 
+\end{figure*} 
+
+\dy{TODO: add a plot that shows the increases of samples}
+
+MHS shows the worst performance in Figure~\ref{fig:planning_efficiency:3dof:general}, \ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}.
+Though theoretically samples converge to a target distribution, the samples could be either too correlated for exploration purpose in planning.
+If the variance of transition distribution is too high, it will then move out of the informed set too frequently, and takes longer to converge.
+Ideally we want to have markov chains are less correlated but moves in informed sets.
+
+HNR shows close performance with RS and HRS in a 6-dimension space, as in Figure~\ref{fig:planning_efficiency:3dof:general}.
+But in higher dimension performance, the advantage of HNR in sampling efficiency is shown.
+In Figure~\ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}, the cost of current best solution by planners with HNR sampler converge significantly faster.
 
 \section{Conclusion}
 
