@@ -87,7 +87,7 @@ However, when planning with differential constraints in non-Euclidean state spac
 State-of-the-art approaches to sampling~$\Cinf$ in such domains such as Hierarchical Rejection Sampling (HRS) may still be slow in high-dimensional state space.
 This may cause the planning algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
 In this paper, we suggest an alternative approach to produce samples in the informed set~\Cinf for a wide range of settings.
-Our main insight is to recast this problem as one of sampling uniformly within a level set of an implicit function.
+Our main insight is to recast this problem as one of sampling uniformly within an informed set of an implicit function.
 This recasting enables us to apply Monte Carlo sampling methods, used very effectively in the Machine Learning and Optimization communities, to solve our problem.
 We show for a wide range of scenarios that using our sampler can accelerate the convergence rate to high-quality solutions in high-dimensional problems.
 \end{abstract}
@@ -140,7 +140,7 @@ This may cause the planning algorithm to spend most of its time trying to produc
     \captionstyle
   	Algorithmic approach.
   	Cost function is depicted using isocontours (darker shades reflect lower cost) while the boundary of the informed set is depicted in purple. 
-  	The root-finding and MCMC algorithms are depicted in blue and green, respectively.
+  	The root-finding and MCMC algorithms are depicted in red and turquoise, respectively.
   	}
    	\label{fig:alg}
 \end{figure}
@@ -148,7 +148,7 @@ This may cause the planning algorithm to spend most of its time trying to produc
 
 In this paper, we suggest an alternative approach to produce samples in the informed set \Cinf for a wide range of settings.
 \textbf{
-Our main insight is to recast this problem as one of sampling uniformly within a level set of an implicit function.
+Our main insight is to recast this problem as one of sampling uniformly within an informed set of an implicit function.
 This recasting enables us to apply Monte Carlo sampling methods, used very effectively in the Machine Learning and Optimization communities, to solve our problem.
 }
 Specifically, our approach, depicted in Fig~\ref{fig:alg} consists of two stages:
@@ -200,7 +200,7 @@ Indeed, we demonstrate the efficiency of our approach on a wide variety of syste
 \end{figure*} 
 
 The rest of the paper is structured as follows: after describing related work in Sec.~\ref{sec:related_work}, we formally define our problem in Sec.~\ref{sec:pdef}.
-We then provide in Sec.~\ref{sec:motivation} an intuitive description of the challenges faced in sampling within the informed set for our planning domains.
+We then provide in Sec.~\ref{sec:mtdi} an intuitive description of the challenges faced in sampling within the informed set for our planning domains.
 We continue in Sec.~\ref{sec:algorithm} with a description of our algorithm and present experimental evaluations in Sec.~\ref{sec:eval}.
 Finally, we conclude with a discussion in Sec.~\ref{sec:future}.
 
@@ -304,11 +304,7 @@ Notice that we do not require that~$ \gamma^*(x) $ is collision free.
 
 In this work we consider the problem of efficiently producing samples within~$\Cinf$.
 These samples will be used within the informed RRT* framework to efficiently and incrementally compute trajectories of decreasing cost, converging to the optimal trajectory.
-\os{mention that it is AO}
-\begin{prop}
-	\label{prop:asym_opt}
-	\dy{claim that once informed sampler provides uniform samplings in any given level set in a non-euclidean state space, the corresponding informed RRT* could asymptotically find an optimal solution.}
-\end{prop}
+
 
 
 \section{Motivation---\Cinf in kinodynamic state spaces}
@@ -320,14 +316,20 @@ Specifically, we start by describing the differences in between planning in Eucl
 
 %\os{mention~\cite{LM97} here or in related work}
 \subsection{Geometric vs. Kinodynamic planning}
+Consider the problem depicted in Fig.~\ref{fig:motivation} where HERB is required about a swing action that a robotic arm ends with a relative high velocity towards a direction.
+One approach to address this problem is to first plan in the geometric configuration space and the re-time the algorithm.
+When the start and goal are in close proximity, a geometric planner will simply connect the two states (Fig.~\ref{fig:motivation:fast}).
+However, to adhere to the velocity constraints at the goal, the actual motion that is required is to move back the arm in order to gain speed and then reach the goal (Fig.~\ref{fig:motivation:fast}).
+In such settings, re-timing the path will not produce feasible results.
+The difference between the two motions are shown in a phase plot in Fig.~\ref{fig:motivation:phase_plot}.
 
-\os{refer to Fig.~2 or the updated one.}
-Geometric planning provides motion from a start state to a goal state.
-It is not expressive enough for a wider range of actions, because many kiondynamic features are not considered in the planning process.
-Figure \ref{fig:motivation} gives an example using HERB, which is about a swing action that a robotic arm ends with a relative high velocity towards a direction.
-Geometric planning does not consider velocities in planning, so it can be viewed as considering only zero goal velocity.
-Kinodyanic planning shall capture the velocity requirments, and generate a motion like in Figure\ref{fig:motivation:fast}.
-The difference of two are shown in a phase plot, as in Figure \ref{fig:motivation:phase_plot}.
+
+%Geometric planning provides motion from a start state to a goal state.
+%It is not expressive enough for a wider range of actions, because many kiondynamic features are not considered in the planning process.
+%Figure \ref{fig:motivation} gives an example using HERB, which is about a swing action that a robotic arm ends with a relative high velocity towards a direction.
+%Geometric planning does not consider velocities in planning, so it can be viewed as considering only zero goal velocity.
+%Kinodyanic planning shall capture the velocity requirments, and generate a motion like in Figure\ref{fig:motivation:fast}.
+%The difference of two are shown in a phase plot, as in Figure \ref{fig:motivation:phase_plot}.
 
 
 \subsection{Minimal Time Double Integrator}
@@ -518,111 +520,94 @@ This surface causes a discontinuous cost surface as shown in Fig. ~\ref{fig:cost
 \section{MCMC-based Informed Sampling}
 \label{sec:algorithm}
 
-In this section we describe our approach to efficiently produce new samples in an informed set ~\Cinf given a specific cost~$c_{\text{best}}$ of trajectory $x_{best}(t)$.
+In this section we describe our approach to efficiently produce new samples in an informed set~\Cinf given a specific cost~$c_{\text{best}}$ of trajectory $\gamma_{best}(t)$.
 The samples follow a Monte Carlo Markov Chain, in which a new sample candiate is produceded from a previous sample that also lies in the same informed set.
 It is important to note that at each iteration, we will query our algorithm for one sample. 
 However, this sample depends on the previous iterations of the algorithm which is why we describe it as a method to produce a sequence of samples.
 Furthermore, the value~$c_{\text{best}}$ can decrease between consecutive iterations.
 This will occur if the search algorithm that uses our sampler finds a path to the goal whose cost is lower than~$c_{\text{best}}$.
 
-The idea behind introducing MCMC to informed sampling is to defining a target distribution $ \pi $ as a uniform distribution in a level set $ \Cinf $.
-The sampling process consists of two stages,
+The idea behind applying MCMC for informed sampling is to define a target distribution~$ \pi $ as a uniform distribution over all points in~$ \Cinf $.
+Our approach consists of two stages,
 \begin{enumerate}
-	\item finding a sample in the informed same $ x_0 \in \Cinf $ as the start of a Markov chain, which is written as 
-	$ x_{0} \leftarrow \texttt{sample\_in\_informed\_space}( )$; and
-	\item sampling a new sample $ x_i $ from a previous sample $ x_{i-1} $ in the same informed set, which is written as  $x_{i} \leftarrow \texttt{MCMC\_sample} (x_{i-1}, c_{\text{best}})$.
+	\item finding an initial sample $ x_0 \in \Cinf $ which will serve as the start of a Markov chain. This is implemented using the function 
+	$ \texttt{sample\_in\_informed\_space}( )$, and
+	\item sampling a new sample $ x_i \in \Cinf $ given a previous sample $ x_{i-1} $. This is implemented using the function $\texttt{MCMC\_sample} (x_{i-1}, c_{\text{best}})$.
 \end{enumerate}
-Compared with rejection samplers, a MCMC-based informed sampler takes the advantage of a previous sample in the level set $ \Cinf $ in finding a new sample, while reserves the randomness in problem space search, which builds an ``exploitation and exploration" patter in informed sampling.
 
-to initialize an MCMC algorithm which outputs a series of samples within \Cinf by constructing a Markov Chain.
-This is done until some termination criterion is met and the entire process is repeated (Sec.~\ref{subsec:mcmc}). 
+%Compared with rejection samplers, a MCMC-based informed sampler takes the advantage of a previous sample in the informed set $ \Cinf $ in finding a new sample, while reserves the randomness in problem space search, which builds an ``exploitation and exploration" patter in informed sampling.
+%
+%to initialize an MCMC algorithm which outputs a series of samples within \Cinf by constructing a Markov Chain.
+%This is done until some termination criterion is met and the entire process is repeated (Sec.~\ref{subsec:mcmc}). 
 %Specifically, we chose to use HMC due to its favourable properties (see Sec.~\ref{sec:intro}). 
-For a visualization of the approach, see Fig.~\ref{fig:alg}.
+Our algorithm is described in Alg.~\ref{alg:mcmc_informed_sampling} and visualized in Fig.~\ref{fig:alg}.
+We now continue to detail each of the algorithm's stages.
+%\os{Fix Alg 1 }
 
-\subsection{Find a sample in a level set}
-
-In our setting, we are only interested in points in~\Cinf, thus we can start the Markov Chain in~\Cinf and avoid this burn-in stage. 
-A new Markov chain is initialized when 
-\begin{itemize}
-	\item a new informed set is provided (e.g. a new current-best is found by the planner); or
-	\item a new sample of an existing Markov chain is outside the level set.
-\end{itemize}
-There are a few methods that provides a sample in a given level set $ \Cinf $ in a planning problem, for example
-\begin{itemize}
-	\item sampling from the start state and the goal state
-	\footnote{The start state and the goal state are guaranteed to be in any level set $ \Cinf $ because of the definition of a level set};
-	\item using a gradient descent algorithm (e.g. Newton-Raphson Method~\cite{RT06}) to find a sample in the level set $ \Cinf $; 
-	\footnote{ $ \forall x_i \in \Cinf \land x_j \not\in \Cinf, c( x_i ) > c ( x_j ) $. }
-	\item sampling from a pool of previous samples that are in the level set $ \Cinf $; and
-	\item calling a rejection sampling till one is in the level set is found.
-\end{itemize}
-
-Different methods have their pros and cons.
-For example, a gradient descent algorithm is usually efficient in finding a solution, but subject to only convex problems.
-Sampling from a pool of samples is algorithmic-free but might attract new samples near around previous samples.
-
+\subsection{Finding an initial sample in $\Cinf$}
 In theory, MCMC methods converge to the desired distribution regardless of the initial sample used to seed the chain.
 In our setting, the probability distribution~\Pinf is defined by having all points in \Cinf distributed uniformly
 while 
 the probability of sampling any configuration $x \in \calX \setminus \Cinf$ is zero.
 A common practice to avoid starting biases in MCMC-type algorithm is to discard an initial set of samples (a process referred to as ``burn-in'')~\cite{ADDJ03}. 
 
-However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi}), thus if no sample was produced on $\partial \Cinf$ after a predefined number of steps, we restart the algorithm using a different random state~$x_\text{rand}$
-(see also Sec.~\ref{subsec:mcmc}).
+In our setting, we are only interested in points in~\Cinf, thus we suggest to start the Markov Chain in~\Cinf and avoid this burn-in stage. 
+We restart our process and generate a new Markov chain  when 
+(i)~the cost of $\cbest$ is updated (i.e. a new solution is found by the planner) or
+(ii)~the new sample on the existing Markov chain is outside~\Cinf.
+
+We suggest several methods to produce an initial sample~$x_0 \in \Cinf $ 
+\begin{itemize}
+	\item randomly returning either the start state or the goal state,
+	\item randomly sampling a state $x_{\text rand} \in \Cinf$ and using a gradient descent algorithm (e.g. Newton-Raphson Method~\cite{RT06}) to find a sample in~$ \Cinf $
+%	\footnote{ $ \forall x_i \in \Cinf \land x_j \not\in \Cinf, c( x_i ) > c ( x_j ) $. }
+	\item sampling from a pool of previous samples that are in the informed set $ \Cinf $ and
+	\item applying rejection sampling until a sample in the informed set is found.
+\end{itemize}
+
+Each of the methods proposed has its own pros and cons.
+For example, a gradient-descent algorithm is usually efficient in finding a solution, but subject to only convex problems.
+Sampling from a pool of samples is algorithmic-free but biases new samples to be near previous samples.
+
+%However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi}), thus if no sample was produced on $\partial \Cinf$ after a predefined number of steps, we restart the algorithm using a different random state~$x_\text{rand}$
+%(see also Sec.~\ref{subsec:mcmc}).
 
 
-\subsection{Generate a new sample in a Markov chain}
+\subsection{Generating a new sample in a Markov chain}
 \label{mcmc}
 
 Our approach is general and can be applied to any MCMC algorithm (see Sec.~\ref{sec:related_work}).
-We demonstrate how to instantiate it with two different algorithms: 
-Metropolis-Hastings and Hit-and-Run.
+The process is demonstrated in Algorithm~\ref{alg:mcmc_informed_sampling}.
+At the beginning of a Markov chain, \texttt{sample\_in\_informed\_space}() is called to generate the first sample in an informed set.
+\texttt{MCMC\_sample}() is called to generate a new sample based on a previous sample $ x_{i-1} $ and a cost $ c_{best} $ that defines an informed set.
+We demonstrate how to instantiate it with two different algorithms \emph{Metropolis-Hastings} and \emph{Hit-and-Run}, which will be described in later subsections.
+If a generated new sample candidate is in the informed set, this candidate will be returned as a new sample.
+But if a generated new sample candidate is not in the informed set, it will go back to line 2.
+A new Markov chain will be initiated by calling \texttt{sample\_in\_informed\_space}() to generate a new sample $ x_0 $.
 
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
-		\LOOP
-		%\STATE $x_{0} \leftarrow \texttt{sample\_in\_informed\_space}( method )$
-		%\WHILE {\texttt{MCMC\_continue\_chain()}}
-		\STATE $x_{i} \leftarrow \texttt{MCMC\_sample} (x_{i-1}, c_{\text{best}})$ \label{alg:mcmc_informed_sampling:start}
-		\IF{ $ x_{i} \not\in \Cinf $ }
+		\LOOP 
+		\IF{ $ x_{i-1} == \varnothing $ }  
+		\label{alg:mcmc_informed_sampling:start}
 			\STATE $x_{0} \leftarrow \texttt{sample\_in\_informed\_space}( )$
+		\ENDIF
+		\STATE $x_{i} \leftarrow \texttt{MCMC\_sample} (x_{i-1}, c_{\text{best}})$ 
+		\IF{ $ x_{i} \not\in \Cinf $ }
+			\STATE $ i \leftarrow 0 $; $ x_{0} \leftarrow \varnothing $
 			\STATE \textbf{Goto} line \ref{alg:mcmc_informed_sampling:start} 
 		\ENDIF
-		\STATE \textbf{output} $x_{i}$
-		%\ENDWHILE
+		\STATE \textbf{return} $x_{i}$
 		\ENDLOOP 
-		%		\STATE $x_{\text{rand}} \leftarrow \texttt{sample\_uniform(\calX)}$
-		%%		\STATE $x_{\text{boundary}} 
-		%		\STATE $x_{0} 
-		%		 \leftarrow
-		%		 \texttt{newton\_raphson}(x_{\text{rand}}, c_{\text{best}})$ ; \hspace{3mm} $i\leftarrow 0$
-		%%		\STATE $x_{0} \leftarrow x_{\text{boundary}}$
-		%		\WHILE {\texttt{MCMC\_continue\_chain()}}
-		%			\STATE $x_{i} \leftarrow \texttt{MCMC} (x_{i-1}, c_{\text{best}})$; \hspace{3mm} $i\leftarrow i+1$
-		%			\STATE \textbf{output} $x_{i}$
-		%		\ENDWHILE		
-		%		\FOR {$i = 1$ to $N$}
-		%			\STATE $x_{i} \leftarrow \texttt{MCMC} (x_{i-1}, c_{\text{best}})$
-		%			\STATE \textbf{output} $x_{i}$
-		%		\ENDFOR
 	\end{algorithmic}
-	\caption{MCMC-based Informed Sampling $(c_{\text{best}})$}
+	\caption{MCMC-based Informed Sampling $( x_{i-1}, c_{\text{best}})$}
 	\label{alg:mcmc_informed_sampling}	
 \end{algorithm}
 
 
-In MCMC-based Informed Sampling, as described in Algorithm~\ref{alg:mcmc_informed_sampling}, 
-a sampler firstly 
-\begin{enumerate}
-\item generate a sample follows a Markov chain 
-(\texttt{MCMC\_sample, line 2});
-and then
-\item decide if the candidate sample is in the level set, a new Markov chain will be created as a restart
-(\texttt{sample\_in\_informed\_space, line 4}).
-\end{enumerate}
-
-
 \subsubsection{Metropolis-Hastings sampler}
+
+\os{Please rewrite this entire section as well as the pseudo code. I did not understand it at all}
 
 The Metropolis-Hastings algorithm is one of the most popular MCMC samplers~\cite{CG95}, because it provides a simple and parameter-free framework that guarantees the convergence of Markov chains to a target distribution.
 Our work adopts the general Metropolis-Hasting algorithm, as described in Alg.~\ref{alg:mh_mcmc}, 
@@ -647,7 +632,7 @@ For this algorithm, we continue sampling along the Markov Chain as long as new s
 	\label{alg:mh_mcmc}	
 \end{algorithm}
 
-We use canonical distribution to approximate the target distribution $ \pi $, which is a uniform distribution subject to a level set.
+We use canonical distribution to approximate the target distribution $ \pi $, which is a uniform distribution subject to an informed set.
 It means that energy function is defined from cost function that bridges cost and probability.
 The energy function's definition provides the flexibility to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. 
 
@@ -696,14 +681,12 @@ The algorithm can be viewed as an efficient method that performs rejection sampl
 		
 		\LOOP
 		
-		
 		\STATE $ \lambda' \leftarrow$ \texttt{sample\_random}$ (\lambda^{-} , \lambda^{+})$
 		\STATE $ x_{i} \leftarrow x_{i-1} + \lambda'_{i} d_i $
 		
 		\IF{ \textsc{Cost}($ x_{i} $) $ < c_{\text{best}} $ }
 		\RETURN $ x_{i}$
 		\ENDIF
-		
 		
 		\IF{ $ \lambda' > 0 $ }
 		\STATE $ \lambda^{+} \leftarrow \lambda' $
@@ -725,19 +708,17 @@ that define our sampling domain is below a predefined threshold or
 The Hit-and-Run algorithm is designed specifically for uniform distributions. 
 Hence, it doesn't require an approximation of a target distribution $ \pi $ that was generated with the energy function for Metropolis-Hastings algorithm.
 
+\subsection{Asymptotic optimality}
+We note that our approach produces samples that cover the informed space. Namely, there is a non-zero probability to sample in any region of $\Cinf$.
+A direct implication of the proof of optimality presented in~\cite{KF11} is that our algorithm is asymptotic optimal:
+
+\begin{prop}
+	\label{prop:asym_opt}
+	Informed RRT*~\cite{GSB14} running with MCMC-based informed sampling is asymptotic optimal.	
+\end{prop}
+
 \section{Evaluation}
 \label{sec:eval}
-
-% \subsection{Uniformity}
-
-% (Give a set of parameters)
-% We firstly need to propose a way of measuring uniformity.
-% Then we can apply it to compare MCMC approach with rejection sampling and hierarchical rejection sampling.
-% We are interested with
-% \begin{itemize}
-% 	\item asymptotic behavior (assumption: MCMC converge to a close uniformity)
-% 	\item convergence rate (assumption: MCMC converge faster)
-% \end{itemize}
 
 We evaluate the performance of proposed MCMC methods by comparing four types of samplers, which are Rejection Sampler (RS), Hierarchical Rejection Sampler (HRS), Metropolis-Hastings Sampler (MHS), and Hit-and-Run Sampler (HNR).
 We use different samplers to generate a fixed number of samples in different informed sets to check the sampling efficiency. %, especially when the sampling is harder (in a small informed set).
@@ -751,19 +732,19 @@ Fig. \ref{fig:sampling_efficiency} shows the log plot of the average time taken 
 The informed set volume ratio is approximated by the ratio of the number of accepted to the total number of samples obtained while running rejection sampling. 
 %Efficiency of rejection sampling based methods is very low for high dimensions because this ratio decreases exponentially w.r.t the dimension of the space, for a given sub-level-set of the cost function. 
 Fig. \ref{fig:sampling_efficiency} shows that MHS and HNR have a better sampling efficiency compared to HRS and RS with decrease in informed set volume ratio or increase in dimensions. 
-Figure \ref{fig:sampling_efficiency:levelset} shows how the informed set volume ratio decreases as the level set cost $ c_{best} $ becomes smaller in problems of different dimensions.
-In a higher dimension, the informed set volume ratio falls much more quickly as the level set cost $ c_{best} $ decreases in planning process, as new better solutions are kept being found.
+Figure \ref{fig:sampling_efficiency:levelset} shows how the informed set volume ratio decreases as the informed set cost $ c_{best} $ becomes smaller in problems of different dimensions.
+In a higher dimension, the informed set volume ratio falls much more quickly as the informed set cost $ c_{best} $ decreases in planning process, as new better solutions are kept being found.
 
 \begin{figure}[t!]
 	\centering
 	\begin{subfigure}[b]{0.78\linewidth}
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/levelset}
-		\caption{2DoF - 4D. TODO:Time per sample vs level set}
+		\caption{2DoF - 4D. TODO:Time per sample vs informed set}
 		\label{fig:sampling_efficiency:levelset}
 	\end{subfigure}
 	%\begin{subfigure}[b]{0.48\linewidth}
 	%	\includegraphics[width=\linewidth]{fig/sampling_efficiency/levelset_6d}
-	%	\caption{6DoF - 12D. TODO:Time per sample vs level set}
+	%	\caption{6DoF - 12D. TODO:Time per sample vs informed set}
 	%	\label{fig:sampling_efficiency:6d}
 	%\end{subfigure}
 	 \\
@@ -786,16 +767,14 @@ In a higher dimension, the informed set volume ratio falls much more quickly as 
 	\label{fig:sampling_efficiency}
 \end{figure} 
 
-\dy{shall we use informed set or level set?}
-
 \dy{going to change the tick labels so this below sentence will be replaced}
 It is noticeable that both x axis and y axis are converted by $ \log_{10} () $ in Figure~\ref{fig:sampling_efficiency:2d} and Figure~\ref{fig:sampling_efficiency:6d}.
 This reserves the linearity of the data from rejection sampler, but also scales the difference in a smaller range for comparison.
 Keep in mind that the differences in unit (ms) are much bigger.
 
 Metropolis-Hastings shows consistent sampling time when problems get harder. 
-It takes the advantage of sampling a near state that generate samples in a level set.
-However this does not reflect the quality of the samples, though all the samples are in the level set.
+It takes the advantage of sampling a near state that generate samples in an informed set.
+However this does not reflect the quality of the samples, though all the samples are in the informed set.
 Recall in Algorithm~\ref{alg:mh_mcmc}, a new sample candidate is obtained from a Gaussian distribution $ q( x \mid x_{i-1}, \Sigma ) $.
 The best covariance $ \Sigma $ that generates faster convergence differs with problem setting.
 A small covariance tends to generate more samples near around previous samples, which a large covariance has better exploration but is more likely to drive a Markov chain outside of an informed set.
