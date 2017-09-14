@@ -22,7 +22,7 @@ plot(dim6(:,12), dim6(:,13), 'color', red, 'linewidth', 4);
 
 xlim([1, 1.41]);
 xlabel('informed set volume ratio');
-ylabel('level set ratio');
+ylabel(' ratio');
 %legend('Rejection', 'HRS', 'MCMC', 'Hit&Run');
 legend('4 dimension', '12 dimension');
 hold off;
