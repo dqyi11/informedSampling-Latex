@@ -306,6 +306,7 @@ In this work we consider the problem of efficiently producing samples within~$\C
 These samples will be used within the informed RRT* framework to efficiently and incrementally compute trajectories of decreasing cost, converging to the optimal trajectory.
 \os{mention that it is AO}
 \begin{prop}
+	\label{prop:asym_opt}
 	\dy{claim that once informed sampler provides uniform samplings in any given level set in a non-euclidean state space, the corresponding informed RRT* could asymptotically find an optimal solution.}
 \end{prop}
 
@@ -321,7 +322,12 @@ Specifically, we start by describing the differences in between planning in Eucl
 \subsection{Geometric vs. Kinodynamic planning}
 
 \os{refer to Fig.~2 or the updated one.}
-
+Geometric planning provides motion from a start state to a goal state.
+It is not expressive enough for a wider range of actions, because many kiondynamic features are not considered in the planning process.
+Figure \ref{fig:motivation} gives an example using HERB, which is about a swing action that a robotic arm ends with a relative high velocity towards a direction.
+Geometric planning does not consider velocities in planning, so it can be viewed as considering only zero goal velocity.
+Kinodyanic planning shall capture the velocity requirments, and generate a motion like in Figure\ref{fig:motivation:fast}.
+The difference of two are shown in a phase plot, as in Figure \ref{fig:motivation:phase_plot}.
 
 
 \subsection{Minimal Time Double Integrator}
@@ -617,11 +623,10 @@ and then
 \end{enumerate}
 
 
-\paragraph{Metropolis-Hastings sampler} 
+\subsubsection{Metropolis-Hastings sampler}
 
-\subsubsection{Metropolis-Hasting}
-
-The Metropolis-Hastings algorithm, describe in Alg.~\ref{alg:mh_mcmc}, also uses rejection sampling around the previously generated sample to propose the next sample of the Markov Chain.
+The Metropolis-Hastings algorithm is one of the most popular MCMC samplers~\cite{CG95}, because it provides a simple and parameter-free framework that guarantees the convergence of Markov chains to a target distribution.
+Our work adopts the general Metropolis-Hasting algorithm, as described in Alg.~\ref{alg:mh_mcmc}, 
 While the general algorithm is slightly more complex, for our setting it can be described as follows:
 We generate a new sample $ x_{i}$ around the previous sample $ x_{i-1}$ using a Gaussian distribution (line~1).
 We then check if the point lies in the informed set (lines 2-5) and if it does we return it.
@@ -629,48 +634,94 @@ If not, we return the previous sample.
 %
 For this algorithm, we continue sampling along the Markov Chain as long as new samples are produced.
 
-
-\subsubsection{Hit-and-Run sampler}
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
-		\STATE $d \leftarrow$ \texttt{sample\_random\_direction}$()$
-		\STATE $ L(\lambda) = \{  x \mid x = x_{i-1} + \lambda d_i \} $
-		\STATE $ \lambda^{+} \leftarrow \sup L(\lambda) $; 
-				\hspace{3mm} 
-			   $ \lambda^{-} \leftarrow \inf L(\lambda) $
-			   
-		\LOOP
-
-
-		\STATE $ \lambda' \leftarrow$ \texttt{sample\_random}$ (\lambda^{-} , \lambda^{+})$
-		\STATE $ x_{i} \leftarrow x_{i-1} + \lambda'_{i} d_i $
-		
-		\IF{ \textsc{Cost}($ x_{i} $) $ < c_{\text{best}} $ }
-		  \RETURN $ x_{i}$
+		\STATE $ x'_{i} \leftarrow \texttt{sample\_normal}( q ( x \mid x_{i-1},\Sigma) ) $ 
+		\label{start}
+		\STATE $ \alpha \leftarrow \frac{ q ( x_{i-1} \mid x'_{i},\Sigma) \pi( x'_{i} ) }{ q ( x'_{i} \mid x_{i-1},\Sigma) \pi( x_{i-1} ) } $
+		\IF{ \texttt{sample\_random}$ (0.0 , 1.0) > \min (1, \alpha) $  }
+            \RETURN $ x'_{i} $
 		\ENDIF
-
-
-		\IF{ $ \lambda' > 0 $ }
-			\STATE $ \lambda^{+} \leftarrow \lambda' $
-		\ELSE
-			\STATE $ \lambda^{-} \leftarrow \lambda'$
-		\ENDIF
-		
-		\ENDLOOP
-  	\end{algorithmic}
-	\caption{Hit-And-Run MCMC $(x_{i-1}, c_{\text{best}})$}
-	\label{alg:hit_and_run_mcmc}	
+		\RETURN $ x_{i} $
+	\end{algorithmic}
+	\caption{Metropolis-Hastings MCMC $(x_{i-1}, c_{\text{best}})$}
+	\label{alg:mh_mcmc}	
 \end{algorithm}
 
-We use the Accelerated Hit and Run algorithm \cite{KSZ11}, described in Alg.~\ref{alg:hit_and_run_mcmc} that produces a series of samples $x_0, \ldots$.
+We use canonical distribution to approximate the target distribution $ \pi $, which is a uniform distribution subject to a level set.
+It means that energy function is defined from cost function that bridges cost and probability.
+The energy function's definition provides the flexibility to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. 
+
+Our energy for any given cost $c$, 
+denoted by~$E\left(c,\Cbest \right)$, 
+is a function of $c$ and the current best cost~$\Cbest$.
+To consider only points in the informed set, all with equal energy, one may consider taking 
+\begin{equation}
+E_{\text{informed}}\left(c,\Cbest \right) = 
+\begin{cases}
+0,	& \text{if } c \leq \Cbest\\        
+\infty,  	& \text{otherwise}.
+\end{cases}
+\end{equation}
+To approximate that function, we propose a formula as below:
+\begin{equation}
+\hat{E}_{\text{informed}} \left( c,\Cbest \right) 
+= \beta \cdot \text{sigm}\left(\Cbest - c\right)
+\end{equation}
+penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some (large\footnote{The constant~$\beta$ gives points out of~\Cinf a large energy value which in turn implies a low probability of being sampled. 
+In theory, we would like to have~$\beta \approx \infty$. 
+However, choosing~$\beta$ to be too large may cause numerical instabilities.}) constant~$\beta$.
+The sigmoid can be seen as a differentiable function smoothing the boundary of~$\Cinf$.
+
+
+\subsubsection{Hit-and-Run sampler}
+
+\dy{Rohan, please finish this part}
+
+Also we can take other approaches that generate samples from a Markov chain without requiring an approximation of a target distribution $ \pi $.
+Hit-and-Run \cite{KSZ11} is one of them that efficiently generates uniform samples in convex regions.
+In order to generalize our sampler to a wider range of problems~\cite{KSZ11} and better efficiency
+We use the Accelerated Hit-and-Run algorithm~\cite{KSZ11}, described in Alg.~\ref{alg:hit_and_run_mcmc} that produces a series of samples $x_0, \ldots$.
 Given the previous sample~$x_{i-1}$ it first  samples a random direction on the unit sphere (line 1).
 This induces a line~$L(\lambda)$ passing through~$x_{i-1}$  in the direction sampled (line 2) parametrized by a scalar~$\lambda$.
-We obtain upper and lower bounds on $\lambda$ (line 3) that are problem dependant. For example, if we have box constraints on joint limits of the robot and on maximum velocity, then bounds are given by $\lambda^{+} = -\lambda^{-} = l_{diag}$; where $l_{diag}$ is the length of the longest diagonal of the box.
+We obtain upper and lower bounds on $\lambda$ (line 3) that are problem dependant. 
+For example, if we have box constraints on joint limits of the robot and on maximum velocity, then bounds are given by $\lambda^{+} = -\lambda^{-} = l_{diag}$; where $l_{diag}$ is the length of the longest diagonal of the box.
 We then sample a point along~$L(\lambda)$ by sampling a scalar~$\lambda'$ within our bounds (line 5).
 This defines a point~$x_{i}$ which is a candidate for the next sample along the Markov Chain (line 6).
 We then check if the point lies in the informed set (line 7) and if it does we return it.
 If not, we update our bounds (lines~9-12) and repeat the process.
 The algorithm can be viewed as an efficient method that performs rejection sampling along a one-dimensional line passing through the previous sample parametrized by $\lambda$.
+
+\begin{algorithm}[t]
+	\begin{algorithmic}[1]
+		\STATE $d \leftarrow$ \texttt{sample\_random\_direction}$()$
+		\STATE $ L(\lambda) = \{  x \mid x = x_{i-1} + \lambda d_i \} $
+		\STATE $ \lambda^{+} \leftarrow \sup L(\lambda) $; 
+		\hspace{3mm} 
+		$ \lambda^{-} \leftarrow \inf L(\lambda) $
+		
+		\LOOP
+		
+		
+		\STATE $ \lambda' \leftarrow$ \texttt{sample\_random}$ (\lambda^{-} , \lambda^{+})$
+		\STATE $ x_{i} \leftarrow x_{i-1} + \lambda'_{i} d_i $
+		
+		\IF{ \textsc{Cost}($ x_{i} $) $ < c_{\text{best}} $ }
+		\RETURN $ x_{i}$
+		\ENDIF
+		
+		
+		\IF{ $ \lambda' > 0 $ }
+		\STATE $ \lambda^{+} \leftarrow \lambda' $
+		\ELSE
+		\STATE $ \lambda^{-} \leftarrow \lambda'$
+		\ENDIF
+		
+		\ENDLOOP
+	\end{algorithmic}
+	\caption{Hit-And-Run MCMC $(x_{i-1}, c_{\text{best}})$}
+	\label{alg:hit_and_run_mcmc}	
+\end{algorithm}
 
 For this algorithm, we continue sampling along the Markov Chain until either 
 (i)~the difference between the lower and upper bounds ($\lambda^-$ and $\lambda^+)$ 
@@ -679,41 +730,7 @@ that define our sampling domain is below a predefined threshold or
 
 \os{Mention that we do not need convexity}
 
-\begin{algorithm}[t]
-	\begin{algorithmic}[1]
-	    \LOOP
-		\STATE $ x'_{i} \leftarrow \texttt{sample\_normal}(x_{i-1},\Sigma) $ 
-		\label{start}
-		\IF{ $ x'_{i} \leftarrow$ \texttt{sample\_random}$ (0.0 , 1.0) >  \pi( x'_{i} ) / \pi( x_{i} ) $  }
-		\STATE x
- 		\ENDIF
-		\IF{ \textsc{Cost}($ x_{i} $) $ < c_{\text{best}} $  }
-		  \RETURN $x_{i}$
-		\ENDIF 
-		\ENDLOOP
-	\end{algorithmic}
-	\caption{Metropolis-Hastings MCMC $(x_{i-1}, c_{\text{best}})$}
-	\label{alg:mh_mcmc}	
-\end{algorithm}
-
-\ignore{
-\begin{algorithm}[t]
-	\begin{algorithmic}[1]
-	\IF{ $method = \texttt{Newton-Rapson}$  }
-		\STATE $x_{\text{rand}} \leftarrow \texttt{sample\_uniform(\calX)}$
-		\STATE $x_{0} \leftarrow \texttt{newton\_raphson}(x_{\text{rand}}, c_{\text{best}})$ ; \hspace{3mm} $i\leftarrow 0$
-	\ELSIF{ $method = \texttt{Previous-Trajectory}$ }
-	    \STATE $t_{rand} \leftarrow \texttt{sample\_random\_time()}$
-	    \STATE $x_{0} \leftarrow x_{best}(t_{rand})$
-	\ENDIF
-	\RETURN $x_0$
-	\end{algorithmic}
-	\caption{sample\_in\_informed\_space$(method, c_{best})$}
-	\label{alg:sample_inf}	
-\end{algorithm}
-}
-
-
+\dy{say some Hit-and-Run's advantages over Metropolis-Hastings}
 
 
 \section{Evaluation}
@@ -735,6 +752,8 @@ We use different samplers to generate a fixed number of samples in different inf
 We then evaluate how the samplers works with informed RRT*~\cite{GSB14}, which reflect the quality of samples in an informed set.
 
 \subsection{Sampling Efficiency}
+
+\dy{TODO: change MCMC to MH (Metropolis Hasting) in the plots}
 
 Fig. \ref{fig:sampling_efficiency} shows the log plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio, i.e. the ratio of the volume of informed space to the volume of entire state space for 5000 samples. 
 The informed set volume ratio is approximated by the ratio of the number of accepted to the total number samples obtained while running rejection sampling. Efficiency of rejection sampling based methods is very low for high dimesions because this ratio decreases exponentially w.r.t the dimension of the space due to the curse of dimensionality. 
@@ -773,23 +792,53 @@ In a higher dimension, the informed set volume ratio falls much more quickly as 
 	\caption{\captionstyle Sampling efficiency of different sampling methods}
 	\label{fig:sampling_efficiency}
 \end{figure} 
-vantage of sampling a near state.
-Both the per-sampling time of HRS 
+
+\dy{shall we use informed set or level set?}
+
+\dy{going to change the tick labels so this below sentence will be replaced}
 It is noticeable that both x axis and y axis are converted by $ \log_{10} () $ in Figure~\ref{fig:sampling_efficiency:2d} and Figure~\ref{fig:sampling_efficiency:6d}.
 This reserves the linearity of the data from rejection sampler, but also scales the difference in a smaller range for comparison.
 Keep in mind that the differences in unit (ms) are much bigger.
-\dy{TODO: change MCMC to MH (Metropolis Hasting) in the plots}
-Metropolis-Hasting shows consistent performance when the informed set volume ratio is decreased, because it takes the adand HNR increases with the decrease of the informed set volume ratio. 
+
+Metropolis-Hastings shows consistent sampling time when problems get harder. 
+It takes the advantage of sampling a near state that generate samples in a level set.
+However this does not reflect the quality of the samples, though all the samples are in the level set.
+Recall in Algorithm~\ref{alg:mh_mcmc}, a new sample candidate is obtained from a Gaussian distribution $ q( x \mid x_{i-1}, \Sigma ) $.
+The best covariance $ \Sigma $ that generates faster convergence differs with problem setting.
+A small covariance tends to generate more samples near around previous samples, which a large covariance is more likely to drive a Markov chain outside of an informed set.
+In our next planning experiment setting, we use the same covariance for different problems.
+
+
 When informed set volume ratio is relatively high, it is easy to generate qualified samples.
 All the samplers have close performances.
-RS and HRS can be the most efficient because of its simple design.
-But when problems get harder, HNR outperforms HRS significantly.
+It actually implies rejection sampler is the best because of its simplicity in implementation.
+The sampling time of other three samplers all increase as problems get harder.
+But we can see the trend that HRS's advantage over RS is more significant , also the same for HNR's advantage over HRS.
+Moving from a 4 dimension problem in Figure \ref{fig:sampling_efficiency:2d} to a 12 dimension problem in Figure \ref{fig:sampling_efficiency:6d}, sampling in an informed set becomes even harder,
+because the informed set volume ratio becomes smaller.
+HNR and MH samplers show much better efficiency over the others.
+
+We want to point out that efficiently sampling in an informed set is not sufficient for determining the quality of a sampler.
+For example, a sampler that constantly only return the same sample in a level set might show the best sampling efficiency can be the worst sampler in a path planning problem.
+\dy{is the property that any state in a set has a chance to be sampled?}
+We hope sampler (satisfies some properties ?) that a resulting planner is asymptotically optimal.
 
 \os{Explain why MCMC is flat, mention strawman approach}
+
+\dy{do we want to say that it is hard to compare the uniformity in high dimension space}
 
 \subsection{Planning Efficiency}
 
 The quality of samples determines the efficiency of resulting planning algorithms.
+If a sampler could provide samples with same quality as others but generate samples in a much efficiency way, we would expect that an informed RRT* with this sampler would show two properties.
+\begin{itemize}
+	\item It shall converge faster in finding the optimal solution.
+	Because sampling in an informed set is gradually becoming as new better solution reduces $ c_{best} $ which reduces the informed set volume ratio significantly.
+	\item It shall adapt better in problems defined in high dimension state space.
+	As shown in Figure \ref{fig:sampling_efficiency:levelset}, the informed set volume ratio decrease more significantly in a high-dimension state space.
+	The advantage of an informed sampler becomes more important.
+\end{itemize}
+
 To evaluate how the samplers impact the planning efficiency, we run the samplers with the informed RRT* planner~\cite{GSB14} on three different problems described below and shown in Fig. \ref{fig:problems}. 
 For each problem the start and goal states (positions and velocities) are known in the joint space.
 
@@ -871,9 +920,9 @@ Figure~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned
 	\label{fig:planning_efficiency}
 \end{figure*} 
 
-\dy{TODO: add a plot that shows the increases of samples}
+\dy{TODO: add a plot that shows the increases of samples?}
 
-MHS shows the worst performance in Figure~\ref{fig:planning_efficiency:3dof:general}, \ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}.
+MH shows the worst performance in Figure~\ref{fig:planning_efficiency:3dof:general}, \ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}.
 Though theoretically samples converge to a target distribution, the samples could be either too correlated for exploration purpose in planning.
 If the variance of transition distribution is too high, it will then move out of the informed set too frequently, and takes longer to converge.
 Ideally we want to have markov chains are less correlated but moves in informed sets.
@@ -881,6 +930,10 @@ Ideally we want to have markov chains are less correlated but moves in informed 
 HNR shows close performance with RS and HRS in a 6-dimension space, as in Figure~\ref{fig:planning_efficiency:3dof:general}.
 But in higher dimension performance, the advantage of HNR in sampling efficiency is shown.
 In Figure~\ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}, the cost of current best solution by planners with HNR sampler converge significantly faster.
+It shows that HNR will have close performance with RS and HRS in simple problem, as in Figure \ref{fig:planning_efficiency:3dof:general}.
+But when the dimensions of problems increase, HNR shows better and steady performance.
+Also, HNR also show fast convergence to the optimal, because it is better at adapting the informed set update in planning process. 
+
 
 \section{Conclusion}
 \label{sec:future}
