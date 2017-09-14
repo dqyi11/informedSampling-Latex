@@ -14,11 +14,11 @@ pink = [197,27,138]/255;
 
 figure;
 hold on;
-marker_size = 20;
-scatter(log10(data(:,5)), log10(data(:,4)./data(:,6)), marker_size, 'MarkerFaceColor', blue, 'MarkerEdgeColor', blue, 'Marker', 's');
-scatter(log10(data(:,5)),log10(data(:,2)./data(:,6)), marker_size, 'MarkerFaceColor', red, 'MarkerEdgeColor', red, 'Marker', 'd');
-scatter(log10(data(:,5)),log10(data(:,1)./data(:,6)), marker_size, 'MarkerFaceColor', green, 'MarkerEdgeColor', green, 'Marker', 'h');
-scatter(log10(data(:,5)),log10(data(:,3)./data(:,6)), marker_size, 'MarkerFaceColor', purple, 'MarkerEdgeColor', purple, 'Marker', 'o');
+marker_size = 4;
+loglog(data(:,5), log10(data(:,4)./data(:,6)), 'MarkerSize', marker_size, 'MarkerFaceColor', blue, 'MarkerEdgeColor', blue, 'Marker', 's');
+loglog(data(:,5),log10(data(:,2)./data(:,6)), 'MarkerSize', marker_size, 'MarkerFaceColor', red, 'MarkerEdgeColor', red, 'Marker', 'd');
+loglog(data(:,5),log10(data(:,1)./data(:,6)), 'MarkerSize', marker_size, 'MarkerFaceColor', green, 'MarkerEdgeColor', green, 'Marker', 'h');
+loglog(data(:,5),log10(data(:,3)./data(:,6)), 'MarkerSize', marker_size, 'MarkerFaceColor', purple, 'MarkerEdgeColor', purple, 'Marker', 'o');
 
 xlabel('informed set volume ratio - log_1_0');
 ylabel('time per sample - log_1_0(ms)');
