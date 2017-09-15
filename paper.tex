@@ -31,6 +31,8 @@
 \usepackage{cite}
 \usepackage{hyperref}
 \usepackage{eqparbox}
+\usepackage{multirow}
+\usepackage{booktabs}
 %\hypersetup{bookmarksopen,
 %bookmarksnumbered,
 %pdfpagemode=UseOutlines,
@@ -43,26 +45,25 @@
 %urlcolor=blue
 %}
 
-
 \title{\LARGE \bf
 Generalizing Informed Sampling
-for Asymptotically Optimal Sampling-based Planning via Markov Chain
-Monte Carlo Methods
+for Asymptotically Optimal Sampling-based Kinodynamic Planning via Markov Chain
+Monte Carlo
 }
 
 
 \author{
-Daqing Yi$^{*}$,
-Rohan Thakker$^{*}$,
-Cole Gulino$^{}$, 
-Oren Salzman$^{}$ and
-Siddhartha Srinivasa$^{}$% <-this % stops a space
-\thanks{*Daqing Yi and R. Thakker contributed equally to this paper.}
-\thanks{This work was (partially) funded by the National Science Foundation IIS (\#1409003), Toyota Motor Engineering \& Manufacturing (TEMA), and the Office of Naval Research.}% <-this % stops a space
-\thanks{$^{1}${\tt\small \{rthakker, cgulino, daqingy, osalzman, ss5\} @andrew.cmu.edu}}%
-%
-\\        
-Robotics Institute, Carnegie Mellon University$^{1}$
+Daqing Yi$^{*1}$,
+Rohan Thakker$^{*2}$,
+Cole Gulino$^{2}$, 
+Oren Salzman$^{2}$ and
+Siddhartha Srinivasa$^{1}$
+\thanks{$^{*}$Daqing Yi and Rohan Thakker contributed equally to this paper.}
+%\thanks{This work was (partially) funded by the National Science Foundation IIS (\#1409003), Toyota Motor Engineering \& Manufacturing (TEMA), and the Office of Naval Research.}% <-this % stops a space
+\thanks{$^{1}$Daqing Yi and Siddhartha Srinivasa are with Paul G. Allen School of Computer Science \& Engineering, University of Washington.
+{\tt\small \{dqyi, siddh\}@cs.washington.edu}}
+\thanks{$^{2}$ Rohan Thakker, Cole Gulino and Oren Salzman are with Robotics Institute, Carnegie Mellon University.
+{\tt\small \{rthakker, cgulino, osalzman\} @andrew.cmu.edu}}%
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,7 +80,7 @@ Robotics Institute, Carnegie Mellon University$^{1}$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-Asymptotically-optimal motion planners such as RRT* have been shown to incrementally approximate the shortest path between a start and goal states.
+Asymptotically-optimal motion planners such as RRT* have been shown to incrementally approximate the shortest path between start and goal states.
 Once an initial solution is found, their performance can be dramatically improved by restricting subsequent samples to regions of the state space that can potentially improve the current solution.
 When the motion planning problem lies in a Euclidean space, this region~$\Cinf$, called the informed set, can be sampled directly.
 However, when planning with differential constraints in non-Euclidean state spaces, no analytic solutions exists to sampling~$\Cinf$ directly.
@@ -87,7 +88,8 @@ However, when planning with differential constraints in non-Euclidean state spac
 State-of-the-art approaches to sampling~$\Cinf$ in such domains such as Hierarchical Rejection Sampling (HRS) may still be slow in high-dimensional state space.
 This may cause the planning algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
 In this paper, we suggest an alternative approach to produce samples in the informed set~\Cinf for a wide range of settings.
-Our main insight is to recast this problem as one of sampling uniformly within an informed set of an implicit function.
+%Our main insight is to recast this problem as one of sampling uniformly within an informed set of an implicit function.
+Our main insight is to recast this problem as one of sampling uniformly within the sub-level-set of an implicit non-convex function.
 This recasting enables us to apply Monte Carlo sampling methods, used very effectively in the Machine Learning and Optimization communities, to solve our problem.
 We show for a wide range of scenarios that using our sampler can accelerate the convergence rate to high-quality solutions in high-dimensional problems.
 \end{abstract}
@@ -148,16 +150,17 @@ This may cause the planning algorithm to spend most of its time trying to produc
 
 In this paper, we suggest an alternative approach to produce samples in the informed set \Cinf for a wide range of settings.
 \textbf{
-Our main insight is to recast this problem as one of sampling uniformly within an informed set of an implicit function.
+%Our main insight is to recast this problem as one of sampling uniformly within an informed set of an implicit function.
+Our main insight is to recast this problem as one of sampling uniformly within the sub-level-set of an implicit non-convex function.
 This recasting enables us to apply Monte Carlo sampling methods, used very effectively in the Machine Learning and Optimization communities, to solve our problem.
 }
 Specifically, our approach, depicted in Fig~\ref{fig:alg} consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a root-finding algorithm;
 in the second stage, this retracted sample  is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
 
-While our approach can be used with any Markov chain Monte Carlo (MCMC) method, it is especially suited to be used with Hit-and-Run~\cite{KSZ11}.
-Roughly speaking, this is because Hit-and-Run (detailed in Sec~\ref{sec:related_work})
-performs a series of one-dimensional rejection samples which are extremely fast to compute, even in high-dimensional spaces. 
+While our approach can be used with any Markov Chain Monte Carlo (MCMC) method, it is especially suited to be used with Hit-and-Run~\cite{KSZ11}.
+Roughly speaking, this is because Hit-and-Run (detailed in Sec~\ref{sec:algorithm})
+produces a series of one-dimensional rejection samples which are extremely fast to compute, even in high-dimensional spaces. 
 
 Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06} and that a gradient can be defined over the cost function.
 Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitude when compared to algorithms using rejection sampling or HRS.
@@ -172,7 +175,7 @@ Indeed, we demonstrate the efficiency of our approach on a wide variety of syste
 		\includegraphics[height=2.7cm]{fig/motivation/slow3}
 		\includegraphics[height=2.7cm]{fig/motivation/slow4}
 		%\includegraphics[height=3cm]{fig/motivation/slowmotion}
-		\caption{Zero goal velocity}
+		\caption{Both start velocity and goal velocity are zero.}	\vspace{4pt}
 		\label{fig:motivation:slow}
 	\end{subfigure}
 	\begin{subfigure}[b]{\textwidth}
@@ -182,18 +185,19 @@ Indeed, we demonstrate the efficiency of our approach on a wide variety of syste
 		\includegraphics[height=2.7cm]{fig/motivation/fast3}
 		\includegraphics[height=2.7cm]{fig/motivation/fast4}
 		%\includegraphics[height=3cm]{fig/motivation/fastmotion}
-		\caption{Non-zero goal velocity}
+		\caption{Start velocity is zero but goal velocity is non-zero.}
 		\label{fig:motivation:fast}
 	\end{subfigure}
     \end{minipage}
     \begin{minipage}[t]{0.35\linewidth}
     	\begin{subfigure}[c]{\textwidth}
     		\includegraphics[width=\textwidth]{fig/motivation/phase_plot}
-    		\caption{Non-zero goal velocity}
+    		\caption{Phase plot of two trajectories of one of the joints.
+    		The X axis is position. The Y axis is velocity. }
     		\label{fig:motivation:phase_plot}
         \end{subfigure}
    	\end{minipage}
-	\caption{HERB moves right arm from a start configuration to a goal configuration, which are very close.
+	\caption{HERB moves right arm from a start configuration to a goal configuration, which are in close proximity.
     When the goal velocity is non-zero, HERB needs to move right arm further away to accelerate.
 	}
 	\label{fig:motivation}
@@ -217,7 +221,7 @@ Initial sampling-based algorithms such as RRT~\cite{LK01} and PRM~\cite{KSLO96} 
 Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* and RRT*, respectively that were shown to produce paths who's cost converges asymptotically to the minimal-cost path.
 This was done by recognizing the underlying connections between stochastic sampling-based motion planning and the theory of random geometric graphs (see also~\cite{SSH16}).
 Additional algorithms followed, increasing the converges rate by various techniques such as 
-lazy dynamic programming~\cite{GSB15, JSCP15, SH15},
+lazy dynamic programming~\cite{GSB15, SH15},
 relaxing optimality to near-optimality~\cite{SH16} 
 and more.
 
@@ -229,7 +233,8 @@ Webb and van den Berg~\cite{WB13} use a fixed-final-state-free-final-time contro
 Perez et al.~\cite{PPKKL12} propose a variant of RRT* that automatically defines a distance metric and node extension method by locally linearizing
 the domain dynamics and applying linear quadratic regulation (LQR).
 
-Finally, we note that we are not the first to integrate Monte Carlo sampling into planning algorithms. T-RRT~\cite{JCS10} and its variants~\cite{DSC13} are inspired by Monte Carlo optimization techniques and use notions such as the Metropolis criterion~\cite{CG95} to guide the exploration of the configuration space.
+Finally, we note that we are not the first to integrate Monte Carlo sampling into planning algorithms. 
+T-RRT~\cite{JCS10} and its variants~\cite{DSC13} are inspired by Monte Carlo optimization techniques and use notions such as the Metropolis criterion~\cite{CG95} to guide the exploration of the configuration space.
 
 
 \subsection{State-space sampling}
@@ -238,10 +243,10 @@ There is a rich body of literature on how to produce samples that increase the e
 Heuristic approaches include
 sampling on the medial axis~\cite{WAS99a, YDLTA14},
 sampling near the boundary of the obstacles~\cite{YTEA12},
-resampling along a given trajectory~\cite{AS11}
-and more~\cite{SWT09}.
+resampling along a given trajectory~\cite{AS11}.
+%and more~\cite{SWT09}.
 For planning under the differential constraints,
-reachability-guided sampling~\cite{SWT09, PLAEFRA17} focuses on sampling regions of the state space that are most likely to promote expansion for the given constraints.
+reachability-guided sampling~\cite{PLAEFRA17} focuses on sampling regions of the state space that are most likely to promote expansion for the given constraints.
 
 
 Of specific interest to our work are approaches that produce samples in the informed set~\Cinf.
@@ -250,22 +255,21 @@ To the best of our knowledge, the only method to produce samples in non-Euclidea
 
 \subsection{Markov Chain Monte Carlo (MCMC)}
 \label{subsec:mcmc}
-Monte Carlo simulation is a general sampling framework widely used in various domains such as
-statistical machine learning~\cite{M97},
-motion tracking~\cite{KBD04}, 
-data regression~\cite{TL11} and 
-state estimation~\cite{ASC13}.
+Monte Carlo simulation is a general sampling framework widely used in various domains. %such as
+%statistical machine learning~\cite{M97},
+%motion tracking~\cite{KBD04}, 
+%data regression~\cite{TL11} and 
+%state estimation~\cite{ASC13}.
 Roughly speaking, Monte Carlo simulation repeatedly samples a domain at random to approximate some value or function.
 One specific domain where Monte Carlo simulation is used which is relevant to this work is generating draws from a desired distribution which is hard to sample directly.
 
 One of the popular classes of Monte Carlo simulation is 
 \emph{Markov Chain Monte Carlo} (MCMC)~\cite{ADDJ03}.
 Here, the samples are drawn by generating a Markov chain such that the distribution of points on the chain converges to the desired distribution.
-The Markov Chain can be generated by performing a random walk such as
-in Metropolis-Hastings~\cite{CG95}, 
-Gibbs sampling~\cite{CK94}
-or by simulating simulating Hamiltonian dynamics~\cite{N94} (instead of performing the random walk).
-
+%The Markov Chain can be generated by performing a random walk such as
+%in Metropolis-Hastings~\cite{CG95}, 
+%Gibbs sampling~\cite{CK94}
+%or by simulating simulating Hamiltonian dynamics~\cite{N94} (instead of performing the random walk).
 One variant, which is of special interest to us is 
 Hit and Run~\cite{KSZ11}.
 Here, given the current point $x_i$ the next point~$x_{i+1}$ in the Markov chain is produced by sampling a random direction~$\theta$ on the surface of the unit sphere centered at $x_{i+1}$. This defines a ray $r_i$ rooted at $x_i$ and passing through~$\theta$. The point $x_{i+1}$ is chosen by randomly sampling a point on $r_i$.
@@ -306,7 +310,6 @@ In this work we consider the problem of efficiently producing samples within~$\C
 These samples will be used within the informed RRT* framework to efficiently and incrementally compute trajectories of decreasing cost, converging to the optimal trajectory.
 
 
-
 \section{Motivation---\Cinf in kinodynamic state spaces}
 \label{sec:mtdi}
 
@@ -316,13 +319,12 @@ Specifically, we start by describing the differences in between planning in Eucl
 
 %\os{mention~\cite{LM97} here or in related work}
 \subsection{Geometric vs. Kinodynamic planning}
-Consider the problem depicted in Fig.~\ref{fig:motivation} where HERB is required about a swing action that a robotic arm ends with a relative high velocity towards a direction.
-One approach to address this problem is to first plan in the geometric configuration space and the re-time the algorithm.
-When the start and goal are in close proximity, a geometric planner will simply connect the two states (Fig.~\ref{fig:motivation:fast}).
-However, to adhere to the velocity constraints at the goal, the actual motion that is required is to move back the arm in order to gain speed and then reach the goal (Fig.~\ref{fig:motivation:fast}).
-In such settings, re-timing the path will not produce feasible results.
+Consider the problem depicted in Fig.~\ref{fig:motivation} where HERB is required to produce a large velocity at the end of its arm at the goal position.
+One approach to address this problem is to first plan in the geometric configuration space and then re-scale the trajectory in time.
+However, when the start and goal are in close proximity, a geometric planner will simply connect the two states (Fig.~\ref{fig:motivation:fast}).
+On re-scaling this trajectory in time, reaching the goal velocity in such short distance will require large acceleration, which will not be feasible.
+Hence, it is required to move the arm back and then reach the goal, i.e. the trajectory returned by the kinodynamic planner shown in (Fig.~\ref{fig:motivation:fast}).
 The difference between the two motions are shown in a phase plot in Fig.~\ref{fig:motivation:phase_plot}.
-
 
 %Geometric planning provides motion from a start state to a goal state.
 %It is not expressive enough for a wider range of actions, because many kiondynamic features are not considered in the planning process.
@@ -370,7 +372,8 @@ u.
 Here, the control 
 %$u \in [u_{\text{min}}, u_{\text{max}}]$ 
 $u \in [\underline{u}, \overline{u}]$ 
-is the (bounded) acceleration\footnote{One can also bound the velocity of the system. However, to simplify the exposition, we only constrain the system with acceleration bounds.}. 
+is the (bounded) acceleration.
+%\footnote{One can also bound the velocity of the system. However, to simplify the exposition, we only constrain the system with acceleration bounds.}. 
 
 
 Notice that 
@@ -388,7 +391,7 @@ Notice that
 %
 %
 %\subsection{Informed set}
-Recall that for Euclidean spaces minimizing path length, the informed set~\Cinf is a prolate hyperspheroid.
+Recall that for Euclidean spaces minimizing path length, the informed set~\Cinf is a prolate hyperspheroid~\cite{GSB14}.
 Moreover, the size and shape of the hyperspheroid is defined only be the cost $c_{\text{best}}$ of the current best solution and not by the location of the start~$x_s$ and goal~$x_g$.
 
 For the case of a MTDI, this is not the case. 
@@ -404,71 +407,7 @@ It is straightforward to see that both the type and the amount of acceleration a
 Fig~\ref{fig:discont} depicts a simple example where the cost map is discontinuous.
 
 To summarize, the structure of \Cinf can change given different start and goal states.
-Furthermore,  its boundary may not be  differentiable due to the aforementioned discontinuous. 
-
-\ignore{
-See Fig. ~\ref{fig:sample_dimt} for an example motion of one joint through the $\left(q,\dot{q}\right)$ space. 
-
-\begin{figure}[tb]
-  \centering
-  	\includegraphics[width=0.3\textwidth]{fig/example_motion.png}
-  \caption{
-    \captionstyle
-  	Example possible motion using the double-integrator minimum time model between start state $(x_1, \dot{x_1})$ and goal state $(x_2, \dot{x_2})$ through some intermediate state $(x_i, \dot{x_i})$.
-  	}
-   	\label{fig:sample_dimt}
-\end{figure}
-
-In order to find the minimum time, $T\left(x\right)$, of a motion like Fig. ~\ref{fig:sample_dimt}, we can examine the paths separately with one corresponding to a motion with acceleration $a_1$ from $\left(x_1, \dot{x}_1\right)$ to $\left(x_i, \dot{x}_i\right)$ and another corresponding to motion with acceleration $a_2$ from $\left(x_i, \dot{x}_i\right)$ to $\left(x_2, \dot{x}_2\right)$.
-
-\ref{} shows that we can express total distance travelled in the joint space $x$ can be expressed in this way as:
-
-\begin{equation}
-x_2 - x_1 = d_{a_1} + d_{a_2}
-\end{equation}
-where $d_{a_1}$ is the distance travelled at max acceleration from the first path and $d_{a_2}$ is the distance travelled at max acceleration in the opposite direction.
-
-Using simple constant acceleration equations we can express this in the form:
-
-\begin{equation}
-x_2 - x_1 = \left(\dot{x}_1 t_{a_1} + \frac{1}{2} a_1 t_{a_1}^2\right) + \left(\frac{\dot{x}_2^2 - \dot{x}_i^2}{2a_2}\right)
-\end{equation}
-where $t_{a_1}$ is the time it takes to make the path from $\left(x_1, \dot{x}_1\right)$ to $\left(x_i, \dot{x}_i\right)$ at acceleration $a_1$ and $t_{a_2}$ is the time it takes to make the path from $\left(x_i, \dot{x_i}\right)$ to $\left(x_2, \dot{x}_2\right)$ at acceleration $a_2$.
-
-We can further expand the equation in order to put it into the canonical quadratic equation as follows:
-
-\begin{equation}
-a_1 t_{a_1}^2 + 2 \dot{x}_1 t_{a_1} + \frac{\dot{x}_2^2 - \dot{x}_1^2}{2a_2} - \left(x_2 - x_1\right) = 0
-\end{equation}
-
-Following ~\ref{} we solve a quadratic equation of the form $at^2+bt+c=0$ as follows:
-
-$$
-q = -\frac{1}{2}\left(b + \text{sign}\left(b\right)\sqrt{b^2 - 4ac}\right)
-$$
-$$
-t_1 = \frac{q}{a}; \hspace{5mm} t_2 = \frac{c}{q}
-$$
-where $t_1$ and $t_2$ are the two solutions to the quadratic equation.
-
-As we know, time must be positive and we are looking for minimum time. This leads to the fact that there is only one correct solution to the quadratic equation. Because of this, depending on the start and goal states, the sign of the acceleration on each path will change.
-
-Again following ~\ref{}, we programatically solve for the sign of the sign of the acceleration by analysing the start and goal position. Fig. ~\ref{fig:sample_dimt} shows the determining term $\Delta x_{acc}$, which is the distance from $x_1$ to the point where $\dot{x} = \dot{x}_2$. 
-
-And using constant acceleration equations with ~\ref{} again, we find that:
-
-\begin{equation}
-\Delta x_{acc} = \frac{1}{2} \left(\dot{x}_1 + \dot{x}_2\right) \frac{|\dot{x}_2 - \dot{x}_1|}{a_{max}}
-\end{equation}
-
-\begin{equation}
-a_1 = - a_2 = \text{sign}\left(x_2 - x_2 - \Delta x_{acc}\right) a_{max}
-\end{equation}
-
-From these equations it shows a fundamental difference of a kinodynamic state space compared to a geometric state space. Because of this the minimum time path can vary in shape depending on the start and goal state. The consequence of this is that the shape of the informed subset can change dramatically depending on the start and goal state of the problem definition. Because of this, finding a closed form solution to sampling in the informed space is not feasible.
-}
-
-%\dy{Do you think we should include some figures that has been commented out below to show how difficult sampling an informed set is?}
+Furthermore,  its boundary may not be  differentiable due to the aforementioned discontinuous.
 
 \ignore{
 See Fig.~\ref{fig:informed_1d_di} for a visualization of the cost surface for a specific start and goal state for one degree of freedom (two dimensions $\left(x, \dot{x}\right)$). Lower costs are represented with cooler colors with warmer colors representing higher costs. One can see the minimum cost path from start to goal as the dark blue curve.
@@ -488,58 +427,25 @@ See Fig.~\ref{fig:informed_1d_di} for a visualization of the cost surface for a 
    	\label{fig:discont}
 \end{figure}
 
-\ignore{
-\begin{figure}[tb]
-  \centering
-  	\includegraphics[height = 4.cm ]{fig/level_set.jpg}
-  \caption{
-    \captionstyle
-  	Level sets for the case of minimal-time double integrator. A point $x = (q, \dot{q})$  denote the position and velocity of the robot while the color at $x$ denotes the cost to reach $x_t$ from $x_s$ subject to passing through the state $x$.
-  	}
-   	\label{fig:informed_1d_di}
-	\vspace{-5.5mm}
-\end{figure}
-
-\begin{figure}[tb]
-  \centering
-  	\includegraphics[width=0.5\textwidth]{fig/kino_space.png}
-  \caption{
-    \captionstyle
-  	Side view of the cost surface for the case of minimal-time double integrator. The side view showcases the discontinuous nature of the cost surface.
-  	}
-   	\label{fig:cost_surface_1d}
-%	\vspace{-5.5mm}
-\end{figure}
-
-See Fig.~\ref{fig:cost_surface_1d} for a side view of the cost surface for one degree of freedom ($\left(x, \dot{x}\right)$). One can see a key property of the cost surface that cause serious concerns is the discontinuous nature of the surface. 
-As mentioned before, finding the minimum time problem amounts to solving a quadratic equation. 
-Because the nature of this equation changes with the start and end goal, there is a curve in the input space that amounts to a switching surface that represents the boundary for the decision of the sign of $a_1$. 
-This surface causes a discontinuous cost surface as shown in Fig. ~\ref{fig:cost_surface_1d}.
-}
 
 \section{MCMC-based Informed Sampling}
 \label{sec:algorithm}
 
 In this section we describe our approach to efficiently produce new samples in an informed set~\Cinf given a specific cost~$c_{\text{best}}$ of trajectory $\gamma_{best}(t)$.
-The samples follow a Monte Carlo Markov Chain, in which a new sample candiate is produceded from a previous sample that also lies in the same informed set.
-It is important to note that at each iteration, we will query our algorithm for one sample. 
-However, this sample depends on the previous iterations of the algorithm which is why we describe it as a method to produce a sequence of samples.
-Furthermore, the value~$c_{\text{best}}$ can decrease between consecutive iterations.
-This will occur if the search algorithm that uses our sampler finds a path to the goal whose cost is lower than~$c_{\text{best}}$.
+The samples follow a Markov Chain Monte Carlo, in which a new sample candidate is produced from a previous sample that also lies in the same informed set.
+%However, this sample depends on the previous iterations of the algorithm which is why we describe it as a method to produce a sequence of samples.
+Furthermore, the value~$c_{\text{best}}$ can decrease between consecutive iterations in the planning process of an informed RRT* planner.
+This will occur if the search algorithm that uses the sampler finds a path to the goal whose cost is lower than~$c_{\text{best}}$.
 
 The idea behind applying MCMC for informed sampling is to define a target distribution~$ \pi $ as a uniform distribution over all points in~$ \Cinf $.
 Our approach consists of two stages,
 \begin{enumerate}
-	\item finding an initial sample $ x_0 \in \Cinf $ which will serve as the start of a Markov chain. This is implemented using the function 
+	\item finding an initial sample $ x_0 \in \Cinf $ which will serve as the start of a Markov chain. 
+	This is implemented using the function 
 	$ \texttt{sample\_in\_informed\_space}( )$, and
-	\item sampling a new sample $ x_i \in \Cinf $ given a previous sample $ x_{i-1} $. This is implemented using the function $\texttt{MCMC\_sample} (x_{i-1}, c_{\text{best}})$.
+	\item sampling a new sample $ x_i \in \Cinf $ given a previous sample $ x_{i-1} $. 
+	This is implemented using the function $\texttt{MCMC\_sample} (x_{i-1}, c_{\text{best}})$.
 \end{enumerate}
-
-%Compared with rejection samplers, a MCMC-based informed sampler takes the advantage of a previous sample in the informed set $ \Cinf $ in finding a new sample, while reserves the randomness in problem space search, which builds an ``exploitation and exploration" patter in informed sampling.
-%
-%to initialize an MCMC algorithm which outputs a series of samples within \Cinf by constructing a Markov Chain.
-%This is done until some termination criterion is met and the entire process is repeated (Sec.~\ref{subsec:mcmc}). 
-%Specifically, we chose to use HMC due to its favourable properties (see Sec.~\ref{sec:intro}). 
 Our algorithm is described in Alg.~\ref{alg:mcmc_informed_sampling} and visualized in Fig.~\ref{fig:alg}.
 We now continue to detail each of the algorithm's stages.
 %\os{Fix Alg 1 }
@@ -599,10 +505,9 @@ A new Markov chain will be initiated by calling \texttt{sample\_in\_informed\_sp
 		\STATE \textbf{return} $x_{i}$
 		\ENDLOOP 
 	\end{algorithmic}
-	\caption{MCMC-based Informed Sampling $( x_{i-1}, c_{\text{best}})$}
+	\caption{\captionstyle MCMC-based Informed Sampling $( x_{i-1}, c_{\text{best}})$}
 	\label{alg:mcmc_informed_sampling}	
 \end{algorithm}
-
 
 \subsubsection{Metropolis-Hastings sampler}
 
@@ -631,36 +536,13 @@ An acceptance ratio $ \alpha $ is used to keep the reversibility even if the tar
 	\label{alg:mh_mcmc}	
 \end{algorithm}
 
-We use canonical distribution to approximate the target distribution $ \pi $, which is a uniform distribution subject to an informed set.
-It means that energy function is defined from cost function that bridges cost and probability.
-The energy function's definition provides the flexibility to specify desired or more probable states (by presenting lower energies) without the need to use a formal and restrictive model. 
-
-Our energy for any given cost $c$, 
-denoted by~$E\left(c,\Cbest \right)$, 
-is a function of $c$ and the current best cost~$\Cbest$.
-To consider only points in the informed set, all with equal energy, one may consider taking 
-\begin{equation}
-E_{\text{informed}}\left(c,\Cbest \right) = 
-\begin{cases}
-0,	& \text{if } c \leq \Cbest\\        
-\infty,  	& \text{otherwise}.
-\end{cases}
-\end{equation}
-To approximate that function, we propose a formula as below:
-\begin{equation}
-\hat{E}_{\text{informed}} \left( c,\Cbest \right) 
-= \beta \cdot \text{sigm}\left(\Cbest - c\right)
-\end{equation}
-penalizes states outside the informed set~$\Cinf$ using a tight sigmoid function~$\text{sigm}$ scaled by some (large\footnote{The constant~$\beta$ gives points out of~\Cinf a large energy value which in turn implies a low probability of being sampled. 
-In theory, we would like to have~$\beta \approx \infty$. 
-However, choosing~$\beta$ to be too large may cause numerical instabilities.}) constant~$\beta$.
-The sigmoid can be seen as a differentiable function smoothing the boundary of~$\Cinf$.
+In implementation, we use Newton-Raphson method as a gradient descent with random restart to find $ x_0 \in \Cinf $ as the start of a Markov chain.
 
 
 \subsubsection{Hit-and-Run sampler}
 
-Hit-and-Run~\cite{S84} MCMC sampler is known to efficiently generate uniform samples. 
-Specifically, we use the Accelerated Hit-and-Run variant~\cite{KSZ11} of the algorithm i.e. described in Alg.~\ref{alg:hit_and_run_mcmc}.
+Hit-and-Run~\cite{S84} sampler is known to efficiently generate uniform samples. 
+Specifically, we use the Accelerated Hit-and-Run variant~\cite{KSZ11} of the algorithm i.e. described in Alg.~\ref{alg:hit_and_run_mcmc}, which also supports the uniform sampling in both convex and non-convex state space~\cite{KSZ11}.
 Given the previous sample~$x_{i-1}$ it first  samples a random direction on the unit sphere (line 1).
 This induces a line~$L(\lambda)$ passing through~$x_{i-1}$ in the direction sampled (line 2), parametrized by a scalar~$\lambda$.
 We obtain upper and lower bounds on $\lambda$ (line 3) that are problem dependant. 
@@ -700,16 +582,17 @@ The algorithm can be viewed as an efficient method that performs rejection sampl
 	\label{alg:hit_and_run_mcmc}	
 \end{algorithm}
 
-For this algorithm, we continue sampling along the Markov Chain until either 
+For this algorithm, we continue sampling along a Markov Chain until either 
 (i)~the difference between the lower and upper bounds ($\lambda^-$ and $\lambda^+)$ 
 that define our sampling domain is below a predefined threshold or
 (ii)~a predefined number of samples was exceeded.
+We want to point out that a Hit-and-Run sampler only requires that a Markov chain starts in an informed set, and will not produce a sample outside of the informed set.
 
-The Hit-and-Run algorithm is designed specifically for uniform distributions. 
-Hence, it doesn't require an approximation of a target distribution $ \pi $ that was generated with the energy function for Metropolis-Hastings algorithm.
+
 
 \subsection{Asymptotic optimality}
-We note that our approach produces samples that cover the informed space. Namely, there is a non-zero probability to sample in any region of $\Cinf$.
+We note that our approach produces samples that cover the informed space. 
+Namely, there is a non-zero probability to sample in any region of $\Cinf$.
 A direct implication of the proof of optimality presented in~\cite{KF11} is that our algorithm is asymptotic optimal:
 
 \begin{prop}
@@ -726,82 +609,66 @@ We then compare the quality of the samplers by evaluating how the samplers work 
 
 \subsection{Sampling Efficiency}
 
-%\dy{TODO: change MCMC to MHS (Metropolis Hasting Sampler) in the plots}
-
-Fig. \ref{fig:sampling_efficiency} shows the log plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio, i.e. the ratio of the volume of informed space to the volume of entire state space, for 5000 samples. 
-The informed set volume ratio is approximated by the ratio of the number of accepted to the total number of samples obtained while running rejection sampling. 
-%Efficiency of rejection sampling based methods is very low for high dimensions because this ratio decreases exponentially w.r.t the dimension of the space, for a given sub-level-set of the cost function. 
-Fig. \ref{fig:sampling_efficiency} shows that MHS and HNR have a better sampling efficiency compared to HRS and RS with decrease in informed set volume ratio or increase in dimensions. 
 Figure \ref{fig:sampling_efficiency:levelset} shows how the informed set volume ratio decreases as the informed set cost $ c_{best} $ becomes smaller in problems of different dimensions.
-In a higher dimension, the informed set volume ratio falls much more quickly as the informed set cost $ c_{best} $ decreases in planning process, as new better solutions are kept being found.
+In higher dimensions, the informed set volume ratio decreases much more quickly with decrease in the informed set cost $ c_{best} $, as new cheaper trajectories are found in the planning process.
+
+Fig. \ref{fig:sampling_efficiency} shows the plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio, i.e. the ratio of the volume of informed space to the volume of entire state space, for 5000 samples. 
+The informed set volume ratio is estimated by the acceptance rate of rejection sampler.
+The informed set volume ratio is approximated by the ratio of the number of accepted to the total number of samples obtained while running rejection sampling. 
+%Efficiency of rejection sampling based methods is very low for high dimensions because this ratio decreases exponentially w.r.t the dimension of the space, for a given sub-level-set of the cost function.
+Fig. \ref{fig:sampling_efficiency} shows that MH and HNR have a better sampling efficiency compared to HRS and RS with decrease in informed set volume ratio or increase in dimensions. 
+
 
 \begin{figure}[t!]
-	\includegraphics[width=.46\textwidth]{fig/sampling_efficiency/levelset}
-	\caption{2DoF - 4D. TODO:Time per sample vs informed set}
+    \centering
+	\includegraphics[width=.3\textwidth]{fig/sampling_efficiency/levelset}
+	\caption{\captionstyle The informed set volume ratio decrease as $ c_{best} $ decreases in the planning process in different dimensions.}
 	\label{fig:sampling_efficiency:levelset}
 \end{figure}
 
 \begin{figure}[t!]
 	\centering
-
-	%\begin{subfigure}[b]{0.48\linewidth}
-	%	\includegraphics[width=\linewidth]{fig/sampling_efficiency/levelset_6d}
-	%	\caption{6DoF - 12D. TODO:Time per sample vs informed set}
-	%	\label{fig:sampling_efficiency:6d}
-	%\end{subfigure}
-	 
 	\begin{subfigure}[b]{\linewidth}
 		\centering
 		\includegraphics[width=.85\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
-		\caption{2DoF - 4D TODO: rescale x axis}
+		\caption{\captionstyle 4-dimension sampling space.}
 		\label{fig:sampling_efficiency:2d}
 	\end{subfigure}
-% 	\begin{subfigure}[b]{0.32\textwidth}
-% 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_3d}
-% 		\caption{3DoF - 6D}
-% 		\label{fig:sampling_efficiency:3d}
-% 	\end{subfigure}	
 	\begin{subfigure}[b]{\linewidth}
 		\centering
 		\includegraphics[width=.85\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
-		\caption{6DoF - 12D. TODO: rescale x axis}
+		\caption{\captionstyle 12-dimension sampling space.}
 		\label{fig:sampling_efficiency:6d}
 	\end{subfigure}
-	\caption{\captionstyle Sampling efficiency of different sampling methods}
+	\caption{\captionstyle Average sampling time vs informed set volume ratio of four samplers (RS, HRS, MH and HNR) in state spaces of different dimensions. 
+	The X axis is the ratio of informed set volume to the entire sampling space.
+	The Y axis is the average time per sample.}
 	\label{fig:sampling_efficiency}
-\end{figure} 
-
-%\dy{going to change the tick labels so this below sentence will be replaced}
-It is noticeable that both x axis and y axis are converted by $ \log_{10} () $ in Figure~\ref{fig:sampling_efficiency:2d} and Figure~\ref{fig:sampling_efficiency:6d}.
-This reserves the linearity of the data from rejection sampler, but also scales the difference in a smaller range for comparison.
-Keep in mind that the differences in unit (ms) are much bigger.
+\end{figure}
 
 Metropolis-Hastings shows consistent sampling time when problems get harder. 
 It takes the advantage of sampling a near state that generate samples in an informed set.
 However this does not reflect the quality of the samples, though all the samples are in the informed set.
 Recall in Algorithm~\ref{alg:mh_mcmc}, a new sample candidate is obtained from a Gaussian distribution $ q( x \mid x_{i-1}, \Sigma ) $.
 The best covariance $ \Sigma $ that generates faster convergence differs with problem setting.
-A small covariance tends to generate more samples near around previous samples, which a large covariance has better exploration but is more likely to drive a Markov chain outside of an informed set.
+A small covariance tends to generate more samples near previous samples, while a large covariance has better exploration but is more likely to drive a markov chain outside the informed set.
 In our next planning experiment setting, we use the same covariance for different problems.
 
-
-When informed set volume ratio is relatively high, it is easy to generate qualified samples.
+When informed set volume ratio is relatively high, it is easy to generate samples in the informed set.
 All the samplers have close performances.
-It actually implies rejection sampler is the best because of its simplicity in implementation.
-The sampling time of other three samplers all increase as problems get harder.
-But we can see the trend that HRS's advantage over RS is more significant , also the same for HNR's advantage over HRS.
-Moving from a 4 dimension problem in Figure \ref{fig:sampling_efficiency:2d} to a 12 dimension problem in Figure \ref{fig:sampling_efficiency:6d}, sampling in an informed set becomes even harder,
-because the informed set volume ratio becomes smaller.
-HNR and MH samplers show much better efficiency over the others.
+It actually implies rejection sampler is the best because of its simplicity in implementation and minimum correlation between successive samples.
+The sampling time of all samplers except MH, increases as problems gets harder.
+Notice that the sampling efficiency of HNR scales better than HRS and HRS is scales than RS.
+Moving from a 4 dimension problem in Figure \ref{fig:sampling_efficiency:2d} to a 12 dimension problem in Figure \ref{fig:sampling_efficiency:6d}, sampling in an informed set becomes even harder, because the informed set volume ratio becomes smaller.
+Here, HNR and MH samplers show much better efficiency over the others.
 
-We want to point out that efficiently sampling in an informed set is not sufficient for determining the quality of a sampler.
+We want to point out that efficiently sampling in an informed set is not sufficient for determining the performance of a sampler.
 For example, a sampler that constantly returns the same sample in a informed set might show the best sampling efficiency, however it is the worst sampler in a path planning problem.
-\dy{is the property that any state in a set has a chance to be sampled?}
-We hope sampler (satisfies some properties ?) that a resulting planner is asymptotically optimal.
-
-\os{Explain why MCMC is flat, mention strawman approach}
-
-\dy{do we want to say that it is hard to compare the uniformity in high dimension space}
+%\dy{is the property that any state in a set has a chance to be sampled?}
+%We hope sampler (satisfies some properties ?) that a resulting planner is asymptotically optimal.
+Ideally, we want generated samples to be uniformly distributed in an informed set to get the best exploration.
+%\os{Explain why MCMC is flat, mention strawman approach}
+%\dy{do we want to say that it is hard to compare the uniformity in high dimension space}
 
 \subsection{Planning Efficiency}
 
@@ -809,33 +676,59 @@ The quality of samples determines the efficiency of resulting planning algorithm
 If a sampler could provide samples with same quality as others but generate samples in a much efficiency way, we would expect that an informed RRT* with this sampler would show two properties.
 \begin{itemize}
 	\item It shall converge faster in finding the optimal solution.
-	Because sampling in an informed set is gradually becoming as new better solution reduces $ c_{best} $ which reduces the informed set volume ratio significantly.
-	\item It shall adapt better in problems defined in high dimension state space.
+	Sampling in an informed set is gradually becoming harder as new better solution reduces $ c_{best} $ which reduces the informed set volume ratio.
+	\item Its performance should not degrade significantly in high dimensional problems.
 	As shown in Figure \ref{fig:sampling_efficiency:levelset}, the informed set volume ratio decrease more significantly in a high-dimension state space.
-	The advantage of an informed sampler becomes more important.
+	The advantage of a good informed sampler becomes evident.
 \end{itemize}
 
-To evaluate how the samplers impact the planning efficiency, we run the samplers with the informed RRT* planner~\cite{GSB14} on three different problems described below and shown in Fig. \ref{fig:problems}. 
-For each problem the start and goal states (positions and velocities) are known in the joint space.
-\dy{TODO: Make table for limits and add units}
-\subsubsection{Problem 1: 3 DoF Planar Manipulator}
+To evaluate the planning efficiency of the samplers, we run them with the informed RRT* planner~\cite{GSB14} in position-velocity space with MTDI as steering function, on three different problems described below and shown in Fig. \ref{fig:problems}. 
+For each problem the start and goal states (positions and velocities) are known in the joint space. Joint velocities at start and goal are calculated from desired end-effector velocities using inverse kinematics before starting the planning. Table \ref{tab:params} shows the parameters used in the problems.
 
-Problem 1 is a 3 DoF manipulator that moves on a plane, which results in a 6 dimension space.
-The position boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ [-1,1] $.
-Figure~\ref{fig:planning_efficiency:3dof:example} shows a few steps of a planned path.
 
-\subsubsection{Problem 2: 6 DoF Snake Arm}
+\begin {table}[H]
+\caption {Parameters for the problems} \label{tab:params} 
+\begin{center}
+	\begin{tabular}{c c c c c} 
+\toprule
+\multicolumn{2}{c}{Problem} & Position  & Velocity & $|acc_{max}|$ \\ [0.5ex] 
+    &    &    $rad$       &  $rad/sec$    &  $rad/sec^2$ \\
+\midrule
+\multicolumn{2}{c}{3DoF Arm} & $[-\pi, \pi]$ & [-10, 10] & 1 \\ 
+\midrule
+\multicolumn{2}{c}{6DoF SnakeArm} & $[-\pi, \pi]$ & [-10, 10] & 1 \\
+\midrule
+\multirow{7}{*}{7DoF arm} & 1st & [0.541593 , 5.74159] & [-0.75, 0.75] & \multirow{7}{*}{1} \\
+\cmidrule{2-4}            & 2nd &  [-2 , 2]            & [-0.75, 0.75]  &  \\
+\cmidrule{2-4}            & 3rd & [-2.8, 2.8]          & [-2, 2] &  \\
+\cmidrule{2-4}            & 4th & [-0.9, 3.1]          & [-2.5, 2.5] &  \\
+\cmidrule{2-4}            & 5th & [-4.76, 1.24]        & [-2.5, 2.5] &  \\
+\cmidrule{2-4}            & 6th & [-1.6, 1.6]          & [-2.5, 2.5] &  \\
+\cmidrule{2-4}            & 7th & [-3, 3]              & [-2.5, 2.5] &  \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+\vspace{-2pt}
 
-Problem 2 is a 6 DoF snake arm that moves in a 3D workspace, which results in a 12 dimension space.
-The position boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ [-1,1] $.
-Figure~\ref{fig:planning_efficiency:6dof:example} shows a few steps of a planned path.
+\subsubsection{Problem 1: 6 Dimension - 3 DoF Planar Manipulator}
 
-\subsubsection{Problem 3: 7 DoF HERB}
+The start and the goal states have zero velocities.
+%The position boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ [-1,1] $.
+Figure~\ref{fig:planning_efficiency:3dof:example} shows the planned path.
 
-Problem 3 is a 7 DoF Barrett WAM arm of HERB that moves in a 3D workspace, which results in a 14 dimension space.
-The position boundaries of 7 joints of the arm are $  [0.541593 , 5.74159] $, $  [-2 , 2] $, $ [-2.8 , 2.8] $, $ [-0.9 , 3.1] $, $ [-4.76 , 1.24] $, $ [-1.6 , 1.6] $ and $ [-3 , 3] $.
-The velocity boundary of 7 joints of the arm are $ [-0.75 , 0.75] $, $ [-0.75 , 0.75] $, $ [-2 , 2] $, $ [-2 , 2] $, $ [-2.5 , 2.5] $, $ [-2.5 , 2.5] $ and $ [-2.5 , 2.5] $.
-The accelerations of all the joints are set to $ [-1,1] $.
+\subsubsection{Problem 2: 12 Dimension - 6 DoF Snake Arm}
+
+The objective is to hammer the end-effector into the wall while starting with zero velocity.
+%The position boundary of each join is $[-\pi,\pi]$, the velocity boundary is $[-10,10]$, and the acceleration is $[-1,1]$.
+Figure~\ref{fig:planning_efficiency:6dof:example} shows the planned path.
+
+\subsubsection{Problem 3: 14 Dimension - 7 DoF WAM Arm}
+
+%The position boundaries of 7 joints of the arm are $  [0.541593 , 5.74159] $, $  [-2 , 2] $, $ [-2.8 , 2.8] $, $ [-0.9 , 3.1] $, $ [-4.76 , 1.24] $, $ [-1.6 , 1.6] $ and $ [-3 , 3] $.
+%The velocity boundary of 7 joints of the arm are $ [-0.75 , 0.75] $, $ [-0.75 , 0.75] $, $ [-2 , 2] $, $ [-2 , 2] $, $ [-2.5 , 2.5] $, $ [-2.5 , 2.5] $ and $ [-2.5 , 2.5] $.
+%The accelerations of all the joints are set to $ [-1,1] $.
+The objective is to quickly swing away a glass on a table using the right arm.
 Figure~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned path.
 
 \begin{figure*}[t!]
@@ -847,7 +740,8 @@ Figure~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned
 		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_3}
 		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_4}
 		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_5}
-		\caption{3DOF planar}
+		\caption{\captionstyle Problem 1 : 3DOF planar arm move from a start to a goal while starting and ending with zero velocities.}
+		\vspace{6pt}
 		\label{fig:planning_efficiency:3dof:example}
 	\end{subfigure}
 	\begin{subfigure}[b]{\textwidth}
@@ -857,7 +751,8 @@ Figure~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned
 		\includegraphics[height=3cm]{fig/planning_efficiency/6dof_3}
 		\includegraphics[height=3cm]{fig/planning_efficiency/6dof_4}
 		\includegraphics[height=3cm]{fig/planning_efficiency/6dof_5}
-		\caption{6DOF snake}
+		\caption{\captionstyle Problem 2 : 6DOF snake hammers the end-effector into the wall while starting with zero velocity.}
+		\vspace{6pt}
 		\label{fig:planning_efficiency:6dof:example}
 	\end{subfigure}
 	\begin{subfigure}[b]{\textwidth}
@@ -867,49 +762,46 @@ Figure~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned
     \includegraphics[height=2.7cm]{fig/planning_efficiency/herb_batting_3}
     \includegraphics[height=2.7cm]{fig/planning_efficiency/herb_batting_4}
     \includegraphics[height=2.7cm]{fig/planning_efficiency/herb_batting_5}
-	\caption{HERB}
+	\caption{Problem 3 : HERB sweeps a cup on a table, in which the right arm starts with zero velocity and ends with non-zero velocity.}
 	\label{fig:planning_efficiency:herb:example}
 	\end{subfigure}
-	\caption{Test problems to evaluate planning efficiency. TODO: Add herb and update figures}
+	\caption{\captionstyle Three problems are used to evaluate planning efficiency.
+	These problems are defined in state spaces with different dimensions and different kinodynamics.}
 	\label{fig:problems}
 \end{figure*} 
 
 
 \begin{figure*}[t!]
 	\centering
-	\begin{subfigure}[b]{0.32\textwidth}
+	\begin{subfigure}[b]{0.325\textwidth}
 		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_general}
-		\caption{\captionstyle Planning Efficiency for Problem 1: 3 DoF Manipulator}
+		\caption{\captionstyle Problem 1 - 6 Dimensions.}
 		\label{fig:planning_efficiency:3dof:general}
 	\end{subfigure}	
-	\begin{subfigure}[b]{0.32\textwidth}
+	\begin{subfigure}[b]{0.325\textwidth}
 		\includegraphics[width=\linewidth]{fig/planning_efficiency/6dof_hammering}
-		\caption{\captionstyle Planning Efficiency for Problem 2: 6DoF Hammering Task}
+		\caption{\captionstyle Problem 2 - 12 Dimensions.}
 		\label{fig:planning_efficiency:6dof:hammering}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.32\textwidth}
+	\begin{subfigure}[b]{0.325\textwidth}
 	\includegraphics[width=\linewidth]{fig/planning_efficiency/herb_batting_efficiency}
-	\caption{\captionstyle Planning Efficiency for Problem 3: 7DoF HERB Batting Task}
+	\caption{\captionstyle Problem 3 - 14 Dimensions.}
 	\label{fig:planning_efficiency:herb:batting}
     \end{subfigure}
-	\caption{Planning Efficiency}
+	\caption{\captionstyle Planning Efficiency of four different samplers (RS, HRS, MH and HNR) in three problems. 
+	The X axis is the planning time. 
+	The Y axis is the ration of the current best and the optimal $ c_{best} / c^*_{best} $.}
 	\label{fig:planning_efficiency}
 \end{figure*} 
 
-\dy{TODO: add a plot that shows the increases of samples?}
+%\dy{TODO: add a plot that shows the increases of samples?}
 
-MH shows the worst performance in Figure~\ref{fig:planning_efficiency:3dof:general}, \ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}.
-Though theoretically samples converge to a target distribution, the samples could be either too correlated for exploration purpose in planning.
-If the variance of transition distribution is too high, it will then move out of the informed set too frequently, and takes longer to converge.
-Ideally we want to have markov chains are less correlated but moves in informed sets.
+As shown in in Figure~\ref{fig:planning_efficiency}, MH has the worst performance in all three problems, especially when the dimension increases.
+Though theoretically samples converge to a target distribution only in the limit of infinite time. However, in practice the samples are to close to each other and don't explore the entire informed space.
+If the variance of transition distribution is too high, it will tend to move out of the informed set too frequently, and takes longer to converge as the rejection rate is too high.
 
-HNR shows close performance with RS and HRS in a 6-dimension space, as in Figure~\ref{fig:planning_efficiency:3dof:general}.
-But in higher dimension performance, the advantage of HNR in planning efficiency is shown.
-In Figure~\ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}, the cost of current best solution by planners with HNR sampler converge significantly faster.
-It shows that HNR will have close performance with RS and HRS in simple problem, as in Figure \ref{fig:planning_efficiency:3dof:general}.
-But when the dimensions of problems increase, HNR shows better and steady performance.
-HNR also shows faster convergence to the optimal trajectory, because it is better at adapting the informed set update in planning process. 
-
+HNR shows close performance with RS and HRS in a 6-dimension problem, as in Figure~\ref{fig:planning_efficiency:3dof:general}. 
+As shown in Figure~\ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}, the advantages of HNR are clearly evident in higher dimensional problems. The cost of best solutions generated by planner with HNR sampler converges significantly faster to a cheaper to trajectory compared to others.
 
 \section{Conclusion}
 \label{sec:future}
