@@ -1,7 +1,7 @@
 set(0,'DefaultTextFontname', 'Times New Roman')
 set(0,'DefaultAxesFontName', 'Times New Roman')
 
-data = sortrows(dim6, 5);
+data = sortrows(dim2, 5);
 
 %data(:,1) = log(data(:,1));
 %data(:,2) = log(data(:,2));
