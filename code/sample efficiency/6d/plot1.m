@@ -1,3 +1,6 @@
+set(0,'DefaultTextFontname', 'Times New Roman')
+set(0,'DefaultAxesFontName', 'Times New Roman')
+
 data = sortrows(dim6, 5);
 
 %data(:,1) = log(data(:,1));
@@ -34,7 +37,7 @@ end
 
 
 xlabel('informed set volume ratio');
-ylabel('time per sample - (ms)');
+ylabel('time per sample (ms)');
 lgd = legend([h1, h2, h3, h4], {'RS', 'HRS', 'MH', 'HNR'});
 lgd.FontSize = 16;
 set(gca, 'XTick', [-5 -4 -3 -2 -1]);

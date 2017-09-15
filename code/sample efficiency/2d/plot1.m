@@ -1,3 +1,7 @@
+% Computer Modern Font
+set(0,'DefaultTextFontname', 'CMU Serif')
+set(0,'DefaultAxesFontName', 'CMU Serif')
+
 data = sortrows(dim2, 5);
 
 %data(:,1) = log(data(:,1));
