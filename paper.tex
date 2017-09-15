@@ -137,7 +137,8 @@ This may cause the planning algorithm to spend most of its time trying to produc
 
 \begin{figure}[tb]
   \centering
-  	\includegraphics[trim={4.5cm 0 4cm 2cm},clip,height = 5.25cm ]{fig/alg.pdf}
+%  	\includegraphics[trim={4.5cm 0 4cm 2cm},clip,height = 5.25cm ]{fig/alg.pdf}
+  	\includegraphics[width=0.75\linewidth ]{fig/alg.pdf}
   \caption{
     \captionstyle
   	Algorithmic approach.
@@ -437,7 +438,9 @@ The samples follow a Markov Chain Monte Carlo, in which a new sample candidate i
 Furthermore, the value~$c_{\text{best}}$ can decrease between consecutive iterations in the planning process of an informed RRT* planner.
 This will occur if the search algorithm that uses the sampler finds a path to the goal whose cost is lower than~$c_{\text{best}}$.
 
-The idea behind applying MCMC for informed sampling is to define a target distribution~$ \pi $ as a uniform distribution over all points in~$ \Cinf $.
+The idea behind applying MCMC for informed sampling is to define a target distribution~$ \pi $ that has $p(x_{sample}\in\Cinf) \ne 0 ~\&~ p(x_{sample})\notin\Cinf = 0$. 
+This is specially useful if we want to bias the samples based on our knowledge of the environment.
+However, we make no such assumption about the environment and use a uniform distribution over all points in~$ \Cinf $. 
 Our approach consists of two stages,
 \begin{enumerate}
 	\item finding an initial sample $ x_0 \in \Cinf $ which will serve as the start of a Markov chain. 
@@ -446,7 +449,7 @@ Our approach consists of two stages,
 	\item sampling a new sample $ x_i \in \Cinf $ given a previous sample $ x_{i-1} $. 
 	This is implemented using the function $\texttt{MCMC\_sample} (x_{i-1}, c_{\text{best}})$.
 \end{enumerate}
-Our algorithm is described in Alg.~\ref{alg:mcmc_informed_sampling} and visualized in Fig.~\ref{fig:alg}.
+Our framework is described in Alg.~\ref{alg:mcmc_informed_sampling} and visualized in Fig.~\ref{fig:alg}.
 We now continue to detail each of the algorithm's stages.
 %\os{Fix Alg 1 }
 
@@ -532,7 +535,7 @@ An acceptance ratio $ \alpha $ is used to keep the reversibility even if the tar
 		\ENDIF
 		\RETURN $ x_{i} $
 	\end{algorithmic}
-	\caption{Metropolis-Hastings MCMC $(x_{i-1}, c_{\text{best}})$}
+	\caption{\captionstyle Metropolis-Hastings MCMC $(x_{i-1}, c_{\text{best}})$}
 	\label{alg:mh_mcmc}	
 \end{algorithm}
 
@@ -578,7 +581,7 @@ The algorithm can be viewed as an efficient method that performs rejection sampl
 		
 		\ENDLOOP
 	\end{algorithmic}
-	\caption{Hit-And-Run MCMC $(x_{i-1}, c_{\text{best}})$}
+	\caption{\captionstyle Hit-And-Run MCMC $(x_{i-1}, c_{\text{best}})$}
 	\label{alg:hit_and_run_mcmc}	
 \end{algorithm}
 
@@ -587,6 +590,7 @@ For this algorithm, we continue sampling along a Markov Chain until either
 that define our sampling domain is below a predefined threshold or
 (ii)~a predefined number of samples was exceeded.
 We want to point out that a Hit-and-Run sampler only requires that a Markov chain starts in an informed set, and will not produce a sample outside of the informed set.
+Also, in our implementation, we pick the start or the goal state to find $ x_0 \in \Cinf $ as the start of a Markov chain.
 
 
 
@@ -630,13 +634,13 @@ Fig. \ref{fig:sampling_efficiency} shows that MH and HNR have a better sampling 
 	\centering
 	\begin{subfigure}[b]{\linewidth}
 		\centering
-		\includegraphics[width=.85\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
+		\includegraphics[width=.70\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
 		\caption{\captionstyle 4-dimension sampling space.}
 		\label{fig:sampling_efficiency:2d}
 	\end{subfigure}
 	\begin{subfigure}[b]{\linewidth}
 		\centering
-		\includegraphics[width=.85\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
+		\includegraphics[width=.70\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
 		\caption{\captionstyle 12-dimension sampling space.}
 		\label{fig:sampling_efficiency:6d}
 	\end{subfigure}
@@ -687,7 +691,7 @@ For each problem the start and goal states (positions and velocities) are known 
 
 
 \begin {table}[H]
-\caption {Parameters for the problems} \label{tab:params} 
+\caption {\captionstyle Parameters for the problems} \label{tab:params} 
 \begin{center}
 	\begin{tabular}{c c c c c} 
 \toprule
