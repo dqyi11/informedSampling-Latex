@@ -78,7 +78,7 @@ ylabel('Velocity');
 legend([h1, h2], {'non-zero goal velocity', 'zero goal velocit'});
 hold off;
 
-
+set(gca,'FontSize',16);
 
 %{
 figure(4);

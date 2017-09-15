@@ -98,7 +98,7 @@ We show for a wide range of scenarios that using our sampler can accelerate the 
 \label{sec:intro}
 
 
-Sampling-based motion-planning algorithms~\cite{CBHKKLT05, L06} have proven to be an effective tool at solving motion-planning problems.
+Sampling-based motion-planning algorithms~\cite{L06} have proven to be an effective tool at solving motion-planning problems.
 They search through a continuous state space~$\calX$ by sampling random states and maintaining a discrete graph~$G$ called a \emph{roadmap}.
 Vertices and edges in $G$ correspond to collision-free states and paths, respectively.
 
@@ -155,11 +155,11 @@ Specifically, our approach, depicted in Fig~\ref{fig:alg} consists of two stages
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a root-finding algorithm;
 in the second stage, this retracted sample  is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
 
-While our approach can be used with any Markov chain Monte Carlo (MCMC) method, it is especially suited to be used with Hit-and-Run~\cite{S84,KSZ11}.
+While our approach can be used with any Markov chain Monte Carlo (MCMC) method, it is especially suited to be used with Hit-and-Run~\cite{KSZ11}.
 Roughly speaking, this is because Hit-and-Run (detailed in Sec~\ref{sec:related_work})
 performs a series of one-dimensional rejection samples which are extremely fast to compute, even in high-dimensional spaces. 
 
-Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06, H02} and that a gradient can be defined over the cost function.
+Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06} and that a gradient can be defined over the cost function.
 Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitude when compared to algorithms using rejection sampling or HRS.
 
 \begin{figure*}[t!]
@@ -186,7 +186,7 @@ Indeed, we demonstrate the efficiency of our approach on a wide variety of syste
 		\label{fig:motivation:fast}
 	\end{subfigure}
     \end{minipage}
-    \begin{minipage}[t]{0.33\linewidth}
+    \begin{minipage}[t]{0.35\linewidth}
     	\begin{subfigure}[c]{\textwidth}
     		\includegraphics[width=\textwidth]{fig/motivation/phase_plot}
     		\caption{Non-zero goal velocity}
@@ -218,7 +218,7 @@ Karaman and Frazzoli~\cite{KF11}, presented variants of PRM and RRT, named PRM* 
 This was done by recognizing the underlying connections between stochastic sampling-based motion planning and the theory of random geometric graphs (see also~\cite{SSH16}).
 Additional algorithms followed, increasing the converges rate by various techniques such as 
 lazy dynamic programming~\cite{GSB15, JSCP15, SH15},
-relaxing optimality to near-optimality~\cite{DB14, SH16} 
+relaxing optimality to near-optimality~\cite{SH16} 
 and more.
 
 Many of the algorithms mentioned require solving a two-point boundary value problem (2pBVP) to perform exact and optimal connections between vertices in the roadmap.
@@ -236,10 +236,10 @@ Finally, we note that we are not the first to integrate Monte Carlo sampling int
 \label{subsec:sampling}
 There is a rich body of literature on how to produce samples that increase the efficiency of a planner in terms of finding a solution or producing high-quality solutions.
 Heuristic approaches include
-sampling on the medial axis~\cite{WAS99a, WAS99b, LTA03, YDLTA14},
-sampling near the boundary of the obstacles~\cite{ABDJV98, YTEA12},
-resampling along a given trajectory~\cite{APD11, AS11}
-and more~\cite{US03, SWT09}.
+sampling on the medial axis~\cite{WAS99a, YDLTA14},
+sampling near the boundary of the obstacles~\cite{YTEA12},
+resampling along a given trajectory~\cite{AS11}
+and more~\cite{SWT09}.
 For planning under the differential constraints,
 reachability-guided sampling~\cite{SWT09, PLAEFRA17} focuses on sampling regions of the state space that are most likely to promote expansion for the given constraints.
 
@@ -267,10 +267,10 @@ Gibbs sampling~\cite{CK94}
 or by simulating simulating Hamiltonian dynamics~\cite{N94} (instead of performing the random walk).
 
 One variant, which is of special interest to us is 
-Hit and Run~\cite{S84,KSZ11}.
+Hit and Run~\cite{KSZ11}.
 Here, given the current point $x_i$ the next point~$x_{i+1}$ in the Markov chain is produced by sampling a random direction~$\theta$ on the surface of the unit sphere centered at $x_{i+1}$. This defines a ray $r_i$ rooted at $x_i$ and passing through~$\theta$. The point $x_{i+1}$ is chosen by randomly sampling a point on $r_i$.
-This algorithm is considered to be one of the most efficient algorithms for generating an asymptotically uniform point if the set under consideration is convex~\cite{L99, LV06}
-and it can also be extended to sample points that converge to an arbitrary target distribution in total variation~\cite{BRS93, RS94}.
+This algorithm is considered to be one of the most efficient algorithms for generating an asymptotically uniform point if the set under consideration is convex~\cite{LV06}
+and it can also be extended to sample points that converge to an arbitrary target distribution in total variation~\cite{RS94}.
 
 The attractiveness of Hit and Run for our problem domain stems from the fact that it performs a series of one-dimensional rejection samples which are extremely fast to compute, even in high-dimensional spaces. 
 Finally, it is worth noting that we are not the first to apply Hit and Run for motion-planning problems.
@@ -468,7 +468,7 @@ a_1 = - a_2 = \text{sign}\left(x_2 - x_2 - \Delta x_{acc}\right) a_{max}
 From these equations it shows a fundamental difference of a kinodynamic state space compared to a geometric state space. Because of this the minimum time path can vary in shape depending on the start and goal state. The consequence of this is that the shape of the informed subset can change dramatically depending on the start and goal state of the problem definition. Because of this, finding a closed form solution to sampling in the informed space is not feasible.
 }
 
-\dy{Do you think we should include some figures that has been commented out below to show how difficult sampling an informed set is?}
+%\dy{Do you think we should include some figures that has been commented out below to show how difficult sampling an informed set is?}
 
 \ignore{
 See Fig.~\ref{fig:informed_1d_di} for a visualization of the cost surface for a specific start and goal state for one degree of freedom (two dimensions $\left(x, \dot{x}\right)$). Lower costs are represented with cooler colors with warmer colors representing higher costs. One can see the minimum cost path from start to goal as the dark blue curve.
@@ -572,7 +572,6 @@ Sampling from a pool of samples is algorithmic-free but biases new samples to be
 %However, our cost function is not necessarily continuous (see Sec.~\ref{sec:mtdi}), thus if no sample was produced on $\partial \Cinf$ after a predefined number of steps, we restart the algorithm using a different random state~$x_\text{rand}$
 %(see also Sec.~\ref{subsec:mcmc}).
 
-
 \subsection{Generating a new sample in a Markov chain}
 \label{mcmc}
 
@@ -607,16 +606,16 @@ A new Markov chain will be initiated by calling \texttt{sample\_in\_informed\_sp
 
 \subsubsection{Metropolis-Hastings sampler}
 
-\os{Please rewrite this entire section as well as the pseudo code. I did not understand it at all}
+%\os{Please rewrite this entire section as well as the pseudo code. I did not understand it at all}
 
 The Metropolis-Hastings algorithm is one of the most popular MCMC samplers~\cite{CG95}, because it provides a simple and parameter-free framework that guarantees the convergence of Markov chains to a target distribution.
 Our work adopts the general Metropolis-Hasting algorithm, as described in Alg.~\ref{alg:mh_mcmc}, 
-While the general algorithm is slightly more complex, for our setting it can be described as follows:
 We generate a new sample $ x_{i}$ around the previous sample $ x_{i-1}$ using a Gaussian distribution (line~1).
 We then check if the point lies in the informed set (lines 2-5) and if it does we return it.
 If not, we return the previous sample.
-%
-For this algorithm, we continue sampling along the Markov Chain as long as new samples are produced.
+An acceptance ratio $ \alpha $ is used to keep the reversibility even if the target probability $ \pi $ is asymmetric, which is needed to guarantee the convergence~\cite{CG95}. 
+
+%For this algorithm, we continue sampling along the Markov Chain as long as new samples are produced.
 
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
@@ -660,7 +659,8 @@ The sigmoid can be seen as a differentiable function smoothing the boundary of~$
 
 \subsubsection{Hit-and-Run sampler}
 
-Hit-and-Run~\cite{S84} MCMC sampler is known to efficiently generate uniform samples. Specifically, we use the Accelerated Hit-and-Run variant~\cite{KSZ11} of the algorithm i.e. described in Alg.~\ref{alg:hit_and_run_mcmc}.
+Hit-and-Run~\cite{S84} MCMC sampler is known to efficiently generate uniform samples. 
+Specifically, we use the Accelerated Hit-and-Run variant~\cite{KSZ11} of the algorithm i.e. described in Alg.~\ref{alg:hit_and_run_mcmc}.
 Given the previous sample~$x_{i-1}$ it first  samples a random direction on the unit sphere (line 1).
 This induces a line~$L(\lambda)$ passing through~$x_{i-1}$ in the direction sampled (line 2), parametrized by a scalar~$\lambda$.
 We obtain upper and lower bounds on $\lambda$ (line 3) that are problem dependant. 
@@ -720,13 +720,13 @@ A direct implication of the proof of optimality presented in~\cite{KF11} is that
 \section{Evaluation}
 \label{sec:eval}
 
-We evaluate the performance of proposed MCMC methods by comparing four types of samplers, which are Rejection Sampler (RS), Hierarchical Rejection Sampler (HRS), Metropolis-Hastings Sampler (MHS), and Hit-and-Run Sampler (HNR).
+We evaluate the performance of proposed MCMC methods by comparing four types of samplers, which are Rejection Sampler (RS), Hierarchical Rejection Sampler (HRS), Metropolis-Hastings Sampler (MH), and Hit-and-Run Sampler (HNR).
 We use different samplers to generate a fixed number of samples in different informed sets to check the sampling efficiency. %, especially when the sampling is harder (in a small informed set).
 We then compare the quality of the samplers by evaluating how the samplers work with informed RRT*~\cite{GSB14}.
 
 \subsection{Sampling Efficiency}
 
-\dy{TODO: change MCMC to MHS (Metropolis Hasting Sampler) in the plots}
+%\dy{TODO: change MCMC to MHS (Metropolis Hasting Sampler) in the plots}
 
 Fig. \ref{fig:sampling_efficiency} shows the log plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio, i.e. the ratio of the volume of informed space to the volume of entire state space, for 5000 samples. 
 The informed set volume ratio is approximated by the ratio of the number of accepted to the total number of samples obtained while running rejection sampling. 
@@ -736,20 +736,23 @@ Figure \ref{fig:sampling_efficiency:levelset} shows how the informed set volume 
 In a higher dimension, the informed set volume ratio falls much more quickly as the informed set cost $ c_{best} $ decreases in planning process, as new better solutions are kept being found.
 
 \begin{figure}[t!]
+	\includegraphics[width=.46\textwidth]{fig/sampling_efficiency/levelset}
+	\caption{2DoF - 4D. TODO:Time per sample vs informed set}
+	\label{fig:sampling_efficiency:levelset}
+\end{figure}
+
+\begin{figure}[t!]
 	\centering
-	\begin{subfigure}[b]{0.78\linewidth}
-		\includegraphics[width=\linewidth]{fig/sampling_efficiency/levelset}
-		\caption{2DoF - 4D. TODO:Time per sample vs informed set}
-		\label{fig:sampling_efficiency:levelset}
-	\end{subfigure}
+
 	%\begin{subfigure}[b]{0.48\linewidth}
 	%	\includegraphics[width=\linewidth]{fig/sampling_efficiency/levelset_6d}
 	%	\caption{6DoF - 12D. TODO:Time per sample vs informed set}
 	%	\label{fig:sampling_efficiency:6d}
 	%\end{subfigure}
-	 \\
-	\begin{subfigure}[b]{0.78\linewidth}
-		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
+	 
+	\begin{subfigure}[b]{\linewidth}
+		\centering
+		\includegraphics[width=.85\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
 		\caption{2DoF - 4D TODO: rescale x axis}
 		\label{fig:sampling_efficiency:2d}
 	\end{subfigure}
@@ -758,8 +761,9 @@ In a higher dimension, the informed set volume ratio falls much more quickly as 
 % 		\caption{3DoF - 6D}
 % 		\label{fig:sampling_efficiency:3d}
 % 	\end{subfigure}	
-	\begin{subfigure}[b]{0.78\linewidth}
-		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
+	\begin{subfigure}[b]{\linewidth}
+		\centering
+		\includegraphics[width=.85\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
 		\caption{6DoF - 12D. TODO: rescale x axis}
 		\label{fig:sampling_efficiency:6d}
 	\end{subfigure}
@@ -767,7 +771,7 @@ In a higher dimension, the informed set volume ratio falls much more quickly as 
 	\label{fig:sampling_efficiency}
 \end{figure} 
 
-\dy{going to change the tick labels so this below sentence will be replaced}
+%\dy{going to change the tick labels so this below sentence will be replaced}
 It is noticeable that both x axis and y axis are converted by $ \log_{10} () $ in Figure~\ref{fig:sampling_efficiency:2d} and Figure~\ref{fig:sampling_efficiency:6d}.
 This reserves the linearity of the data from rejection sampler, but also scales the difference in a smaller range for comparison.
 Keep in mind that the differences in unit (ms) are much bigger.

@@ -21,10 +21,10 @@ plot(dim6(:,12), dim6(:,13), 'color', red, 'linewidth', 4);
 %scatter(log10(data(:,5)),log10(data(:,3)./data(:,6)), marker_size, 'MarkerFaceColor', purple, 'MarkerEdgeColor', purple, 'Marker', 'o');
 
 xlim([1, 1.41]);
-xlabel('informed set volume ratio');
-ylabel(' ratio');
+xlabel(' c_{best} / c^*_{best}');
+ylabel('informed set volume ratio');
 %legend('Rejection', 'HRS', 'MCMC', 'Hit&Run');
-legend('4 dimension', '12 dimension');
+legend('4-dimension', '12-dimension');
 hold off;
 
-set(gca,'FontSize',20)
+set(gca,'FontSize',16)

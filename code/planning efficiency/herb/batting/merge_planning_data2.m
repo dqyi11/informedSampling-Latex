@@ -1,4 +1,4 @@
-datasetSize = 10;
+datasetSize = 20;
 maxtimes = zeros(datasetSize,1);
 minvals = zeros(datasetSize,1);
 for i = 0:1:datasetSize-1
@@ -35,10 +35,10 @@ T3 = T1 + deltaStepSize*2; T3(1) = 0;
 T4 = T1 + deltaStepSize*3; T4(1) = 0; 
 
 for i = 0:1:datasetSize-1
-  mcmc_filename = sprintf('data/20s/simple_MCMC_%d.csv', i);
-  rs_filename = sprintf('data/20s/simple_RS_%d.csv', i);
-  hrs_filename = sprintf('data/20s/simple_HRS_%d.csv', i);
-  hnr_filename = sprintf('data/20s/simple_HNR_%d.csv', i);
+  mcmc_filename = sprintf('data/60s/simple_MCMC_%d.csv', i);
+  rs_filename = sprintf('data/60s/simple_RS_%d.csv', i);
+  hrs_filename = sprintf('data/60s/simple_HRS_%d.csv', i);
+  hnr_filename = sprintf('data/60s/simple_HNR_%d.csv', i);
   
   MCMC = csvread(mcmc_filename);
   RS = csvread(rs_filename);
