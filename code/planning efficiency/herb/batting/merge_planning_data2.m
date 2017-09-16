@@ -21,7 +21,7 @@ end
 maxT = max(maxtimes);
 minVal = min(minvals);
 
-stepNum = 20;
+stepNum = 10;
 MCMC1 = zeros(datasetSize, stepNum+1);
 RS1 = zeros(datasetSize, stepNum+1);
 HRS1 = zeros(datasetSize, stepNum+1);

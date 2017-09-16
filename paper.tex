@@ -299,7 +299,7 @@ where $T$ is the duration of~$\gamma$.
 Given start and target states $x_s, x_g \in \calX$, we wish to find a collision free trajectory $\gamma^*$ connecting $x_s$ to $x_g$ such that 
 $c(\gamma^*) = \min_{\gamma \in \Gamma} c(\gamma)$, where $\Gamma$ is the set of all collision-free trajectories.
 
-Given a trajectory $\gamma_{\text{best}}$ with cost $c_{\text{best}} = c(\gamma_{\text{best}})$ the \emph{informed set}~\Cinf is defined to be all states $x$  which may be on trajectories with lower cost than $c_{\text{best}}$.
+Given a trajectory $\gamma_{\rm best}$ with cost $\cbest = c(\gamma_{\rm best})$ the \emph{informed set}~\Cinf is defined to be all states $x$  which may be on trajectories with lower cost than $\cbest$.
 Specifically,
 $
 \Cinf = \{ x \in \calX \mid  
@@ -393,18 +393,18 @@ Notice that
 %
 %\subsection{Informed set}
 Recall that for Euclidean spaces minimizing path length, the informed set~\Cinf is a prolate hyperspheroid~\cite{GSB14}.
-Moreover, the size and shape of the hyperspheroid is defined only be the cost $c_{\text{best}}$ of the current best solution and not by the location of the start~$x_s$ and goal~$x_g$.
+Moreover, the size and shape of the hyperspheroid is defined only be the cost $\cbest$ of the current best solution and not by the location of the start~$x_s$ and goal~$x_g$.
 
 For the case of a MTDI, this is not the case. 
 Specifically, we have that 
-(i)~the structure of~\Cinf changes not only with~$c_{\text{best}}$ but also according to the specific values of~$x_s$ and~$x_g$ 
+(i)~the structure of~\Cinf changes not only with~$\cbest$ but also according to the specific values of~$x_s$ and~$x_g$ 
 and that
 (ii)~the cost map that implicitly defines~\Cinf can contain discontinuities (in contrast to Euclidean spaces minimizing path length where the cost map is continuous and differentiable at every point).
 
 To understand the differences recall that optimal trajectories  for MTDI follow a ``bang-bang`` controller~\cite{HN10, KS14}.
 Namely, we first apply maximal (or minimal) acceleration for some duration and then switch to applying minimal (or maximal, respectively) acceleration.
 It is straightforward to see that both the type and the amount of acceleration applied (and hence the structure of~\Cinf) depend on the specific values of~$x_s$ and~$x_g$. 
-%Fig~\ref{fig:informed_sets} depicts two informed sets defined using the same cost~$c_{\text{best}}$ but different start and goal states. Notice the difference in structure of~\Cinf. 
+%Fig~\ref{fig:informed_sets} depicts two informed sets defined using the same cost~$\cbest$ but different start and goal states. Notice the difference in structure of~\Cinf. 
 Fig~\ref{fig:discont} depicts a simple example where the cost map is discontinuous.
 
 To summarize, the structure of \Cinf can change given different start and goal states.
@@ -432,11 +432,11 @@ See Fig.~\ref{fig:informed_1d_di} for a visualization of the cost surface for a 
 \section{MCMC-based Informed Sampling}
 \label{sec:algorithm}
 
-In this section we describe our approach to efficiently produce new samples in an informed set~\Cinf given a specific cost~$c_{\text{best}}$ of trajectory $\gamma_{best}(t)$.
+In this section we describe our approach to efficiently produce new samples in an informed set~\Cinf given a specific cost~$\cbest$ of trajectory $\gamma_{\rm best}(t)$.
 The samples follow a Markov Chain Monte Carlo, in which a new sample candidate is produced from a previous sample that also lies in the same informed set.
 %However, this sample depends on the previous iterations of the algorithm which is why we describe it as a method to produce a sequence of samples.
-Furthermore, the value~$c_{\text{best}}$ can decrease between consecutive iterations in the planning process of an informed RRT* planner.
-This will occur if the search algorithm that uses the sampler finds a path to the goal whose cost is lower than~$c_{\text{best}}$.
+Furthermore, the value~$\cbest$ can decrease between consecutive iterations in the planning process of an informed RRT* planner.
+This will occur if the search algorithm that uses the sampler finds a path to the goal whose cost is lower than~$\cbest$.
 
 The idea behind applying MCMC for informed sampling is to define a target distribution~$ \pi $ that has $p(x_{sample}\in\Cinf) \ne 0 ~\&~ p(x_{sample})\notin\Cinf = 0$. 
 This is specially useful if we want to bias the samples based on our knowledge of the environment.
@@ -447,7 +447,7 @@ Our approach consists of two stages,
 	This is implemented using the function 
 	$ \texttt{sample\_in\_informed\_space}( )$, and
 	\item sampling a new sample $ x_i \in \Cinf $ given a previous sample $ x_{i-1} $. 
-	This is implemented using the function $\texttt{MCMC\_sample} (x_{i-1}, c_{\text{best}})$.
+	This is implemented using the function $\texttt{MCMC\_sample} (x_{i-1}, \cbest)$.
 \end{enumerate}
 Our framework is described in Alg.~\ref{alg:mcmc_informed_sampling} and visualized in Fig.~\ref{fig:alg}.
 We now continue to detail each of the algorithm's stages.
@@ -487,7 +487,7 @@ Sampling from a pool of samples is algorithmic-free but biases new samples to be
 Our approach is general and can be applied to any MCMC algorithm (see Sec.~\ref{sec:related_work}).
 The process is demonstrated in Algorithm~\ref{alg:mcmc_informed_sampling}.
 At the beginning of a Markov chain, \texttt{sample\_in\_informed\_space}() is called to generate the first sample in an informed set.
-\texttt{MCMC\_sample}() is called to generate a new sample based on a previous sample $ x_{i-1} $ and a cost $ c_{best} $ that defines an informed set.
+\texttt{MCMC\_sample}() is called to generate a new sample based on a previous sample $ x_{i-1} $ and a cost $ \cbest $ that defines an informed set.
 We demonstrate how to instantiate it with two different algorithms \emph{Metropolis-Hastings} and \emph{Hit-and-Run}, which will be described in later subsections.
 If a generated new sample candidate is in the informed set, this candidate will be returned as a new sample.
 But if a generated new sample candidate is not in the informed set, it will go back to line 2.
@@ -500,7 +500,7 @@ A new Markov chain will be initiated by calling \texttt{sample\_in\_informed\_sp
 		\label{alg:mcmc_informed_sampling:start}
 			\STATE $x_{0} \leftarrow \texttt{sample\_in\_informed\_space}( )$
 		\ENDIF
-		\STATE $x_{i} \leftarrow \texttt{MCMC\_sample} (x_{i-1}, c_{\text{best}})$ 
+		\STATE $x_{i} \leftarrow \texttt{MCMC\_sample} (x_{i-1}, \cbest)$ 
 		\IF{ $ x_{i} \not\in \Cinf $ }
 			\STATE $ i \leftarrow 0 $; $ x_{0} \leftarrow \varnothing $
 			\STATE \textbf{Goto} line \ref{alg:mcmc_informed_sampling:start} 
@@ -508,7 +508,7 @@ A new Markov chain will be initiated by calling \texttt{sample\_in\_informed\_sp
 		\STATE \textbf{return} $x_{i}$
 		\ENDLOOP 
 	\end{algorithmic}
-	\caption{\captionstyle MCMC-based Informed Sampling $( x_{i-1}, c_{\text{best}})$}
+	\caption{\captionstyle MCMC-based Informed Sampling $( x_{i-1}, \cbest)$}
 	\label{alg:mcmc_informed_sampling}	
 \end{algorithm}
 
@@ -535,7 +535,7 @@ An acceptance ratio $ \alpha $ is used to keep the reversibility even if the tar
 		\ENDIF
 		\RETURN $ x_{i} $
 	\end{algorithmic}
-	\caption{\captionstyle Metropolis-Hastings MCMC $(x_{i-1}, c_{\text{best}})$}
+	\caption{\captionstyle Metropolis-Hastings MCMC $(x_{i-1}, \cbest)$}
 	\label{alg:mh_mcmc}	
 \end{algorithm}
 
@@ -569,7 +569,7 @@ The algorithm can be viewed as an efficient method that performs rejection sampl
 		\STATE $ \lambda' \leftarrow$ \texttt{sample\_random}$ (\lambda^{-} , \lambda^{+})$
 		\STATE $ x_{i} \leftarrow x_{i-1} + \lambda'_{i} d_i $
 		
-		\IF{ \textsc{Cost}($ x_{i} $) $ < c_{\text{best}} $ }
+		\IF{ \textsc{Cost}($ x_{i} $) $ < \cbest $ }
 		\RETURN $ x_{i}$
 		\ENDIF
 		
@@ -581,7 +581,7 @@ The algorithm can be viewed as an efficient method that performs rejection sampl
 		
 		\ENDLOOP
 	\end{algorithmic}
-	\caption{\captionstyle Hit-And-Run MCMC $(x_{i-1}, c_{\text{best}})$}
+	\caption{\captionstyle Hit-And-Run MCMC $(x_{i-1}, \cbest)$}
 	\label{alg:hit_and_run_mcmc}	
 \end{algorithm}
 
@@ -613,8 +613,8 @@ We then compare the quality of the samplers by evaluating how the samplers work 
 
 \subsection{Sampling Efficiency}
 
-Figure \ref{fig:sampling_efficiency:levelset} shows how the informed set volume ratio decreases as the informed set cost $ c_{best} $ becomes smaller in problems of different dimensions.
-In higher dimensions, the informed set volume ratio decreases much more quickly with decrease in the informed set cost $ c_{best} $, as new cheaper trajectories are found in the planning process.
+Figure \ref{fig:sampling_efficiency:levelset} shows how the informed set volume ratio decreases as the informed set cost $ \cbest $ becomes smaller in problems of different dimensions.
+In higher dimensions, the informed set volume ratio decreases much more quickly with decrease in the informed set cost $ \cbest $, as new cheaper trajectories are found in the planning process.
 
 Fig. \ref{fig:sampling_efficiency} shows the plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio, i.e. the ratio of the volume of informed space to the volume of entire state space, for 5000 samples. 
 The informed set volume ratio is estimated by the acceptance rate of rejection sampler.
@@ -623,24 +623,25 @@ The informed set volume ratio is approximated by the ratio of the number of acce
 Fig. \ref{fig:sampling_efficiency} shows that MH and HNR have a better sampling efficiency compared to HRS and RS with decrease in informed set volume ratio or increase in dimensions. 
 
 
-\begin{figure}[t!]
-    \centering
-	\includegraphics[width=.3\textwidth]{fig/sampling_efficiency/levelset}
-	\caption{\captionstyle The informed set volume ratio decrease as $ c_{best} $ decreases in the planning process in different dimensions.}
-	\label{fig:sampling_efficiency:levelset}
-\end{figure}
 
-\begin{figure}[t!]
+
+\begin{figure*}[t!]
 	\centering
-	\begin{subfigure}[b]{\linewidth}
+	\begin{subfigure}[t!]{0.325\textwidth}
 		\centering
-		\includegraphics[width=.70\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
+		\includegraphics[width=\textwidth]{fig/sampling_efficiency/levelset}
+		\caption{\captionstyle The informed set volume ratio decrease as $ \cbest $ decreases in the planning process in different dimensions.}
+		\label{fig:sampling_efficiency:levelset}
+	\end{subfigure}
+	\begin{subfigure}[t!]{0.325\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
 		\caption{\captionstyle 4-dimension sampling space.}
 		\label{fig:sampling_efficiency:2d}
 	\end{subfigure}
-	\begin{subfigure}[b]{\linewidth}
+	\begin{subfigure}[t!]{0.325\textwidth}
 		\centering
-		\includegraphics[width=.70\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
+		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
 		\caption{\captionstyle 12-dimension sampling space.}
 		\label{fig:sampling_efficiency:6d}
 	\end{subfigure}
@@ -648,7 +649,7 @@ Fig. \ref{fig:sampling_efficiency} shows that MH and HNR have a better sampling 
 	The X axis is the ratio of informed set volume to the entire sampling space.
 	The Y axis is the average time per sample.}
 	\label{fig:sampling_efficiency}
-\end{figure}
+\end{figure*}
 
 Metropolis-Hastings shows consistent sampling time when problems get harder. 
 It takes the advantage of sampling a near state that generate samples in an informed set.
@@ -680,7 +681,7 @@ The quality of samples determines the efficiency of resulting planning algorithm
 If a sampler could provide samples with same quality as others but generate samples in a much efficiency way, we would expect that an informed RRT* with this sampler would show two properties.
 \begin{itemize}
 	\item It shall converge faster in finding the optimal solution.
-	Sampling in an informed set is gradually becoming harder as new better solution reduces $ c_{best} $ which reduces the informed set volume ratio.
+	Sampling in an informed set is gradually becoming harder as new better solution reduces $ \cbest $ which reduces the informed set volume ratio.
 	\item Its performance should not degrade significantly in high dimensional problems.
 	As shown in Figure \ref{fig:sampling_efficiency:levelset}, the informed set volume ratio decrease more significantly in a high-dimension state space.
 	The advantage of a good informed sampler becomes evident.
@@ -794,7 +795,7 @@ Figure~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned
     \end{subfigure}
 	\caption{\captionstyle Planning Efficiency of four different samplers (RS, HRS, MH and HNR) in three problems. 
 	The X axis is the planning time. 
-	The Y axis is the ration of the current best and the optimal $ c_{best} / c^*_{best} $.}
+	The Y axis is the ration of the current best and the optimal $ \cbest / c^*_{\rm best} $.}
 	\label{fig:planning_efficiency}
 \end{figure*} 
 

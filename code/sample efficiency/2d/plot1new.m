@@ -29,26 +29,33 @@ HRSTime = data(:,2)./data(:,6);
 MHTime = data(:,1)./data(:,6);
 HNRTime = data(:,3)./data(:,6);
 
+RSColor = [92, 121, 157]/255.; %[69,117,180]/255.;
+HRSColor = [113, 174, 111]/255.; %[102,189,99]/255.;
+MHColor = [219, 176, 132]/255.; %[253,174,97]/255.;
+HNRColor = [243, 90, 83]/255.; %[215,48,39]/255.;
+
 ymin = min([RSTime; HRSTime; MHTime; HNRTime]);
 ymax = max([RSTime; HRSTime; MHTime; HNRTime]);
 xmin = min(volumeRatio);
 xmax = max(volumeRatio);
 
-figure(2);
+fig = figure(2);
 %hold on;
 marker_size = 4;
 
-h1 = loglog(volumeRatio,RSTime,  'o', 'MarkerFaceColor', blue, 'MarkerEdgeColor', blue, 'MarkerSize', 4);
+h1 = loglog(volumeRatio,RSTime,  'o', 'MarkerFaceColor', RSColor, 'MarkerEdgeColor', RSColor, 'MarkerSize', 4);
 hold on;
-h2 = loglog(volumeRatio,HRSTime, 'o', 'MarkerFaceColor', red, 'MarkerEdgeColor', red, 'MarkerSize', 4);
-h3 = loglog(volumeRatio,MHTime,  'o', 'MarkerFaceColor', green, 'MarkerEdgeColor', green, 'MarkerSize', 4);
-h4 = loglog(volumeRatio,HNRTime, 'o', 'MarkerFaceColor', purple, 'MarkerEdgeColor', purple, 'MarkerSize', 4);
-
+h2 = loglog(volumeRatio,HRSTime, 'o', 'MarkerFaceColor', HRSColor, 'MarkerEdgeColor', HRSColor, 'MarkerSize', 4);
+h3 = loglog(volumeRatio,MHTime,  'o', 'MarkerFaceColor', MHColor, 'MarkerEdgeColor', MHColor, 'MarkerSize', 4);
+h4 = loglog(volumeRatio,HNRTime, 'o', 'MarkerFaceColor', HNRColor, 'MarkerEdgeColor', HNRColor, 'MarkerSize', 4);
 hold off;
-deltaXLower = 0.000001;
-deltaXUpper = 0.002;
-deltaYLower = 0.000001;
-deltaYUpper = 2000;
+
+h1.Color(4) = 0.9; h2.Color(4) = 0.9; h3.Color(4) = 0.9;
+
+deltaXLower = 0.00005;
+deltaXUpper = 0.02;
+deltaYLower = 0.001;
+deltaYUpper = 2;
 xlim([xmin-deltaXLower,xmax+deltaXUpper]);
 ylim([ymin-deltaYLower,ymax+deltaYUpper]);
 
@@ -56,4 +63,10 @@ xlabel('informed set volume ratio');
 ylabel('time per sample (ms)');
 lgd = legend([h1, h2, h3, h4], {'RS', 'HRS', 'MH', 'HNR'});
 lgd.FontSize = 16;
-set(gca, 'fontsize',12);
+set(gca, 'fontsize',16);
+
+set(fig,'Units','Inches');
+figPos = get(fig,'Position');
+set(fig,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[figPos(3), figPos(4)+0.04])
+
+print sample_efficiency_2d.pdf -dpdf -r0
