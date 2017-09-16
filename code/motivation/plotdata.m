@@ -106,7 +106,7 @@ xlim([-0.32, 0.12]);
 
 xlabel('Position  $ q  $ (rad)', 'Interpreter','latex');
 ylabel('Velocity $ \dot{q} $ (rad/sec) ', 'Interpreter','latex');
-lgd = legend([h1, h2], {'non-zero goal velocity', 'zero goal velocity'}, 'Location', 'southeast');
+lgd = legend([h1, h2], {'non-zero goal velocity', 'zero goal velocity'}, 'Location', 'northwest');
 hold off;
 %lgd.Position = 'southeast';
 
