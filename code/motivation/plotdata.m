@@ -102,7 +102,7 @@ scatter(slowStartPos, slowStartVel, 'o', 'MarkerEdgeColor', slowStartColor, 'Mar
 scatter(fastGoalPos, fastGoalVel, 's', 'MarkerEdgeColor', fastGoalColor, 'MarkerFaceColor', faceColor, 'LineWidth',2);
 scatter(slowGoalPos, slowGoalVel, 's', 'MarkerEdgeColor', slowGoalColor, 'MarkerFaceColor', faceColor, 'LineWidth',2);
 
-
+xlim([-0.32, 0.12]);
 
 xlabel('Position  $ q  $ (rad)', 'Interpreter','latex');
 ylabel('Velocity $ \dot{q} $ (rad/sec) ', 'Interpreter','latex');
