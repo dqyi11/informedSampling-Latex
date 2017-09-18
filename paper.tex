@@ -669,31 +669,68 @@ To evaluate the planning efficiency of the samplers, we run them with the inform
 For each problem the start and goal states (positions and velocities) are known in the joint space. 
 Joint velocities at start and goal are calculated from desired end-effector velocities using inverse kinematics before starting the planning. Table~\ref{tab:params} shows the parameters used in the problems.
 
-
-\begin {table}[H]
-\caption {\captionstyle Parameters for the problems} \label{tab:params} 
-\begin{center}
-	\begin{tabular}{c c c c c} 
+\begin {table*}[t!]
+\centering
+\setlength{\tabcolsep}{0.5em}
+\begin{tabular}{r*{7}{>{[}r@{,~}l<{]}}} 
 \toprule
-\multicolumn{2}{c}{Problem} & Position  & $ | v_{max} |  $ & $|acc_{max}|$ \\ [0.5ex] 
-    &    &    $rad$       &  $rad/sec$    &  $rad/sec^2$ \\
+HERB Joint & 
+\multicolumn{2}{c}{1} & 
+\multicolumn{2}{c}{2} & 
+\multicolumn{2}{c}{3} &
+\multicolumn{2}{c}{4} &
+\multicolumn{2}{c}{5} &
+\multicolumn{2}{c}{6} &
+\multicolumn{2}{c}{7} 
+\\ 
 \midrule
-\multicolumn{2}{c}{3DoF Arm} & $[-\pi, \pi]$ & 10 & 1 \\ 
-\midrule
-\multicolumn{2}{c}{6DoF SnakeArm} & $[-\pi, \pi]$ & 10 & 1 \\
-\midrule
-7DoF arm                  & 1st & [0.54 , 5.74] & 0.75 & \multirow{7}{*}{1} \\
-\rule{0pt}{3ex}           & 2nd & [-2 , 2]             & 0.75 &  \\
-\rule{0pt}{3ex}           & 3rd & [-2.8, 2.8]          &  2   &  \\
-\rule{0pt}{3ex}           & 4th & [-0.9, 3.1]          & 2.5  &  \\
-\rule{0pt}{3ex}           & 5th & [-4.76, 1.24]        & 2.5  &  \\
-\rule{0pt}{3ex}           & 6th & [-1.6, 1.6]          & 2.5  &  \\
-\rule{0pt}{3ex}          & 7th & [-3, 3]              & 2.5  &  \\
+Joint limits ($rad$)& 
+ 0.54 & 5.74 &
+-2.00 & 2.00 &
+-2.80 & 2.80 &
+-0.90 & 3.10 &
+-4.76 & 1.24 &
+-1.60 & 1.60 &
+-3.00 & 3.00
+\\
+$| v_{max} |~(rad/s)$ &
+\multicolumn{2}{c}{0.75} &
+\multicolumn{2}{c}{0.75} &
+\multicolumn{2}{c}{2.00} &
+\multicolumn{2}{c}{2.50} &
+\multicolumn{2}{c}{2.50} &
+\multicolumn{2}{c}{2.50} &
+\multicolumn{2}{c}{2.00}
+\\
 \bottomrule
 \end{tabular}
-\end{center}
-\end{table}
-\vspace{-2pt}
+\begin{tabular}{>{[}r@{,~}l<{]}} 
+\toprule
+\multicolumn{2}{c}{3D Arm} 
+\\ 
+\midrule
+ $-\pi$ & $\pi$ 
+\\
+\multicolumn{2}{c}{10} 
+\\
+\bottomrule
+\end{tabular}
+\begin{tabular}{>{[}r@{,~}l<{]}} 
+\toprule
+\multicolumn{2}{c}{6D Snake} 
+\\ 
+\midrule
+ $-\pi$ & $\pi$ 
+\\
+\multicolumn{2}{c}{10} 
+\\
+\bottomrule
+\end{tabular}
+\caption {\captionstyle Parameters for the problems. All robots have $|a_{max}| = 1.0~rad/s^2$}.
+\label{tab:params} 
+\end{table*}
+
+
 
 \subsubsection{Problem 1: 6 Dimension - 3 DoF Planar Manipulator}
 
