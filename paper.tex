@@ -615,18 +615,18 @@ Fig.~\ref{fig:sampling_efficiency} shows that MH and HNR have a better sampling 
 	\begin{subfigure}[t!]{0.325\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_2d}
-		\caption{\captionstyle 4-dimension sampling space.}
+		\caption{\captionstyle 4-dimensional state space.}
 		\label{fig:sampling_efficiency:2d}
 	\end{subfigure}
 	\begin{subfigure}[t!]{0.325\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{fig/sampling_efficiency/sample_efficiency_6d}
-		\caption{\captionstyle 12-dimension sampling space.}
+		\caption{\captionstyle 12-dimensional state space.}
 		\label{fig:sampling_efficiency:6d}
 	\end{subfigure}
 	\caption{\captionstyle Average sampling time vs informed set volume ratio of four samplers (RS, HRS, MH and HNR) in state spaces of different dimensions. 
-	The X axis is the ratio of informed set volume to the entire sampling space.
-	The Y axis is the average time per sample.}
+	The $x$-axis is the ratio of the volume of informed set and the volume of the entire state space.
+	The $y$-axis is the average time per sample.}
 	\label{fig:sampling_efficiency}
 \end{figure*}
 
@@ -668,7 +668,7 @@ If a sampler could provide samples with same quality as others but generate samp
 
 To evaluate the planning efficiency of the samplers, we run them with the informed RRT* planner~\cite{GSB14} in position-velocity space with MTDI as steering function, on three different problems described below and shown in Fig.~\ref{fig:problems}. 
 For each problem the start and goal states (positions and velocities) are known in the joint space. 
-Joint velocities at start and goal are calculated from desired end-effector velocities using inverse kinematics before starting the planning. Table~\ref{tab:params} shows the parameters used in the problems.
+Joint velocities at start and goal are calculated from desired end-effector velocities using inverse kinematics before starting the planning. Table~\ref{tab:params} shows the parameters used in the problems and Fig.~\ref{fig:problems} depicts the planned path for the three problems.
 
 \begin {table*}[t!]
 \centering
@@ -731,24 +731,31 @@ $| v_{max} |~(rad/s)$ &
 \label{tab:params} 
 \end{table*}
 
+\begin{enumerate}
+	\item[\textbf{P1}] \emph{6 Dimensional 3 DoF planar manipulator}---The objective is to move the arm from a start to a goal state, both with zero velocities.
+	
+	\item[\textbf{P2}] \emph{12 Dimensional 6 DoF snake arm}	---The objective is to hammer the end-effector into the wall while starting with zero velocity.
 
-
-\subsubsection{Problem 1: 6 Dimension - 3 DoF Planar Manipulator}
-
-The start and the goal states have zero velocities.
-%The position boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ [-1,1] $.
-Fig.~\ref{fig:planning_efficiency:3dof:example} shows the planned path.
-
-\subsubsection{Problem 2: 12 Dimension - 6 DoF Snake Arm}
-
-The objective is to hammer the end-effector into the wall while starting with zero velocity.
-%The position boundary of each join is $[-\pi,\pi]$, the velocity boundary is $[-10,10]$, and the acceleration is $[-1,1]$.
-Fig.~\ref{fig:planning_efficiency:6dof:example} shows the planned path.
-
-\subsubsection{Problem 3: 14 Dimension - 7 DoF WAM Arm}
-
-The objective is to quickly swing away a glass on a table using the right arm.
-Fig.~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned path.
+	\item[\textbf{P3}] \emph{14 Dimensional 7 DoF WAM arm}---The objective is to  to quickly swing away a glass on a table using the right arm.
+\end{enumerate}
+%
+%
+%\subsubsection[\textbf{P1}]{\textbf{P1} 6 Dimension - 3 DoF Planar Manipulator}
+%
+%The start and the goal states have zero velocities.
+%%The position boundary of each join is $ [ - \pi , \pi ] $, the velocity boundary is $ [-10, 10] $, and the acceleration is $ [-1,1] $.
+%Fig.~\ref{fig:planning_efficiency:3dof:example} shows the planned path.
+%
+%\subsubsection{Problem 2: 12 Dimension - 6 DoF Snake Arm}
+%
+%The objective is to hammer the end-effector into the wall while starting with zero velocity.
+%%The position boundary of each join is $[-\pi,\pi]$, the velocity boundary is $[-10,10]$, and the acceleration is $[-1,1]$.
+%Fig.~\ref{fig:planning_efficiency:6dof:example} shows the planned path.
+%
+%\subsubsection{Problem 3: 14 Dimension - 7 DoF WAM Arm}
+%
+%The objective is to quickly swing away a glass on a table using the right arm.
+%Fig.~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned path.
 
 \begin{figure*}[t!]
 	\centering
@@ -759,7 +766,7 @@ Fig.~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned p
 		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_3}
 		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_4}
 		\includegraphics[height=2.45cm]{fig/planning_efficiency/3dof_5}
-		\caption{\captionstyle Problem 1 : 3DOF planar arm move from a start to a goal while starting and ending with zero velocities.}
+		\caption{\captionstyle Problem \textbf{P1} : 3DOF planar arm moving from a start state to a goal state, both with zero velocities.}
 		\vspace{6pt}
 		\label{fig:planning_efficiency:3dof:example}
 	\end{subfigure}
@@ -770,7 +777,7 @@ Fig.~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned p
 		\includegraphics[height=3cm]{fig/planning_efficiency/6dof_3}
 		\includegraphics[height=3cm]{fig/planning_efficiency/6dof_4}
 		\includegraphics[height=3cm]{fig/planning_efficiency/6dof_5}
-		\caption{\captionstyle Problem 2 : 6DOF snake hammers the end-effector into the wall while starting with zero velocity.}
+		\caption{\captionstyle Problem \textbf{P2} : 6DOF snake hammers the end-effector into the wall while starting with zero velocity.}
 		\vspace{6pt}
 		\label{fig:planning_efficiency:6dof:example}
 	\end{subfigure}
@@ -781,11 +788,10 @@ Fig.~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned p
     \includegraphics[height=2.7cm]{fig/planning_efficiency/herb_batting_3}
     \includegraphics[height=2.7cm]{fig/planning_efficiency/herb_batting_4}
     \includegraphics[height=2.7cm]{fig/planning_efficiency/herb_batting_5}
-	\caption{Problem 3 : HERB sweeps a cup on a table, in which the right arm starts with zero velocity and ends with non-zero velocity.}
+	\caption{Problem \textbf{P3} : HERB sweeps a cup on a table, in which the right arm starts with zero velocity and ends with non-zero velocity.}
 	\label{fig:planning_efficiency:herb:example}
 	\end{subfigure}
-	\caption{\captionstyle Three problems are used to evaluate planning efficiency.
-	These problems are defined in state spaces of different dimensions and subject to different kinodynamics.}
+	\caption{\captionstyle Three problems in different state spaces and subject to different dynamic constraints used to evaluate planning efficiency.}
 	\label{fig:problems}
 \end{figure*} 
 
@@ -794,22 +800,22 @@ Fig.~\ref{fig:planning_efficiency:herb:example} shows a few steps of a planned p
 	\centering
 	\begin{subfigure}[b]{0.325\textwidth}
 		\includegraphics[width=\linewidth]{fig/planning_efficiency/3dof_general}
-		\caption{\captionstyle Problem 1 - 6 Dimensions.}
+		\caption{\captionstyle Problem \textbf{P1} - 6 dimensions.}
 		\label{fig:planning_efficiency:3dof:general}
 	\end{subfigure}	
 	\begin{subfigure}[b]{0.325\textwidth}
 		\includegraphics[width=\linewidth]{fig/planning_efficiency/6dof_hammering}
-		\caption{\captionstyle Problem 2 - 12 Dimensions.}
+		\caption{\captionstyle Problem \textbf{P2} - 12 dimensions.}
 		\label{fig:planning_efficiency:6dof:hammering}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.325\textwidth}
 	\includegraphics[width=\linewidth]{fig/planning_efficiency/herb_batting_efficiency}
-	\caption{\captionstyle Problem 3 - 14 Dimensions.}
+	\caption{\captionstyle Problem \textbf{P3} - 14 dimensions.}
 	\label{fig:planning_efficiency:herb:batting}
     \end{subfigure}
 	\caption{\captionstyle Planning Efficiency of four different samplers (RS, HRS, MH and HNR) in three problems. 
-	The X axis is the planning time. 
-	The Y axis is the ratio of the current best and the optimal $ \cbest / c^*_{\rm best} $.}
+	The $x$-axis is the planning time. 
+	The $y$-axis is the ratio of the current best and the optimal $ \cbest / c^*_{\rm best} $.}
 	\label{fig:planning_efficiency}
 \end{figure*} 
 
@@ -833,7 +839,7 @@ There is a wealth of literature in the optimization community regarding this top
 Finally, we are interested in using this framework with alternative sampling-based algorithms such as BIT*~\cite{GSB15} or LBT-RRT~\cite{SH16} and with alternative state spaces.
 %Here, a potential challenge lies with the fact the distance function we considered is not a metric, which may require changes
 
-\section{Acknowledge}
+\section{Acknowledgements}
 
 This work was (partially) funded by the National Science Foundation IIS ($\#1409003$), and the Office of Naval Research.
 
