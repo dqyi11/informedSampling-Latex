@@ -59,8 +59,8 @@ deltaYUpper = 2;
 xlim([xmin-deltaXLower,xmax+deltaXUpper]);
 ylim([ymin-deltaYLower,ymax+deltaYUpper]);
 
-xlabel('informed set volume ratio');
-ylabel('time per sample (ms)');
+xlabel('Informed set volume ratio');
+ylabel('Time per sample (ms)');
 lgd = legend([h1, h2, h3, h4], {'RS', 'HRS', 'MH', 'HNR'});
 lgd.FontSize = 16;
 set(gca, 'fontsize',16);

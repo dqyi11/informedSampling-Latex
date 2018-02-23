@@ -27,7 +27,7 @@ plot(dim6(:,12), dim6(:,13), 'color', highDimColor, 'linewidth', 4);
 
 xlim([1, 1.41]);
 xlabel('$ c_{best} / c^*_{best} $', 'Interpreter','latex');
-ylabel('informed set volume ratio');
+ylabel('Informed set volume ratio');
 %legend('Rejection', 'HRS', 'MCMC', 'Hit&Run');
 legend('4-dimension', '12-dimension', 'Location', 'northwest');
 hold off;
