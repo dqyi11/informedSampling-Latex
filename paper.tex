@@ -143,6 +143,7 @@ This may cause the planning algorithm to spend most of its time trying to produc
   	Algorithmic approach.
   	Cost function is depicted using isocontours (darker shades reflect lower cost) while the boundary of the informed set is depicted in purple. 
   	The root-finding and MCMC algorithms are depicted in red and turquoise, respectively.
+  	$ x_0 $ lies on the boundary of $ \Cinf $
   	}
    	\label{fig:alg}
 \end{figure}
@@ -162,7 +163,7 @@ Roughly speaking, this is because Hit-and-Run (detailed in Sec~\ref{sec:algorith
 produces a series of one-dimensional rejection samples which are extremely fast to compute, even in high-dimensional spaces. 
 
 Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06} and that a gradient can be defined over the cost function.
-Indeed, we demonstrate the efficiency of our approach on a wide variety of systems and show that it enables reducing the planning time by several orders of magnitude when compared to algorithms using rejection sampling or HRS.
+Indeed, we demonstrate the efficiency of our approach in several systems and show that it has the potential of reducing the planning time by several orders of magnitude when compared to algorithms using rejection sampling or HRS.
 
 \begin{figure*}[t!]
 	\centering
@@ -286,7 +287,7 @@ Our paper can be seen as a hybrid approach marrying sampling-based planning with
 Let $\calX, \calU$ denote the state and controls spaces, respectively and set $\Cfree \subset \calX$ to be the set of states where the robot is collision free.
 A \emph{trajectory} $\gamma$ is a timed path through~$\calX$ obtained by applying at time $t$ control $u(t) \in \calU$ and satisfying the system dynamics 
 $\dot{x}(t) = f( x(t) , u(t) )$.
-A trajectory is collision free if $\forall t,~\gamma(t) \in \Cfree$
+A trajectory is collision free if $\forall t,~\gamma(t) \in \Cfree$.
 
 Given a cost function $C : \calX \times \calU \rightarrow \R$, the cost of a trajectory $ \gamma $ is the accumulated cost along the path
 $c(\gamma) = \int_0^{T} c( x(t), u(t) ) |\dot{\gamma}(t)|dt$, 
@@ -318,7 +319,7 @@ Specifically, we start by describing the differences in between planning in Eucl
 \subsection{Geometric vs. Kinodynamic planning}
 Consider the problem depicted in Fig.~\ref{fig:motivation} where HERB is required to produce a large velocity at the end of its arm at the goal position.
 One approach to address this problem is to first plan in the geometric configuration space and then re-scale the trajectory in time.
-However, when the start and goal are in close proximity, a geometric planner will simply connect the two states (Fig.~\ref{fig:motivation:fast}).
+However, when the start and goal are in close proximity, a geometric planner will simply connect the two states (Fig.~\ref{fig:motivation:slow}).
 On re-scaling this trajectory in time, reaching the goal velocity in such short distance will require large acceleration, which will not be feasible.
 Hence, it is required to move the arm back and then reach the goal, i.e. the trajectory returned by the kinodynamic planner shown in (Fig.~\ref{fig:motivation:fast}).
 The difference between the two motions are shown in a phase plot in Fig.~\ref{fig:motivation:phase_plot}.
@@ -393,7 +394,7 @@ It is straightforward to see that both the type and the amount of acceleration a
 Fig~\ref{fig:discont} depicts a simple example where the cost map is discontinuous.
 
 To summarize, the structure of \Cinf can change given different start and goal states.
-Furthermore,  its boundary may not be  differentiable due to the aforementioned discontinuous.
+Furthermore,  its boundary may not be  differentiable due to the aforementioned discontinuity.
 
 \begin{figure}[tb]
   \centering
@@ -436,7 +437,7 @@ We now continue to detail each of the algorithm's stages.
 
 \subsection{Finding an initial sample in $\Cinf$}
 In theory, MCMC methods converge to the desired distribution regardless of the initial sample used to seed the chain.
-In our setting, the probability distribution~\Pinf is defined by having all points in \Cinf distributed uniformly
+In our setting, the probability distribution~ $ \pi $ is defined by having all points in \Cinf distributed uniformly
 while 
 the probability of sampling any configuration $x \in \calX \setminus \Cinf$ is zero.
 A common practice to avoid starting biases in MCMC-type algorithm is to discard an initial set of samples (a process referred to as ``burn-in'')~\cite{ADDJ03}. 
@@ -445,7 +446,6 @@ In our setting, we are only interested in points in~\Cinf, thus we suggest to st
 We restart our process and generate a new Markov chain  when 
 (i)~the cost of $\cbest$ is updated (i.e. a new solution is found by the planner) or
 (ii)~the new sample on the existing Markov chain is outside~\Cinf.
-
 We suggest several methods to produce an initial sample~$x_0 \in \Cinf $ 
 \begin{itemize}
 	\item randomly returning either the start state or the goal state,
@@ -470,8 +470,8 @@ The process is demonstrated in Algorithm~\ref{alg:mcmc_informed_sampling}.
 At the beginning of a Markov chain, \texttt{sample\_in\_informed\_space}() is called to generate the first sample in an informed set.
 \texttt{MCMC\_sample}() is called to generate a new sample based on a previous sample $ x_{i-1} $ and a cost $ \cbest $ that defines an informed set.
 We demonstrate how to instantiate it with two different algorithms \emph{Metropolis-Hastings} and \emph{Hit-and-Run}, which will be described in later subsections.
-If a generated new sample candidate is in the informed set, this candidate will be returned as a new sample.
-But if a generated new sample candidate is not in the informed set, it will go back to line 2.
+If a generated new sample candidate is in the informed set, this candidate will be returned as a new sample (line~4).
+But if a generated new sample candidate is not in the informed set (line~5), it will go back to line 2.
 A new Markov chain will be initiated by calling \texttt{sample\_in\_informed\_space}() to generate a new sample $ x_0 $.
 
 \begin{algorithm}[t]
@@ -497,12 +497,12 @@ A new Markov chain will be initiated by calling \texttt{sample\_in\_informed\_sp
 
 %\os{Please rewrite this entire section as well as the pseudo code. I did not understand it at all}
 
-The Metropolis-Hastings algorithm is one of the most popular MCMC samplers~\cite{CG95}, because it provides a simple and parameter-free framework that guarantees the convergence of Markov chains to a target distribution.
+The Metropolis-Hastings algorithm is one of the most popular MCMC samplers~\cite{CG95}, because it provides a simple and framework that guarantees the convergence of Markov chains to a target distribution.
 Our work adopts the general Metropolis-Hastings algorithm, as described in Algorithm~\ref{alg:mh_mcmc}, 
 We generate a new sample $ x_{i}$ around the previous sample $ x_{i-1}$ using a Gaussian distribution (line~1).
-We then check if the point lies in the informed set (lines 2-5) and if it does we return it.
-If not, we return the previous sample.
 An acceptance ratio $ \alpha $ is used to keep the reversibility even if the target probability $ \pi $ is asymmetric, which is needed to guarantee the convergence~\cite{CG95}. 
+The calculation of the acceptance ratio $ \alpha $ is given in line~2 in Algorithm~\ref{alg:mh_mcmc}.
+A new sample will be accepted if a generated random number from a uniform distribution $[0.0, 1.0 ] $ is less than the acceptance ratio (line 3-5). 
 
 %For this algorithm, we continue sampling along the Markov Chain as long as new samples are produced.
 
@@ -511,10 +511,10 @@ An acceptance ratio $ \alpha $ is used to keep the reversibility even if the tar
 		\STATE $ x'_{i} \leftarrow \texttt{sample\_normal}( q ( x \mid x_{i-1},\Sigma) ) $ 
 		\label{start}
 		\STATE $ \alpha \leftarrow \frac{ q ( x_{i-1} \mid x'_{i},\Sigma) \pi( x'_{i} ) }{ q ( x'_{i} \mid x_{i-1},\Sigma) \pi( x_{i-1} ) } $
-		\IF{ \texttt{sample\_random}$ (0.0 , 1.0) > \min (1, \alpha) $  }
+		\IF{ \texttt{sample\_random}$ (0.0 , 1.0) < \min (1, \alpha) $  }
             \RETURN $ x'_{i} $
 		\ENDIF
-		\RETURN $ x_{i} $
+		\RETURN $ x_{i-1} $
 	\end{algorithmic}
 	\caption{\captionstyle Metropolis-Hastings MCMC $(x_{i-1}, \cbest)$}
 	\label{alg:mh_mcmc}	
@@ -539,8 +539,8 @@ The algorithm can be viewed as an efficient method that performs rejection sampl
 
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
-		\STATE $d \leftarrow$ \texttt{sample\_random\_direction}$()$
-		\STATE $ L(\lambda) = \{  x \mid x = x_{i-1} + \lambda d_i \} $
+		\STATE $d_i \leftarrow$ \texttt{sample\_random\_direction}$()$
+		\STATE $ L(\lambda) = \{  \lambda \in \mathbb{R} \mid c(x_{i-1} + \lambda d_i ) \leq \cbest \} $
 		\STATE $ \lambda^{+} \leftarrow \sup L(\lambda) $; 
 		\hspace{3mm} 
 		$ \lambda^{-} \leftarrow \inf L(\lambda) $
@@ -590,14 +590,15 @@ A direct implication of the proof of optimality presented in~\cite{KF11} is that
 
 We evaluate the performance of proposed MCMC methods by comparing four types of samplers, which are Rejection Sampler (RS), Hierarchical Rejection Sampler (HRS), Metropolis-Hastings Sampler (MH), and Hit-and-Run Sampler (HNR).
 We use different samplers to generate a fixed number of samples in different informed sets to check the sampling efficiency. %, especially when the sampling is harder (in a small informed set).
-We then compare the quality of the samplers by evaluating how the samplers work with informed RRT*~\cite{GSB14}.
+We then compare the quality of the samplers by how the samplers work with informed RRT*~\cite{GSB14}.
 
 \subsection{Sampling Efficiency}
 
 Fig.~\ref{fig:sampling_efficiency:levelset} shows how the informed set volume ratio decreases as the informed set cost $ \cbest $ becomes smaller in problems of different dimensions.
 In higher dimensions, the informed set volume ratio decreases much more quickly with decrease in the informed set cost $ \cbest $, as new cheaper trajectories are found in the planning process.
 
-Fig.~\ref{fig:sampling_efficiency} shows the plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio, i.e. the ratio of the volume of informed space to the volume of entire state space, for 5000 samples. 
+We define the \emph{informed set volume ratio} as the ratio of the volume of informed space to the volume of entire state space.
+Fig.~\ref{fig:sampling_efficiency} shows the plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio for 5000 samples. 
 The informed set volume ratio is estimated by the acceptance rate of rejection sampler.
 The informed set volume ratio is approximated by the ratio of the number of accepted to the total number of samples obtained while running rejection sampling. 
 %Efficiency of rejection sampling based methods is very low for high dimensions because this ratio decreases exponentially w.r.t the dimension of the space, for a given sub-level-set of the cost function.
@@ -641,12 +642,12 @@ When informed set volume ratio is relatively high, it is easy to generate sample
 All the samplers have close performances.
 It actually implies rejection sampler is the best because of its simplicity in implementation and minimum correlation between successive samples.
 The sampling time of all samplers except MH, increases as problems gets harder.
-Notice that the sampling efficiency of HNR scales better than HRS and HRS is scales than RS.
+Notice that the sampling efficiency of HNR scales better than HRS, and HRS scales better than RS.
 Moving from a 4 dimension problem in Fig.~\ref{fig:sampling_efficiency:2d} to a 12 dimension problem in Fig.~\ref{fig:sampling_efficiency:6d}, sampling in an informed set becomes even harder, because the informed set volume ratio becomes smaller.
 Here, HNR and MH samplers show much better efficiency over the others.
 
 We want to point out that efficiently sampling in an informed set is not sufficient for determining the performance of a sampler.
-For example, a sampler that constantly returns the same sample in a informed set might show the best sampling efficiency, however it is the worst sampler in a path planning problem.
+For example, a sampler that constantly returns the same sample in an informed set might show the best sampling efficiency, however it is the worst sampler in a path planning problem.
 %\dy{is the property that any state in a set has a chance to be sampled?}
 %We hope sampler (satisfies some properties ?) that a resulting planner is asymptotically optimal.
 Ideally, we want generated samples to be uniformly distributed in an informed set to get the best exploration.
