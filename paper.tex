@@ -83,7 +83,7 @@ Siddhartha Srinivasa$^{1}$
 Asymptotically-optimal motion planners such as RRT* have been shown to incrementally approximate the shortest path between start and goal states.
 Once an initial solution is found, their performance can be dramatically improved by restricting subsequent samples to regions of the state space that can potentially improve the current solution.
 When the motion-planning problem lies in a Euclidean space, this region~$\Cinf$, called the informed set, can be sampled directly.
-However, when planning with differential constraints in non-Euclidean state spacess, no analytic solutions exists to sampling~$\Cinf$ directly.
+However, when planning with differential constraints in non-Euclidean state spaces, no analytic solutions exists to sampling~$\Cinf$ directly.
 
 State-of-the-art approaches to sampling~$\Cinf$ in such domains such as Hierarchical Rejection Sampling (HRS) may still be slow in high-dimensional state space.
 This may cause the planning algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
@@ -673,7 +673,29 @@ Joint velocities at start and goal are calculated from desired end-effector velo
 \begin {table*}[t!]
 \centering
 \setlength{\tabcolsep}{0.5em}
-\begin{tabular}{r*{7}{>{[}r@{,~}l<{]}}} 
+\begin{tabular}{>{[}r@{,~}l<{]}} 
+	\toprule
+	\multicolumn{2}{c}{3D Arm} 
+	\\ 
+	\midrule
+	$-\pi$ & $\pi$ 
+	\\
+	\multicolumn{2}{c}{10} 
+	\\
+	\bottomrule
+\end{tabular}
+\begin{tabular}{>{[}r@{,~}l<{]}} 
+	\toprule
+	\multicolumn{2}{c}{6D Snake} 
+	\\ 
+	\midrule
+	$-\pi$ & $\pi$ 
+	\\
+	\multicolumn{2}{c}{10} 
+	\\
+	\bottomrule
+\end{tabular}
+\begin{tabular}{l*{7}{>{[}r@{,~}l<{]}}} 
 \toprule
 HERB Joint & 
 \multicolumn{2}{c}{1} & 
@@ -702,28 +724,6 @@ $| v_{max} |~(rad/s)$ &
 \multicolumn{2}{c}{2.50} &
 \multicolumn{2}{c}{2.50} &
 \multicolumn{2}{c}{2.00}
-\\
-\bottomrule
-\end{tabular}
-\begin{tabular}{>{[}r@{,~}l<{]}} 
-\toprule
-\multicolumn{2}{c}{3D Arm} 
-\\ 
-\midrule
- $-\pi$ & $\pi$ 
-\\
-\multicolumn{2}{c}{10} 
-\\
-\bottomrule
-\end{tabular}
-\begin{tabular}{>{[}r@{,~}l<{]}} 
-\toprule
-\multicolumn{2}{c}{6D Snake} 
-\\ 
-\midrule
- $-\pi$ & $\pi$ 
-\\
-\multicolumn{2}{c}{10} 
 \\
 \bottomrule
 \end{tabular}
