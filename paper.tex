@@ -47,7 +47,7 @@
 
 \title{\LARGE \bf
 Generalizing Informed Sampling
-for Asymptotically Optimal Sampling-based Kinodynamic Planning via Markov Chain
+for Asymptotically-Optimal Sampling-based Kinodynamic Planning via Markov Chain
 Monte Carlo
 }
 
@@ -62,7 +62,7 @@ Siddhartha Srinivasa$^{1}$
 %\thanks{This work was (partially) funded by the National Science Foundation IIS (\#1409003), Toyota Motor Engineering \& Manufacturing (TEMA), and the Office of Naval Research.}% <-this % stops a space
 \thanks{$^{1}$Daqing Yi and Siddhartha Srinivasa are with Paul G. Allen School of Computer Science \& Engineering, University of Washington.
 {\tt\small \{dqyi, siddh\}@cs.washington.edu}}
-\thanks{$^{2}$ Rohan Thakker, Cole Gulino and Oren Salzman are with Robotics Institute, Carnegie Mellon University.
+\thanks{$^{2}$Rohan Thakker, Cole Gulino and Oren Salzman are with Robotics Institute, Carnegie Mellon University.
 {\tt\small \{rthakker, cgulino, osalzman\} @andrew.cmu.edu}}%
 }
 
@@ -82,8 +82,8 @@ Siddhartha Srinivasa$^{1}$
 \begin{abstract}
 Asymptotically-optimal motion planners such as RRT* have been shown to incrementally approximate the shortest path between start and goal states.
 Once an initial solution is found, their performance can be dramatically improved by restricting subsequent samples to regions of the state space that can potentially improve the current solution.
-When the motion planning problem lies in a Euclidean space, this region~$\Cinf$, called the informed set, can be sampled directly.
-However, when planning with differential constraints in non-Euclidean state spaces, no analytic solutions exists to sampling~$\Cinf$ directly.
+When the motion-planning problem lies in a Euclidean space, this region~$\Cinf$, called the informed set, can be sampled directly.
+However, when planning with differential constraints in non-Euclidean state spacess, no analytic solutions exists to sampling~$\Cinf$ directly.
 
 State-of-the-art approaches to sampling~$\Cinf$ in such domains such as Hierarchical Rejection Sampling (HRS) may still be slow in high-dimensional state space.
 This may cause the planning algorithm to spend most of its time trying to produces samples in~$\Cinf$ rather than explore it.
@@ -116,7 +116,7 @@ when a path has yet to be found,
 the samples are drawn from the entire state space~$\calX$.
 However, once a path $\gamma$ is produced,  algorithms that seek \emph{high-quality paths} can limit their sampling domain to a subset of~$\calX$ only  containing states that may be used to produce higher-quality paths than~$\gamma$.
 Following Gammell et al.~\cite{GSB14}, we call this subset the \emph{informed subset} and denote it~$\Cinf$.
-In this work we address the problem of efficiently producing samples in informed subset for systems with arbitrary complex costs. 
+In this work we address the problem of efficiently producing samples in~$\Cinf$ for systems with arbitrary complex costs. 
 
 For Euclidean spaces optimizing for path length, 
 \Cinf can be analytically expressed as a prolate hyperspheroid and can be sampled directly using a closed-form solution~\cite{GSB14}.
@@ -141,7 +141,7 @@ This may cause the planning algorithm to spend most of its time trying to produc
   \caption{
     \captionstyle
   	Algorithmic approach.
-  	Cost function is depicted using isocontours (darker shades reflect lower cost) while the boundary of the informed set is depicted in purple. 
+  	Cost function is depicted using iso-contours (darker shades reflect lower cost) while the boundary of the informed set is depicted in purple. 
   	The root-finding and MCMC algorithms are depicted in red and turquoise, respectively.
   	$ x_0 $ lies on the boundary of $ \Cinf $
   	}
@@ -154,12 +154,12 @@ In this paper, we suggest an alternative approach to produce samples in the info
 Our main insight is to recast this problem as one of sampling uniformly within the sub-level-set of an implicit non-convex function.
 This recasting enables us to apply Monte Carlo sampling methods, used very effectively in the Machine Learning and Optimization communities, to solve our problem.
 }
-Specifically, our approach, depicted in Fig~\ref{fig:alg} consists of two stages:
+Specifically, our approach, depicted in Fig.~\ref{fig:alg} consists of two stages:
 in the first, a random sample $x \in \calX$ is retracted to the boundary of~$\Cinf$ by running a root-finding algorithm;
 in the second stage, this retracted sample  is used to seed a Monte Carlo sampling chain which allows us to  produce samples that (approximately) cover~$\Cinf$  uniformly.
 
 While our approach can be used with any Markov Chain Monte Carlo (MCMC) method, it is especially suited to be used with Hit-and-Run~\cite{KSZ11}.
-Roughly speaking, this is because Hit-and-Run (detailed in Sec~\ref{sec:algorithm})
+Roughly speaking, this is because Hit-and-Run (detailed in Sec.~\ref{sec:algorithm})
 produces a series of one-dimensional rejection samples which are extremely fast to compute, even in high-dimensional spaces. 
 
 Our approach requires that the system has a solution to the two-point boundary value problem (2pBVP)~\cite{L06} and that a gradient can be defined over the cost function.
@@ -271,12 +271,12 @@ Here, the samples are drawn by generating a Markov chain such that the distribut
 One variant, which is of special interest to us is 
 Hit-and-Run~\cite{KSZ11}.
 Here, given the current point $x_i$ the next point~$x_{i+1}$ in the Markov chain is produced by sampling a random direction~$\theta$ on the surface of the unit sphere centered at $x_{i+1}$. This defines a ray $r_i$ rooted at $x_i$ and passing through~$\theta$. The point $x_{i+1}$ is chosen by randomly sampling a point on $r_i$.
-This algorithm is considered to be one of the most efficient algorithms for generating an asymptotically uniform point if the set under consideration is convex~\cite{LV06}
+This algorithm is considered to be one of the most efficient algorithms for generating an asymptotically uniform distribution if the set under consideration is convex~\cite{LV06}
 and it can also be extended to sample points that converge to an arbitrary target distribution in total variation~\cite{RS94}.
 
 The attractiveness of Hit-and-Run for our problem domain stems from the fact that it performs a series of one-dimensional rejection samples which are extremely fast to compute, even in high-dimensional spaces. 
 Finally, it is worth noting that we are not the first to apply Hit-and-Run for motion-planning problems.
-Recently~\cite{YPVA17} was used as an alternative to RRT to produce \emph{feasible motions} (and not high-quality paths). 
+Recently~\cite{YPVA17} it was used as an alternative to RRT to produce \emph{feasible motions} (and not high-quality paths). 
 Interestingly the paper concludes with the statement ``\emph{One drawback is that the sample paths for Hit-and-Run have no pruning and are therefore longer than the RRT paths. Hybrid approaches that yield short paths but also explore quickly are a promising future direction.}''
 Our paper can be seen as a hybrid approach marrying sampling-based planning with MCMC-based approaches.
 
@@ -289,11 +289,11 @@ A \emph{trajectory} $\gamma$ is a timed path through~$\calX$ obtained by applyin
 $\dot{x}(t) = f( x(t) , u(t) )$.
 A trajectory is collision free if $\forall t,~\gamma(t) \in \Cfree$.
 
-Given a cost function $C : \calX \times \calU \rightarrow \R$, the cost of a trajectory $ \gamma $ is the accumulated cost along the path
+Given a cost function $c : \calX \times \calU \rightarrow \R$, the cost of a trajectory $ \gamma $ is the accumulated cost along the path
 $c(\gamma) = \int_0^{T} c( x(t), u(t) ) |\dot{\gamma}(t)|dt$, 
 where $T$ is the duration of~$\gamma$.
 
-Given start and target states $x_s, x_g \in \calX$, we wish to find a collision free trajectory $\gamma^*$ connecting $x_s$ to $x_g$ such that 
+Given start and target states $x_s, x_g \in \calX$, we wish to find a collision-free trajectory $\gamma^*$ connecting $x_s$ to $x_g$ such that 
 $c(\gamma^*) = \min_{\gamma \in \Gamma} c(\gamma)$, where $\Gamma$ is the set of all collision-free trajectories.
 
 Given a trajectory $\gamma_{\rm best}$ with cost $\cbest = c(\gamma_{\rm best})$ the \emph{informed set}~\Cinf is defined to be all states $x$  which may be on trajectories with lower cost than $\cbest$.
@@ -301,7 +301,7 @@ Specifically,
 $
 \Cinf = \{ x \in \calX \mid  
 		c ( \gamma^*(x) ) < \cbest \} $~\cite{GSB14}.
-Here~$ \gamma^*(x) $ denotes the optimal trajectory  from $ x_s $ to $ x_g $ constrained to pass through $ x $.
+Here~$ \gamma^*(x) $ denotes the optimal trajectory  from $ x_s $ to $ x_g $ constrained to pass through~$x $.
 Notice that we do not require that~$ \gamma^*(x) $ is collision free.
 
 In this work we consider the problem of efficiently producing samples within~$\Cinf$.
@@ -311,13 +311,13 @@ These samples will be used within the informed RRT* framework to efficiently and
 \section{Motivation---\Cinf in kinodynamic state spaces}
 \label{sec:mtdi}
 
-In this section we properly motivate this work.
-Specifically, we start by describing the differences in between planning in Euclidean configuration spaces (also called geometric planning) nd non-Euclidean  state spaces.
+In this section we properly motivate our work.
+Specifically, we start by describing the differences in between planning in Euclidean configuration spaces (also called geometric planning) and non-Euclidean  state spaces.
 
 
 %\os{mention~\cite{LM97} here or in related work}
 \subsection{Geometric vs. Kinodynamic planning}
-Consider the problem depicted in Fig.~\ref{fig:motivation} where HERB is required to produce a large velocity at the end of its arm at the goal position.
+Consider the problem depicted in Fig.~\ref{fig:motivation} where HERB is required to reach a goal position with a high  velocity of its end effector.
 One approach to address this problem is to first plan in the geometric configuration space and then re-scale the trajectory in time.
 However, when the start and goal are in close proximity, a geometric planner will simply connect the two states (Fig.~\ref{fig:motivation:slow}).
 On re-scaling this trajectory in time, reaching the goal velocity in such short distance will require large acceleration, which will not be feasible.
@@ -391,7 +391,7 @@ To understand the differences recall that optimal trajectories  for MTDI follow 
 Namely, we first apply maximal (or minimal) acceleration for some duration and then switch to applying minimal (or maximal, respectively) acceleration.
 It is straightforward to see that both the type and the amount of acceleration applied (and hence the structure of~\Cinf) depend on the specific values of~$x_s$ and~$x_g$. 
 %Fig~\ref{fig:informed_sets} depicts two informed sets defined using the same cost~$\cbest$ but different start and goal states. Notice the difference in structure of~\Cinf. 
-Fig~\ref{fig:discont} depicts a simple example where the cost map is discontinuous.
+Fig.~\ref{fig:discont} depicts a simple example where the cost map is discontinuous.
 
 To summarize, the structure of \Cinf can change given different start and goal states.
 Furthermore,  its boundary may not be  differentiable due to the aforementioned discontinuity.
@@ -420,7 +420,7 @@ The samples follow a Markov Chain Monte Carlo, in which a new sample candidate i
 Furthermore, the value~$\cbest$ can decrease between consecutive iterations in the planning process of an informed RRT* planner.
 This will occur if the search algorithm that uses the sampler finds a path to the goal whose cost is lower than~$\cbest$.
 
-The idea behind applying MCMC for informed sampling is to define a target distribution~$ \pi $ that has $p(x_{sample}\in\Cinf) \ne 0 ~\&~ p(x_{sample})\notin\Cinf = 0$. 
+The idea behind applying MCMC for informed sampling is to define a target distribution~$ \pi $ that has $\text{Pr}(x_{\text{sample}}\in\Cinf) \ne 0 \text{ and } \text{Pr}(x_{\text{sample}})\notin\Cinf = 0$ (here, $\text{Pr}(\cdot)$ is the probability that an event will occur). 
 This is specially useful if we want to bias the samples based on our knowledge of the environment.
 However, we make no such assumption about the environment and use a uniform distribution over all points in~$ \Cinf $. 
 Our approach consists of two stages,
@@ -449,7 +449,7 @@ We restart our process and generate a new Markov chain  when
 We suggest several methods to produce an initial sample~$x_0 \in \Cinf $ 
 \begin{itemize}
 	\item randomly returning either the start state or the goal state,
-	\item randomly sampling a state $x_{\text rand} \in \Cinf$ and using a gradient descent algorithm (e.g. Newton-Raphson Method~\cite{RT06}) to find a sample in~$ \Cinf $
+	\item randomly sampling a state $x_{\text {rand}} \in \calX$ and using a gradient descent algorithm (e.g. Newton-Raphson Method~\cite{RT06}) to find a sample in~$ \Cinf $
 %	\footnote{ $ \forall x_i \in \Cinf \land x_j \not\in \Cinf, c( x_i ) > c ( x_j ) $. }
 	\item sampling from a pool of previous samples that are in the informed set $ \Cinf $ and
 	\item applying rejection sampling until a sample in the informed set is found.
@@ -468,22 +468,22 @@ Sampling from a pool of samples is algorithmic-free but biases new samples to be
 Our approach is general and can be applied to any MCMC algorithm (see Sec.~\ref{sec:related_work}).
 The process is demonstrated in Algorithm~\ref{alg:mcmc_informed_sampling}.
 At the beginning of a Markov chain, \texttt{sample\_in\_informed\_space}() is called to generate the first sample in an informed set.
-\texttt{MCMC\_sample}() is called to generate a new sample based on a previous sample $ x_{i-1} $ and a cost $ \cbest $ that defines an informed set.
+\texttt{MCMC\_sample}() is called to generate a new sample based on a previous sample~$ x_{i-1} $ and a cost $ \cbest $ that defines an informed set.
 We demonstrate how to instantiate it with two different algorithms \emph{Metropolis-Hastings} and \emph{Hit-and-Run}, which will be described in later subsections.
 If a generated new sample candidate is in the informed set, this candidate will be returned as a new sample (line~4).
-But if a generated new sample candidate is not in the informed set (line~5), it will go back to line 2.
-A new Markov chain will be initiated by calling \texttt{sample\_in\_informed\_space}() to generate a new sample $ x_0 $.
+But if a generated new sample candidate is not in the informed set (line~5), a new Markov chain will be initiated by calling \texttt{sample\_in\_informed\_space}() to generate a new sample $ x_0 $ (lines 7 and 3).
 
 \begin{algorithm}[t]
 	\begin{algorithmic}[1]
 		\LOOP 
-		\IF{ $ x_{i-1} == \varnothing $ }  
+		\IF{ $ i = 0$ }  
 		\label{alg:mcmc_informed_sampling:start}
 			\STATE $x_{0} \leftarrow \texttt{sample\_in\_informed\_space}( )$
 		\ENDIF
 		\STATE $x_{i} \leftarrow \texttt{MCMC\_sample} (x_{i-1}, \cbest)$ 
 		\IF{ $ x_{i} \not\in \Cinf $ }
-			\STATE $ i \leftarrow 0 $; $ x_{0} \leftarrow \varnothing $
+			\STATE $ i \leftarrow 0$
+%			\STATE $ i \leftarrow 0 $; $ x_{0} \leftarrow \varnothing $
 			\STATE \textbf{Goto} line \ref{alg:mcmc_informed_sampling:start} 
 		\ENDIF
 		\STATE \textbf{return} $x_{i}$
@@ -497,12 +497,12 @@ A new Markov chain will be initiated by calling \texttt{sample\_in\_informed\_sp
 
 %\os{Please rewrite this entire section as well as the pseudo code. I did not understand it at all}
 
-The Metropolis-Hastings algorithm is one of the most popular MCMC samplers~\cite{CG95}, because it provides a simple and framework that guarantees the convergence of Markov chains to a target distribution.
+The Metropolis-Hastings algorithm is one of the most popular MCMC samplers~\cite{CG95} because it provides a simple  framework that guarantees the convergence of Markov chains to a target distribution.
 Our work adopts the general Metropolis-Hastings algorithm, as described in Algorithm~\ref{alg:mh_mcmc}, 
 We generate a new sample $ x_{i}$ around the previous sample $ x_{i-1}$ using a Gaussian distribution (line~1).
 An acceptance ratio $ \alpha $ is used to keep the reversibility even if the target probability $ \pi $ is asymmetric, which is needed to guarantee the convergence~\cite{CG95}. 
 The calculation of the acceptance ratio $ \alpha $ is given in line~2 in Algorithm~\ref{alg:mh_mcmc}.
-A new sample will be accepted if a generated random number from a uniform distribution $[0.0, 1.0 ] $ is less than the acceptance ratio (line 3-5). 
+A new sample will be accepted if a generated random number from a uniform distribution $[0.0, 1.0 ] $ is less than the acceptance ratio (lines~3-5). 
 
 %For this algorithm, we continue sampling along the Markov Chain as long as new samples are produced.
 
@@ -511,7 +511,7 @@ A new sample will be accepted if a generated random number from a uniform distri
 		\STATE $ x'_{i} \leftarrow \texttt{sample\_normal}( q ( x \mid x_{i-1},\Sigma) ) $ 
 		\label{start}
 		\STATE $ \alpha \leftarrow \frac{ q ( x_{i-1} \mid x'_{i},\Sigma) \pi( x'_{i} ) }{ q ( x'_{i} \mid x_{i-1},\Sigma) \pi( x_{i-1} ) } $
-		\IF{ \texttt{sample\_random}$ (0.0 , 1.0) < \min (1, \alpha) $  }
+		\IF{ \texttt{sample\_random}$ (0.0 , 1.0) < \alpha $  }
             \RETURN $ x'_{i} $
 		\ENDIF
 		\RETURN $ x_{i-1} $
@@ -520,19 +520,19 @@ A new sample will be accepted if a generated random number from a uniform distri
 	\label{alg:mh_mcmc}	
 \end{algorithm}
 
-In implementation, we use Newton-Raphson method as a gradient descent with random restart to find $ x_0 \in \Cinf $ as the start of a Markov chain.
+In our implementation, we use the Newton-Raphson method as a gradient descent with random restart to find $ x_0 \in \Cinf $ as the start of a Markov chain.
 
 
 \subsubsection{Hit-and-Run sampler}
 
-Hit-and-Run~\cite{S84} sampler is known to efficiently generate uniform samples. 
-Specifically, we use the Accelerated Hit-and-Run variant~\cite{KSZ11} of the algorithm i.e. described in Algorithm~\ref{alg:hit_and_run_mcmc}, which also supports the uniform sampling in both convex and non-convex state space~\cite{KSZ11}.
+The Hit-and-Run~\cite{S84} sampler is known to efficiently generate uniform samples. 
+Specifically, we use the Accelerated Hit-and-Run variant~\cite{KSZ11} of the algorithm which is described in Algorithm~\ref{alg:hit_and_run_mcmc}. It allows for uniform sampling in both convex and non-convex state spaces~\cite{KSZ11}.
 Given the previous sample~$x_{i-1}$ it first  samples a random direction on a unit sphere (line 1).
-This induces a line~$L(\lambda)$ passing through~$x_{i-1}$ in the direction sampled (line 2), parametrized by a scalar~$\lambda$.
+This induces a line~$L(\lambda)$ passing through~$x_{i-1}$ in the direction sampled and parametrized by a scalar~$\lambda$ (line 2).
 We obtain upper and lower bounds on $\lambda$ (line 3) that are problem dependent. 
-For example, if we have box constraints on joint limits of the robot and on maximum velocity, then bounds are given by $\lambda^{+} = -\lambda^{-} = l_{diag}$; where $l_{diag}$ is the length of the longest diagonal of the box.
+For example, if we have box constraints on the joint limits of the robot and on the maximum velocity, then the bounds are given by $\lambda^{+} = -\lambda^{-} = l_{diag}$; where $l_{diag}$ is the length of the longest diagonal of the box.
 We then sample a point along~$L(\lambda)$ by sampling a scalar~$\lambda'$ within our bounds (line 5).
-This defines a point~$x_{i}$ which is a candidate for the next sample along the Markov Chain (line 6).
+This defines a point~$x_{i}$ which is a candidate for the next sample of the Markov Chain (line 6).
 We then check if the point lies in the informed set (line 7) and if it does, we return it.
 If not, we update our bounds (lines~9-12) and repeat the process.
 The algorithm can be viewed as an efficient method that performs rejection sampling along a one-dimensional line passing through the previous sample parametrized by $\lambda$.
@@ -550,7 +550,7 @@ The algorithm can be viewed as an efficient method that performs rejection sampl
 		\STATE $ \lambda' \leftarrow$ \texttt{sample\_random}$ (\lambda^{-} , \lambda^{+})$
 		\STATE $ x_{i} \leftarrow x_{i-1} + \lambda'_{i} d_i $
 		
-		\IF{ $ c( x_{i} ) $ $ < \cbest $ }
+		\IF{ $ c( \gamma^*(x_{i}) )$ $ < \cbest $ }
 		\RETURN $ x_{i}$
 		\ENDIF
 		
@@ -588,7 +588,7 @@ A direct implication of the proof of optimality presented in~\cite{KF11} is that
 \section{Evaluation}
 \label{sec:eval}
 
-We evaluate the performance of proposed MCMC methods by comparing four types of samplers, which are Rejection Sampler (RS), Hierarchical Rejection Sampler (HRS), Metropolis-Hastings Sampler (MH), and Hit-and-Run Sampler (HNR).
+We evaluate the performance of proposed MCMC methods by comparing four types of samplers, which are Rejection Sampler (RS), Hierarchical Rejection Sampler (HRS), Metropolis-Hastings Sampler (MH), and the Hit-and-Run Sampler (HNR).
 We use different samplers to generate a fixed number of samples in different informed sets to check the sampling efficiency. %, especially when the sampling is harder (in a small informed set).
 We then compare the quality of the samplers by how the samplers work with informed RRT*~\cite{GSB14}.
 
