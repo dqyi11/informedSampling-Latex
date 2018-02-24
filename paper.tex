@@ -593,16 +593,24 @@ We use different samplers to generate a fixed number of samples in different inf
 We then compare the quality of the samplers by how the samplers work with informed RRT*~\cite{GSB14}.
 
 \subsection{Sampling Efficiency}
-
-Fig.~\ref{fig:sampling_efficiency:levelset} shows how the informed set volume ratio decreases as the informed set cost $ \cbest $ becomes smaller in problems of different dimensions.
-In higher dimensions, the informed set volume ratio decreases much more quickly with decrease in the informed set cost $ \cbest $, as new cheaper trajectories are found in the planning process.
-
 We define the \emph{informed set volume ratio} as the ratio of the volume of informed space to the volume of entire state space.
-Fig.~\ref{fig:sampling_efficiency} shows the plot of the average time taken to generate one sample in the informed space vs. informed set volume ratio for 5000 samples. 
-The informed set volume ratio is estimated by the acceptance rate of rejection sampler.
-The informed set volume ratio is approximated by the ratio of the number of accepted to the total number of samples obtained while running rejection sampling. 
+This serves as a measure of how hard it is for a rejection sampler to sample within $\Cinf$.
+We plot (Fig.~\ref{fig:sampling_efficiency:levelset}) the informed set volume ratio decreases as the informed set cost $ \cbest $ becomes smaller in problems of different dimensions.
+As the dimension increases, the informed set volume ratio decreases much more quickly with the decrease in the informed set cost $ \cbest $, as new cheaper trajectories are found in the planning process.
+This implies that as the current solution improves, the problem of sampling within $\Cinf$ significantly increases.
+
+We next move to evaluate the average time taken to generate one sample in the informed space as a function informed set volume ratio.
+Fig.~\ref{fig:sampling_efficiency} depicts this value averaged over 5000 samples; here, the informed set volume ratio is estimated by the acceptance rate of rejection sampler.
+%The informed set volume ratio is approximated by the ratio of the number of accepted to the total number of samples obtained while running rejection sampling. 
 %Efficiency of rejection sampling based methods is very low for high dimensions because this ratio decreases exponentially w.r.t the dimension of the space, for a given sub-level-set of the cost function.
-Fig.~\ref{fig:sampling_efficiency} shows that MH and HNR have a better sampling efficiency compared to HRS and RS with decrease in informed set volume ratio or increase in dimensions. 
+%Fig.~\ref{fig:sampling_efficiency} 
+When the informed set volume ratio is high, it is relatively easy to generate samples in the informed set and all the samplers have comparable performances.
+This implies that rejection sampler may be the preferable sampler due to its simplicity and the fact that it indeed produces uniform samples in $\Cinf$.
+The sampling time of HRS and HNR, increases as problems gets harder.
+Notice that the sampling efficiency of HNR scales better than HRS, and HRS scales better than RS.
+Moving from a 4-dimensional problem in Fig.~\ref{fig:sampling_efficiency:2d} to a 12-dimensional problem in Fig.~\ref{fig:sampling_efficiency:6d}, sampling in $\Cinf$ becomes even harder, because the informed set volume ratio becomes smaller.
+Here, HNR and MH samplers show much better efficiency over the others.
+
 
 \begin{figure*}[t!]
 	\centering
@@ -630,24 +638,18 @@ Fig.~\ref{fig:sampling_efficiency} shows that MH and HNR have a better sampling 
 	\label{fig:sampling_efficiency}
 \end{figure*}
 
-Metropolis-Hastings shows consistent sampling time when problems get harder. 
-It takes the advantage of sampling a near state that generate samples in an informed set.
-However this does not reflect the quality of the samples, though all the samples are in the informed set.
-Recall in Algorithm~\ref{alg:mh_mcmc}, a new sample candidate is obtained from a Gaussian distribution $ q( x \mid x_{i-1}, \Sigma ) $.
+Roughly speaking, the average time to produce a sample remains constant for MH, regardless of the problem's difficulty.
+This is due to the fact that every sample is produced in the vicinity of a previously-generated sample.
+%It takes the advantage of sampling a near state that generate samples in an informed set.
+However this does not reflect the \emph{quality} of the samples---namely the distribution of the samples in $\Cinf$.
+Recall (Algorithm~\ref{alg:mh_mcmc}) that a new sample candidate is obtained from a Gaussian distribution $ q( x \mid x_{i-1}, \Sigma ) $.
 The best covariance $ \Sigma $ that generates faster convergence differs with problem setting.
 A small covariance tends to generate more samples near previous samples, while a large covariance has better exploration but is more likely to drive a Markov chain outside the informed set.
 In our next planning experiment setting, we use the same covariance for different problems.
 
-When informed set volume ratio is relatively high, it is easy to generate samples in the informed set.
-All the samplers have close performances.
-It actually implies rejection sampler is the best because of its simplicity in implementation and minimum correlation between successive samples.
-The sampling time of all samplers except MH, increases as problems gets harder.
-Notice that the sampling efficiency of HNR scales better than HRS, and HRS scales better than RS.
-Moving from a 4 dimension problem in Fig.~\ref{fig:sampling_efficiency:2d} to a 12 dimension problem in Fig.~\ref{fig:sampling_efficiency:6d}, sampling in an informed set becomes even harder, because the informed set volume ratio becomes smaller.
-Here, HNR and MH samplers show much better efficiency over the others.
 
 We want to point out that efficiently sampling in an informed set is not sufficient for determining the performance of a sampler.
-For example, a sampler that constantly returns the same sample in an informed set might show the best sampling efficiency, however it is the worst sampler in a path planning problem.
+For example, a sampler that constantly returns the same sample in an informed set might exhibit the best sampling efficiency, however it is the worst sampler in a path planning problem.
 %\dy{is the property that any state in a set has a chance to be sampled?}
 %We hope sampler (satisfies some properties ?) that a resulting planner is asymptotically optimal.
 Ideally, we want generated samples to be uniformly distributed in an informed set to get the best exploration.
@@ -656,14 +658,13 @@ Ideally, we want generated samples to be uniformly distributed in an informed se
 
 \subsection{Planning Efficiency}
 
-The quality of samples determines the efficiency of resulting planning algorithms.
-If a sampler could provide samples with same quality as others but generate samples in a much efficiency way, we would expect that an informed RRT* with this sampler would show two properties.
+The quality of samples determines the efficiency of planning algorithm using that sampler.
+If a sampler could provide samples with the same quality as others but generate samples in a much more efficient way, we expect that an informed RRT* with this sampler would show two properties:
 \begin{itemize}
-	\item It shall converge faster in finding the optimal solution.
-	Sampling in an informed set is gradually becoming harder as new better solution reduces $ \cbest $ which reduces the informed set volume ratio.
-	\item Its performance should not degrade significantly in high dimensional problems.
-	As shown in Fig.~\ref{fig:sampling_efficiency:levelset}, the informed set volume ratio decrease more significantly in a high-dimension state space.
-	The advantage of a good informed sampler becomes evident.
+	\item It shall converge faster to the optimal solution as sampling in $\Cfree$ becoming harder as new and better solution reduces $ \cbest $ (which,  in turn reduces the informed set volume ratio).
+	\item Its performance should not degrade significantly in high-dimensional problems.
+	As shown in Fig.~\ref{fig:sampling_efficiency:levelset}, the informed set volume ratio decrease more significantly in high-dimension state spaces, making the problem significantly more challenging.
+%	The advantage of a good informed sampler becomes evident.
 \end{itemize}
 
 To evaluate the planning efficiency of the samplers, we run them with the informed RRT* planner~\cite{GSB14} in position-velocity space with MTDI as steering function, on three different problems described below and shown in Fig.~\ref{fig:problems}. 
@@ -821,18 +822,19 @@ $| v_{max} |~(rad/s)$ &
 
 %\dy{TODO: add a plot that shows the increases of samples?}
 
-As shown in in Fig.~\ref{fig:planning_efficiency}, MH has the worst performance in all three problems, especially when the dimension increases.
-Though theoretically samples converge to a target distribution only in the limit of infinite time. However, in practice the samples are to close to each other and don't explore the entire informed space.
-If the variance of transition distribution is too high, it will tend to move out of the informed set too frequently, and takes longer to converge as the rejection rate is too high.
+As shown in in Fig.~\ref{fig:planning_efficiency}, MH has the worst performance in all three problems and this is accentuated as the dimension increases.
+Though theoretically, the samples it priduces converge to a target distribution only,  this occurs only as the number of samples tend to infinity. In practice, the samples are to close to each other and don't explore the entire informed space.
+A possible remedy would be to increase the variance of transition distribution. However, this may cause samples to exit $\Cinf$ too frequently, and would result in larger sampling times as the rejection rate would be too high.
 
-HNR shows close performance with RS and HRS in a 6-dimension problem, as in Fig.~\ref{fig:planning_efficiency:3dof:general}. 
-As shown in Fig.~\ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}, the advantages of HNR are clearly evident in higher dimensional problems. The cost of best solutions generated by planner with HNR sampler converges significantly faster to a cheaper to trajectory compared to others.
+HNR shows similar  performance with RS and HRS in a 6-dimensional problem, as depicted in Fig.~\ref{fig:planning_efficiency:3dof:general}. 
+However, in higher dimensions 
+(Fig.~\ref{fig:planning_efficiency:6dof:hammering} and \ref{fig:planning_efficiency:herb:batting}), , the cost of the solutions generated by Informed RRT* with HNR as a sampler converges significantly faster to a cheaper to trajectory compared to the other methods.
 
 \section{Conclusion}
 \label{sec:future}
 
 In this work we demonstrated the effectiveness of using MCMC algorithms to 
-efficiently produce samples for asymptotically-optimal motion planning algorithms.
+efficiently produce samples for asymptotically-optimal motion-planning algorithms.
 Clearly, there are multiple other MCMC algorithms that can be used and it is interesting to see if alternative algorithms may produce better results.
 One drawback of these approaches is that they usually incur parameters that have to be tuned. Indeed, in this work we did not spend effort in tuning the parameters and did not change them across the range of scenarios we tested. 
 There is a wealth of literature in the optimization community regarding this topic and integrating  such tools is left for future work.
